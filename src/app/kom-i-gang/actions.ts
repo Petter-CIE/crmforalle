@@ -2,18 +2,20 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { WORKSPACE_COOKIE } from "@/lib/session";
 
 export type OnboardingState = { error?: string };
 
 export async function createWorkspace(_prev: OnboardingState, formData: FormData): Promise<OnboardingState> {
+  const { t } = await getI18n();
   const name = String(formData.get("name") ?? "").trim();
   const orgRaw = String(formData.get("org_number") ?? "").replace(/\s/g, "");
   const fullName = String(formData.get("full_name") ?? "").trim();
 
-  if (!name) return { error: "Skriv inn navnet på bedriften." };
-  if (orgRaw && !/^\d{9}$/.test(orgRaw)) return { error: "Organisasjonsnummer må ha 9 siffer." };
+  if (!name) return { error: t.onboarding.nameRequired };
+  if (orgRaw && !/^\d{9}$/.test(orgRaw)) return { error: t.common.orgNumberDigits };
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -27,7 +29,7 @@ export async function createWorkspace(_prev: OnboardingState, formData: FormData
     p_name: name.slice(0, 200),
     p_org_number: orgRaw || undefined,
   });
-  if (error || !workspaceId) return { error: "Kunne ikke opprette bedriften. Prøv igjen." };
+  if (error || !workspaceId) return { error: t.onboarding.failed };
 
   (await cookies()).set(WORKSPACE_COOKIE, workspaceId, {
     httpOnly: true,

@@ -4,20 +4,26 @@ import { useActionState } from "react";
 import { sendMagicLink, type LoginState } from "./actions";
 import { Button, Input, Label, Notice } from "@/components/ui";
 
-export function LoginForm({ next }: { next: string }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(sendMagicLink, {
-    status: "idle",
-  });
+type Texts = {
+  email: string;
+  emailPlaceholder: string;
+  submit: string;
+  sending: string;
+  noPassword: string;
+  sentTo: string;
+  sentHelp: string;
+};
+
+export function LoginForm({ next, t }: { next: string; t: Texts }) {
+  const [state, action, pending] = useActionState<LoginState, FormData>(sendMagicLink, { status: "idle" });
 
   if (state.status === "sent") {
     return (
       <div className="space-y-3">
         <Notice tone="success">
-          Vi har sendt en innloggingslenke til <strong>{state.email}</strong>.
+          {t.sentTo} <strong>{state.email}</strong>.
         </Notice>
-        <p className="text-sm text-muted">
-          Åpne e-posten på denne enheten og klikk på lenken. Finner du den ikke, sjekk søppelpost.
-        </p>
+        <p className="text-sm text-muted">{t.sentHelp}</p>
       </div>
     );
   }
@@ -26,7 +32,7 @@ export function LoginForm({ next }: { next: string }) {
     <form action={action} className="space-y-4">
       <input type="hidden" name="neste" value={next} />
       <div>
-        <Label htmlFor="email">E-post</Label>
+        <Label htmlFor="email">{t.email}</Label>
         <Input
           id="email"
           name="email"
@@ -34,16 +40,14 @@ export function LoginForm({ next }: { next: string }) {
           autoComplete="email"
           required
           defaultValue={state.email}
-          placeholder="navn@bedrift.no"
+          placeholder={t.emailPlaceholder}
         />
       </div>
       {state.status === "error" && <Notice tone="error">{state.message}</Notice>}
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Sender …" : "Send innloggingslenke"}
+        {pending ? t.sending : t.submit}
       </Button>
-      <p className="text-xs text-muted">
-        Ingen passord. Har du ikke konto, opprettes den automatisk.
-      </p>
+      <p className="text-xs text-muted">{t.noPassword}</p>
     </form>
   );
 }

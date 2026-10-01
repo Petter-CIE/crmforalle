@@ -1,12 +1,32 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { BrregSearch } from "@/components/brreg-search";
+import { BrregSearch, type BrregTexts } from "@/components/brreg-search";
 import { Button, Input, Label, Notice } from "@/components/ui";
 import type { BrregCompany } from "@/lib/brreg";
 import { createWorkspace, type OnboardingState } from "./actions";
 
-export function OnboardingForm({ defaultFullName }: { defaultFullName: string }) {
+type Texts = {
+  yourName: string;
+  namePlaceholder: string;
+  findCompany: string;
+  findHelp: string;
+  companyName: string;
+  orgNumberOptional: string;
+  submit: string;
+  submitting: string;
+  trialNote: string;
+};
+
+export function OnboardingForm({
+  defaultFullName,
+  t,
+  brreg,
+}: {
+  defaultFullName: string;
+  t: Texts;
+  brreg: BrregTexts;
+}) {
   const [state, action, pending] = useActionState<OnboardingState, FormData>(createWorkspace, {});
   const [company, setCompany] = useState<{ name: string; org: string; city?: string | null }>({
     name: "",
@@ -20,19 +40,19 @@ export function OnboardingForm({ defaultFullName }: { defaultFullName: string })
   return (
     <form action={action} className="space-y-5">
       <div>
-        <Label htmlFor="full_name">Ditt navn</Label>
-        <Input id="full_name" name="full_name" autoComplete="name" defaultValue={defaultFullName} placeholder="Ola Nordmann" />
+        <Label htmlFor="full_name">{t.yourName}</Label>
+        <Input id="full_name" name="full_name" autoComplete="name" defaultValue={defaultFullName} placeholder={t.namePlaceholder} />
       </div>
 
       <div>
-        <span className="mb-1 block text-sm font-medium">Finn bedriften din</span>
-        <BrregSearch onSelect={pick} autoFocus />
-        <p className="mt-1 text-xs text-muted">Hentes fra Brønnøysundregistrene. Du kan også fylle inn selv.</p>
+        <span className="mb-1 block text-sm font-medium">{t.findCompany}</span>
+        <BrregSearch onSelect={pick} t={brreg} autoFocus />
+        <p className="mt-1 text-xs text-muted">{t.findHelp}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-[1fr_11rem]">
         <div>
-          <Label htmlFor="name">Bedriftsnavn</Label>
+          <Label htmlFor="name">{t.companyName}</Label>
           <Input
             id="name"
             name="name"
@@ -42,7 +62,7 @@ export function OnboardingForm({ defaultFullName }: { defaultFullName: string })
           />
         </div>
         <div>
-          <Label htmlFor="org_number">Org.nr. (valgfritt)</Label>
+          <Label htmlFor="org_number">{t.orgNumberOptional}</Label>
           <Input
             id="org_number"
             name="org_number"
@@ -57,9 +77,9 @@ export function OnboardingForm({ defaultFullName }: { defaultFullName: string })
 
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Oppretter …" : "Opprett og start prøveperioden"}
+        {pending ? t.submitting : t.submit}
       </Button>
-      <p className="text-center text-xs text-muted">14 dager gratis. Ingen kort nødvendig.</p>
+      <p className="text-center text-xs text-muted">{t.trialNote}</p>
     </form>
   );
 }

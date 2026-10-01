@@ -1,11 +1,15 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo, Select } from "@/components/ui";
+import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace, trialDaysLeft } from "@/lib/session";
 import { switchWorkspace } from "./actions";
 import { Nav } from "./_components/nav";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const { user, workspace, workspaces } = await requireWorkspace();
+  const { locale, t } = await getI18n();
   const daysLeft = trialDaysLeft(workspace.trial_ends_at);
 
   return (
@@ -19,7 +23,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         {workspaces.length > 1 ? (
           <form action={switchWorkspace} className="mb-4">
             <label htmlFor="workspace_id" className="sr-only">
-              Bytt bedrift
+              {t.nav.switchCompany}
             </label>
             <Select id="workspace_id" name="workspace_id" defaultValue={workspace.id} className="w-full">
               {workspaces.map((w) => (
@@ -29,7 +33,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
               ))}
             </Select>
             <button type="submit" className="mt-1 text-xs text-brand hover:underline">
-              Bytt
+              {t.nav.switch}
             </button>
           </form>
         ) : (
@@ -37,32 +41,38 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             {workspace.name}
           </p>
         )}
-        <Nav />
+        <Nav t={t.nav} />
         <div className="mt-6 hidden space-y-2 border-t border-border pt-4 text-xs text-muted md:block">
           <p className="truncate" title={user.email}>
             {user.email}
           </p>
           <form action="/auth/logg-ut" method="post">
             <button type="submit" className="hover:text-foreground hover:underline">
-              Logg ut
+              {t.common.logout}
             </button>
           </form>
+          <Suspense>
+            <LanguageSwitcher locale={locale} label={t.common.language} />
+          </Suspense>
         </div>
       </aside>
       <div className="flex flex-1 flex-col">
         {workspace.plan === "trial" && (
           <div className="border-b border-border bg-brand-soft px-6 py-2 text-sm text-brand">
-            {daysLeft > 0
-              ? `Prøveperiode: ${daysLeft} ${daysLeft === 1 ? "dag" : "dager"} igjen.`
-              : "Prøveperioden er over."}
+            {daysLeft > 0 ? t.trial.daysLeft(daysLeft) : t.trial.over}
           </div>
         )}
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-8">{children}</main>
-        <form action="/auth/logg-ut" method="post" className="border-t border-border p-4 text-center md:hidden">
-          <button type="submit" className="text-xs text-muted hover:underline">
-            Logg ut ({user.email})
-          </button>
-        </form>
+        <div className="flex flex-col items-center gap-2 border-t border-border p-4 md:hidden">
+          <Suspense>
+            <LanguageSwitcher locale={locale} label={t.common.language} />
+          </Suspense>
+          <form action="/auth/logg-ut" method="post">
+            <button type="submit" className="text-xs text-muted hover:underline">
+              {t.common.logout} ({user.email})
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

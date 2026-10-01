@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace, siteUrl } from "@/lib/session";
 import { createMailerClient } from "@/lib/supabase/mailer";
 import type { MemberRole } from "@/lib/database.types";
@@ -17,26 +18,28 @@ async function managerContext() {
 
 export async function updateWorkspace(_prev: FormState, formData: FormData): Promise<FormState> {
   const { supabase, workspace } = await managerContext();
+  const { t } = await getI18n();
   const name = String(formData.get("name") ?? "").trim();
   const org = String(formData.get("org_number") ?? "").replace(/\s/g, "");
-  if (!name) return { error: "Bedriftsnavn kan ikke være tomt." };
-  if (org && !/^\d{9}$/.test(org)) return { error: "Organisasjonsnummer må ha 9 siffer." };
+  if (!name) return { error: t.settings.nameEmpty };
+  if (org && !/^\d{9}$/.test(org)) return { error: t.common.orgNumberDigits };
 
   const { error } = await supabase
     .from("workspaces")
     .update({ name: name.slice(0, 200), org_number: org || null })
     .eq("id", workspace.id);
-  if (error) return { error: "Kunne ikke lagre. Prøv igjen." };
+  if (error) return { error: t.settings.saveFailed };
   revalidatePath("/app", "layout");
-  return { ok: true, message: "Lagret." };
+  return { ok: true, message: t.settings.saved };
 }
 
 export async function inviteMember(_prev: FormState, formData: FormData): Promise<FormState> {
   const { supabase, user, workspace } = await managerContext();
+  const { t } = await getI18n();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "user") as MemberRole;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Skriv inn en gyldig e-postadresse." };
-  if (!ASSIGNABLE.includes(role)) return { error: "Ugyldig rolle." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail };
+  if (!ASSIGNABLE.includes(role)) return { error: t.settings.invalidRole };
 
   const { data, error } = await supabase
     .from("invitations")
@@ -45,7 +48,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
     .single();
   if (error) {
     return {
-      error: error.code === "23505" ? "Denne personen er allerede invitert." : "Kunne ikke opprette invitasjonen.",
+      error: error.code === "23505" ? t.settings.alreadyInvited : t.settings.inviteFailed,
     };
   }
   revalidatePath("/app/innstillinger");
@@ -63,16 +66,13 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   if (mailError) {
     return {
       ok: true,
-      message:
-        mailError.status === 429
-          ? `Invitasjonen er opprettet, men e-post kunne ikke sendes akkurat nå (for mange e-poster). Send lenken til ${email} selv:`
-          : `Invitasjonen er opprettet, men e-post kunne ikke sendes. Send lenken til ${email} selv:`,
+      message: mailError.status === 429 ? t.settings.inviteMailLimited(email) : t.settings.inviteMailFailed(email),
       link,
     };
   }
   return {
     ok: true,
-    message: `Invitasjon sendt på e-post til ${email}. Du kan også dele lenken direkte:`,
+    message: t.settings.inviteSent(email),
     link,
   };
 }

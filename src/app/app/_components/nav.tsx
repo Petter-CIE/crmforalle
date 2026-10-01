@@ -3,19 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const items = [
-  { href: "/app", label: "I dag" },
-  { href: "/app/salg", label: "Salg" },
-  { href: "/app/bedrifter", label: "Bedrifter" },
-  { href: "/app/kontakter", label: "Kontakter" },
-  { href: "/app/oppgaver", label: "Oppgaver" },
-  { href: "/app/innstillinger", label: "Innstillinger" },
-];
+export type NavTexts = {
+  today: string;
+  sales: string;
+  companies: string;
+  contacts: string;
+  tasks: string;
+  settings: string;
+  mainMenu: string;
+};
 
-export function Nav() {
+export function Nav({ t }: { t: NavTexts }) {
   const pathname = usePathname();
+  const items = [
+    { href: "/app", label: t.today },
+    { href: "/app/salg", label: t.sales },
+    { href: "/app/bedrifter", label: t.companies },
+    { href: "/app/kontakter", label: t.contacts },
+    { href: "/app/oppgaver", label: t.tasks },
+    { href: "/app/innstillinger", label: t.settings },
+  ];
   return (
-    <nav aria-label="Hovedmeny" className="flex gap-1 overflow-x-auto md:flex-col">
+    <nav aria-label={t.mainMenu} className="flex gap-1 overflow-x-auto md:flex-col">
       {items.map((item) => {
         const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
         return (

@@ -1,5 +1,6 @@
 "use server";
 
+import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/session";
 
@@ -11,9 +12,10 @@ function safeNext(value: FormDataEntryValue | null) {
 }
 
 export async function sendMagicLink(_prev: LoginState, formData: FormData): Promise<LoginState> {
+  const { t } = await getI18n();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { status: "error", message: "Skriv inn en gyldig e-postadresse.", email };
+    return { status: "error", message: t.common.invalidEmail, email };
   }
   const next = safeNext(formData.get("neste"));
 
@@ -27,14 +29,7 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
   });
 
   if (error) {
-    const rateLimited = error.status === 429;
-    return {
-      status: "error",
-      email,
-      message: rateLimited
-        ? "For mange forsøk. Vent litt og prøv igjen."
-        : "Vi kunne ikke sende innloggingslenken. Prøv igjen.",
-    };
+    return { status: "error", email, message: error.status === 429 ? t.login.rateLimited : t.login.failed };
   }
   return { status: "sent", email };
 }

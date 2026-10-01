@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { searchBrreg } from "@/lib/brreg";
+import { getI18n } from "@/lib/i18n/server";
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q") ?? "";
@@ -8,9 +9,7 @@ export async function GET(request: NextRequest) {
     const results = await searchBrreg(q.slice(0, 100));
     return NextResponse.json({ results });
   } catch {
-    return NextResponse.json(
-      { results: [], error: "Kunne ikke hente data fra Brønnøysundregistrene." },
-      { status: 502 },
-    );
+    const { t } = await getI18n();
+    return NextResponse.json({ results: [], error: t.brreg.failed }, { status: 502 });
   }
 }

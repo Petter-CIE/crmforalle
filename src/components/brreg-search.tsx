@@ -4,14 +4,22 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { BrregCompany } from "@/lib/brreg";
 import { Input } from "@/components/ui";
 
+export type BrregTexts = {
+  placeholder: string;
+  searching: string;
+  noHits: string;
+  failed: string;
+  bankrupt: string;
+};
+
 type Props = {
   onSelect: (company: BrregCompany) => void;
-  placeholder?: string;
+  t: BrregTexts;
   autoFocus?: boolean;
 };
 
 /** Search-as-you-type against Brønnøysundregistrene (name or org. number). */
-export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
+export function BrregSearch({ onSelect, t, autoFocus }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<BrregCompany[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,7 +33,7 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
     const q = query.trim();
     if (q.length < 2) return;
     const id = ++reqId.current;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/brreg?q=${encodeURIComponent(q)}`);
@@ -36,13 +44,13 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
         setActive(0);
         setOpen(true);
       } catch {
-        if (id === reqId.current) setError("Søket feilet. Prøv igjen.");
+        if (id === reqId.current) setError(t.failed);
       } finally {
         if (id === reqId.current) setLoading(false);
       }
     }, 250);
-    return () => clearTimeout(t);
-  }, [query]);
+    return () => clearTimeout(timer);
+  }, [query, t.failed]);
 
   const tooShort = query.trim().length < 2;
   const shown = tooShort ? [] : results;
@@ -65,7 +73,7 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
         aria-autocomplete="list"
         autoFocus={autoFocus}
         value={query}
-        placeholder={placeholder ?? "Søk på firmanavn eller org.nr."}
+        placeholder={t.placeholder}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => shown.length && setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -85,7 +93,7 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
           }
         }}
       />
-      {loading && <span className="absolute right-3 top-2.5 text-xs text-muted">Søker …</span>}
+      {loading && <span className="absolute right-3 top-2.5 text-xs text-muted">{t.searching}</span>}
       {shownError && <p className="mt-1 text-xs text-danger">{shownError}</p>}
       {open && shown.length > 0 && (
         <ul
@@ -107,7 +115,7 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
             >
               <div className="font-medium">
                 {c.name}
-                {c.bankrupt && <span className="ml-2 text-xs text-danger">(konkurs/avvikling)</span>}
+                {c.bankrupt && <span className="ml-2 text-xs text-danger">({t.bankrupt})</span>}
               </div>
               <div className="text-xs text-muted">
                 {c.orgNumber.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")}
@@ -119,7 +127,7 @@ export function BrregSearch({ onSelect, placeholder, autoFocus }: Props) {
         </ul>
       )}
       {open && !loading && query.trim().length >= 2 && shown.length === 0 && !shownError && (
-        <p className="mt-1 text-xs text-muted">Ingen treff i Brønnøysundregistrene.</p>
+        <p className="mt-1 text-xs text-muted">{t.noHits}</p>
       )}
     </div>
   );

@@ -51,11 +51,6 @@ export function canManage(role: MemberRole) {
   return role === "owner" || role === "admin";
 }
 
-export const ROLE_LABEL: Record<MemberRole, string> = {
-  owner: "Eier",
-  admin: "Administrator",
-  user: "Bruker",
-};
 
 export function siteUrl() {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
