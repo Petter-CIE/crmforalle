@@ -26,7 +26,7 @@ export default async function Home() {
         <div className="mt-8 flex flex-wrap gap-3">
           <ButtonLink href="/logg-inn">Prøv gratis i 14 dager</ButtonLink>
         </div>
-        <p className="mt-3 text-sm text-muted">Fra 249 kr/mnd eks. mva. Ingen pris per bruker.</p>
+        <p className="mt-3 text-sm text-muted">Fra 249 kr/mnd eks. mva. Alle brukere inkludert.</p>
       </main>
     </div>
   );

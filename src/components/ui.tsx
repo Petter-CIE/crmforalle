@@ -82,9 +82,11 @@ export function Logo() {
   return (
     <span className="inline-flex items-center gap-2 font-semibold tracking-tight">
       <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-xs font-bold text-white">
-        CA
+        AS
       </span>
-      CRM for alle
+      <span>
+        AllSeats <span className="font-normal text-muted">CRM</span>
+      </span>
     </span>
   );
 }

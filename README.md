@@ -1,6 +1,6 @@
-# CRM for alle
+# AllSeats CRM
 
-Norsk CRM for små bedrifter – én fast pris per bedrift, ubegrenset antall brukere.
+CRM for små bedrifter – én fast pris per bedrift, alle brukere inkludert ("every seat included").
 
 Status: MVP under utvikling. Fase 1 (innlogging, bedrift, brukere og invitasjoner) er ferdig.
 

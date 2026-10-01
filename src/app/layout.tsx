@@ -6,8 +6,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "CRM for alle", template: "%s · CRM for alle" },
-  description: "Norsk CRM for små bedrifter – én fast pris, ubegrenset antall brukere.",
+  title: { default: "AllSeats CRM", template: "%s · AllSeats CRM" },
+  description: "CRM for hele bedriften – én fast pris, alle brukere inkludert.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

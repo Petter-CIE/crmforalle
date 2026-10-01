@@ -58,7 +58,12 @@ export const ROLE_LABEL: Record<MemberRole, string> = {
 };
 
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+  // On Vercel, fall back to the project's production domain.
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${vercel}`;
+  return "http://localhost:3000";
 }
 
 /** Whole days left of the trial (0 when expired). */
