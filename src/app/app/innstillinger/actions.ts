@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { canManage, requireWorkspace, siteUrl } from "@/lib/session";
+import { createMailerClient } from "@/lib/supabase/mailer";
 import type { MemberRole } from "@/lib/database.types";
 
 export type FormState = { ok?: boolean; error?: string; message?: string; link?: string };
@@ -48,11 +49,31 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
     };
   }
   revalidatePath("/app/innstillinger");
-  // E-postutsending kommer med Resend/Postmark; foreløpig deles lenken manuelt.
+
+  const link = `${siteUrl()}/invitasjon/${data.token}`;
+  // Send a login e-mail that lands on the invitation page. Uses Supabase Auth e-mail.
+  const { error: mailError } = await createMailerClient().auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${siteUrl()}/auth/callback?neste=${encodeURIComponent(`/invitasjon/${data.token}`)}`,
+      shouldCreateUser: true,
+    },
+  });
+
+  if (mailError) {
+    return {
+      ok: true,
+      message:
+        mailError.status === 429
+          ? `Invitasjonen er opprettet, men e-post kunne ikke sendes akkurat nå (for mange e-poster). Send lenken til ${email} selv:`
+          : `Invitasjonen er opprettet, men e-post kunne ikke sendes. Send lenken til ${email} selv:`,
+      link,
+    };
+  }
   return {
     ok: true,
-    message: `Invitasjon opprettet for ${email}. Send lenken til personen:`,
-    link: `${siteUrl()}/invitasjon/${data.token}`,
+    message: `Invitasjon sendt på e-post til ${email}. Du kan også dele lenken direkte:`,
+    link,
   };
 }
 
