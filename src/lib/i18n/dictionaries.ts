@@ -125,8 +125,6 @@ const nb = {
     passkeyAdded: "Passkey lagt til.",
     passkeyFailed: "Kunne ikke legge til passkey. Prøv igjen.",
     unsupported: "Nettleseren din støtter ikke passkeys.",
-    sms: "SMS-kode",
-    smsSoon: "Kommer senere.",
     error: "Noe gikk galt. Prøv igjen.",
   },
   onboarding: {
@@ -352,8 +350,6 @@ const en: Dictionary = {
     passkeyAdded: "Passkey added.",
     passkeyFailed: "Couldn't add the passkey. Please try again.",
     unsupported: "Your browser doesn't support passkeys.",
-    sms: "SMS code",
-    smsSoon: "Coming later.",
     error: "Something went wrong. Please try again.",
   },
   onboarding: {

@@ -45,10 +45,6 @@ export default async function AccountPage() {
         <PasskeySection t={texts} dateLocale={dateLocale} />
       </Card>
 
-      <Card className="opacity-70">
-        <h2 className="mb-1 font-semibold">{s.sms}</h2>
-        <p className="text-sm text-muted">{s.smsSoon}</p>
-      </Card>
     </div>
   );
 }
