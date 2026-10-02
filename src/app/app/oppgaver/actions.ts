@@ -50,6 +50,10 @@ export async function updateTask(_p: FormResult, formData: FormData): Promise<Fo
     .single();
   if (error) return { error: t.crm.error };
 
+  if (data.assignee_id && data.assignee_id !== before.assignee_id) {
+    // the new assignee no longer needs to be listed as a collaborator
+    await supabase.from("task_members").delete().eq("task_id", taskId).eq("user_id", data.assignee_id);
+  }
   if (data.assignee_id && data.assignee_id !== before.assignee_id && !data.done_at) {
     after(() =>
       notifyAssignment(supabase, {
@@ -154,4 +158,45 @@ export async function deleteAttachment(formData: FormData) {
   await supabase.storage.from("attachments").remove([data.path]);
   await supabase.from("task_attachments").delete().eq("id", id).eq("workspace_id", workspace.id);
   refresh(data.task_id);
+}
+
+/** Adds a colleague who works on the task together with the assignee. */
+export async function addTaskMember(formData: FormData) {
+  const { supabase, user, workspace } = await requireWorkspace();
+  const taskId = uid(formData.get("task_id"));
+  const userId = uid(formData.get("user_id"));
+  if (!taskId || !userId) return;
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("title, due_at, done_at")
+    .eq("id", taskId)
+    .eq("workspace_id", workspace.id)
+    .maybeSingle();
+  if (!task) return;
+  const { error } = await supabase
+    .from("task_members")
+    .insert({ task_id: taskId, workspace_id: workspace.id, user_id: userId, added_by: user.id });
+  if (!error && !task.done_at) {
+    after(() =>
+      notifyAssignment(supabase, {
+        kind: "collab",
+        recipientId: userId,
+        actorId: user.id,
+        workspaceName: workspace.name,
+        title: task.title,
+        dueAt: task.due_at,
+        path: `/app/oppgaver/${taskId}`,
+      }),
+    );
+  }
+  refresh(taskId);
+}
+
+export async function removeTaskMember(formData: FormData) {
+  const { supabase, workspace } = await requireWorkspace();
+  const taskId = uid(formData.get("task_id"));
+  const userId = uid(formData.get("user_id"));
+  if (!taskId || !userId) return;
+  await supabase.from("task_members").delete().eq("task_id", taskId).eq("user_id", userId).eq("workspace_id", workspace.id);
+  refresh(taskId);
 }

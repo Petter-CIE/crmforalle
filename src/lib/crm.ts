@@ -44,3 +44,18 @@ export function opt(v: FormDataEntryValue | null, max = 500) {
 }
 
 export { PROJECT_COLORS, type ProjectColor } from "@/lib/colors";
+
+/**
+ * PostgREST `or` filter for tasks a person works on: assigned to them or added as a collaborator.
+ * Usage: query.or(await involvedFilter(ctx, userId))
+ */
+export async function involvedFilter(ctx: Ctx, userId: string) {
+  const { data } = await ctx.supabase
+    .from("task_members")
+    .select("task_id")
+    .eq("workspace_id", ctx.workspace.id)
+    .eq("user_id", userId)
+    .limit(1000);
+  const ids = (data ?? []).map((r) => r.task_id);
+  return ids.length > 0 ? `assignee_id.eq.${userId},id.in.(${ids.join(",")})` : `assignee_id.eq.${userId}`;
+}

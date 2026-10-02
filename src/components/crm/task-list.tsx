@@ -17,6 +17,7 @@ export type TaskRow = {
   started_at: string | null;
   assignee_id: string | null;
   task_comments?: { count: number }[];
+  task_members?: { user_id: string }[];
   task_attachments?: { count: number }[];
   companies?: { id: string; name: string } | null;
   contacts?: { id: string; first_name: string; last_name: string | null } | null;
@@ -25,10 +26,21 @@ export type TaskRow = {
 };
 
 type Member = { id: string; name: string };
+
+function initials(name: string) {
+  return (
+    name
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?"
+  );
+}
 type Links = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null; project_id?: string | null };
 
 export const TASK_SELECT =
-  "id, title, due_at, done_at, started_at, assignee_id, task_comments(count), task_attachments(count), companies(id, name), contacts(id, first_name, last_name), deals(id, title), projects(id, name, color)";
+  "id, title, due_at, done_at, started_at, assignee_id, task_comments(count), task_attachments(count), task_members(user_id), companies(id, name), contacts(id, first_name, last_name), deals(id, title), projects(id, name, color)";
 
 /** Renders tasks with a done checkbox; shows what each task relates to when `showLinks`. */
 export async function TaskRows({
@@ -109,6 +121,26 @@ export async function TaskRows({
                 )}
               </div>
             </div>
+            {team && (task.task_members?.length ?? 0) > 0 && (
+              <span
+                className="flex -space-x-1.5"
+                title={task.task_members!.map((m) => nameOf.get(m.user_id) ?? "?").join(", ")}
+              >
+                {task.task_members!.slice(0, 3).map((m) => (
+                  <span
+                    key={m.user_id}
+                    className="grid h-6 w-6 place-items-center rounded-full border-2 border-surface bg-brand-soft text-[9px] font-semibold text-brand"
+                  >
+                    {initials(nameOf.get(m.user_id) ?? "?")}
+                  </span>
+                ))}
+                {task.task_members!.length > 3 && (
+                  <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-surface bg-background text-[9px] text-muted">
+                    +{task.task_members!.length - 3}
+                  </span>
+                )}
+              </span>
+            )}
             {team &&
               (task.done_at ? (
                 <span className="text-xs text-muted">{task.assignee_id ? nameOf.get(task.assignee_id) : ""}</span>

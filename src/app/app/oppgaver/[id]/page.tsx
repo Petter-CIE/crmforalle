@@ -3,13 +3,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Card, Input, Select } from "@/components/ui";
+import { Button, Card, Input, Select } from "@/components/ui";
 import { EmptyState, Field, PageHeader, Textarea } from "@/components/ui-extra";
 import { deleteTask } from "@/app/app/crm-actions";
 import { contactName, formatDateTime, listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
-import { addTaskComment, deleteAttachment, deleteTaskComment, setTaskStatus, updateTask } from "../actions";
+import {
+  addTaskComment,
+  addTaskMember,
+  deleteAttachment,
+  deleteTaskComment,
+  removeTaskMember,
+  setTaskStatus,
+  updateTask,
+} from "../actions";
 import { AttachmentUpload } from "./attachment-upload";
 
 export async function generateMetadata({ params }: PageProps<"/app/oppgaver/[id]">): Promise<Metadata> {
@@ -39,7 +47,7 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
   const { t, dateLocale } = await getI18n();
   const tt = t.tasks;
 
-  const [{ data: task }, { data: comments }, { data: files }, members, { data: projects }] = await Promise.all([
+  const [{ data: task }, { data: comments }, { data: files }, members, { data: projects }, { data: collab }] = await Promise.all([
     supabase
       .from("tasks")
       .select(
@@ -60,10 +68,14 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
       .order("created_at", { ascending: true }),
     listMembers(ctx),
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+    supabase.from("task_members").select("user_id").eq("task_id", id).order("created_at"),
   ]);
   if (!task) notFound();
 
   const nameOf = new Map(members.map((m) => [m.id, m.name]));
+  const collabIds = (collab ?? []).map((c) => c.user_id);
+  const addable = members.filter((m) => m.id !== task.assignee_id && !collabIds.includes(m.id));
+  const initial = (name: string) => name.slice(0, 1).toUpperCase();
   const status = task.done_at ? "done" : task.started_at ? "in_progress" : "open";
   const statuses = [
     { v: "open", label: tt.statusOpen, on: "bg-zinc-200 text-foreground" },
@@ -217,6 +229,57 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
         </div>
 
         <div className="space-y-6">
+          {members.length > 1 && (
+            <Card>
+              <h2 className="mb-3 font-semibold">{tt.people}</h2>
+              <ul className="space-y-2 text-sm">
+                {task.assignee_id && (
+                  <li className="flex items-center gap-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-semibold text-white">
+                      {initial(nameOf.get(task.assignee_id) ?? "?")}
+                    </span>
+                    <span className="flex-1 truncate font-medium">{nameOf.get(task.assignee_id) ?? "?"}</span>
+                    <span className="text-xs text-muted">{tt.responsible}</span>
+                  </li>
+                )}
+                {collabIds.map((cid) => (
+                  <li key={cid} className="flex items-center gap-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand">
+                      {initial(nameOf.get(cid) ?? "?")}
+                    </span>
+                    <span className="flex-1 truncate">{nameOf.get(cid) ?? "?"}</span>
+                    <form action={removeTaskMember}>
+                      <input type="hidden" name="task_id" value={task.id} />
+                      <input type="hidden" name="user_id" value={cid} />
+                      <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={tt.remove}>
+                        ✕
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+              {collabIds.length === 0 && <p className="mt-2 text-xs text-muted">{tt.noCollaborators}</p>}
+              {addable.length > 0 && (
+                <form action={addTaskMember} className="mt-3 flex gap-2">
+                  <input type="hidden" name="task_id" value={task.id} />
+                  <Select name="user_id" required defaultValue="" aria-label={tt.addCollaborator} className="min-w-0 flex-1">
+                    <option value="" disabled>
+                      {tt.addCollaborator}
+                    </option>
+                    {addable.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button type="submit" variant="secondary">
+                    {t.tasks.add}
+                  </Button>
+                </form>
+              )}
+            </Card>
+          )}
+
           <Card>
             <h2 className="mb-3 font-semibold">{tt.details}</h2>
             <ActionForm action={updateTask} submitLabel={t.crm.save} pendingLabel={t.crm.saving} successText={t.settings.saved}>

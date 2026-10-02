@@ -4,7 +4,7 @@ import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { TASK_SELECT, TaskForm, TaskRows, type TaskRow } from "@/components/crm/task-list";
 import { Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
-import { listMembers } from "@/lib/crm";
+import { involvedFilter, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 
@@ -31,8 +31,8 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
   let q = supabase.from("tasks").select(TASK_SELECT).eq("workspace_id", workspace.id).limit(500);
   if (view === "fullfort") q = q.not("done_at", "is", null).order("done_at", { ascending: false });
   else q = q.is("done_at", null).order("due_at", { ascending: true, nullsFirst: false });
-  if (view === "mine") q = q.eq("assignee_id", user.id);
-  else if (person) q = q.eq("assignee_id", person);
+  if (view === "mine") q = q.or(await involvedFilter(ctx, user.id));
+  else if (person) q = q.or(await involvedFilter(ctx, person));
   const [{ data }, { data: projects }] = await Promise.all([
     q,
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),

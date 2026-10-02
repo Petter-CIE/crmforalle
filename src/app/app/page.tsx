@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TASK_SELECT, TaskRows, type TaskRow } from "@/components/crm/task-list";
 import { ButtonLink, Card } from "@/components/ui";
 import { canManage, requireWorkspace } from "@/lib/session";
-import { formatMoney } from "@/lib/crm";
+import { formatMoney, involvedFilter } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { daysAgoIso } from "@/lib/time";
 
@@ -13,7 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TodayPage() {
-  const { supabase, user, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
+  const mine = await involvedFilter(ctx, user.id);
   const { t, dateLocale } = await getI18n();
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
@@ -30,7 +32,7 @@ export default async function TodayPage() {
         .from("tasks")
         .select(TASK_SELECT)
         .eq("workspace_id", workspace.id)
-        .eq("assignee_id", user.id)
+        .or(mine)
         .is("done_at", null)
         .lte("due_at", endOfToday.toISOString())
         .order("due_at")

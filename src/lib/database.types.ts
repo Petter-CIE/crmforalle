@@ -700,6 +700,53 @@ export type Database = {
           },
         ];
       };
+      task_members: {
+        Row: { task_id: string; workspace_id: string; user_id: string; added_by: string | null; created_at: string };
+        Insert: {
+          task_id: string;
+          workspace_id: string;
+          user_id: string;
+          added_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          task_id?: string;
+          workspace_id?: string;
+          user_id?: string;
+          added_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_members_added_by_fkey";
+            columns: ["added_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_members_task_id_workspace_id_fkey";
+            columns: ["task_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "task_members_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           id: string;

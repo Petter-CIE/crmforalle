@@ -26,7 +26,7 @@ const FROM = () => process.env.SMTP_FROM || "AllSeats CRM <noreply@allseats.no>"
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-type Kind = "task" | "project";
+type Kind = "task" | "project" | "collab";
 
 type Lang = {
   subject: (k: Kind, title: string) => string;
@@ -41,26 +41,42 @@ type Lang = {
 
 const TEXT: Record<"nb" | "en", Lang> = {
   nb: {
-    subject: (k: Kind, title: string) => (k === "task" ? `Ny oppgave til deg: ${title}` : `Du er ansvarlig for prosjektet ${title}`),
+    subject: (k: Kind, title: string) =>
+      k === "task"
+        ? `Ny oppgave til deg: ${title}`
+        : k === "collab"
+          ? `Du er lagt til på oppgaven: ${title}`
+          : `Du er ansvarlig for prosjektet ${title}`,
     lead: (k: Kind, actor: string, ws: string) =>
       k === "task"
         ? `${actor} har gitt deg en oppgave i ${ws}:`
-        : `${actor} har gjort deg ansvarlig for et prosjekt i ${ws}:`,
+        : k === "collab"
+          ? `${actor} har lagt deg til som medarbeider på en oppgave i ${ws}:`
+          : `${actor} har gjort deg ansvarlig for et prosjekt i ${ws}:`,
     commentSubject: (title: string) => `Nytt notat: ${title}`,
     commentLead: (actor: string) => `${actor} skrev et notat på oppgaven:`,
     due: "Frist",
-    open: (k: Kind) => (k === "task" ? "Åpne oppgaven" : "Åpne prosjektet"),
+    open: (k: Kind) => (k === "project" ? "Åpne prosjektet" : "Åpne oppgaven"),
     footer: "Du får denne e-posten fordi du er bruker i AllSeats CRM. Du kan slå av varsler under Konto og sikkerhet.",
     dateLocale: "nb-NO",
   },
   en: {
-    subject: (k: Kind, title: string) => (k === "task" ? `New task for you: ${title}` : `You are now the lead of ${title}`),
+    subject: (k: Kind, title: string) =>
+      k === "task"
+        ? `New task for you: ${title}`
+        : k === "collab"
+          ? `You were added to the task: ${title}`
+          : `You are now the lead of ${title}`,
     lead: (k: Kind, actor: string, ws: string) =>
-      k === "task" ? `${actor} assigned you a task in ${ws}:` : `${actor} made you the lead of a project in ${ws}:`,
+      k === "task"
+        ? `${actor} assigned you a task in ${ws}:`
+        : k === "collab"
+          ? `${actor} added you as a collaborator on a task in ${ws}:`
+          : `${actor} made you the lead of a project in ${ws}:`,
     commentSubject: (title: string) => `New note: ${title}`,
     commentLead: (actor: string) => `${actor} added a note to the task:`,
     due: "Due",
-    open: (k: Kind) => (k === "task" ? "Open the task" : "Open the project"),
+    open: (k: Kind) => (k === "project" ? "Open the project" : "Open the task"),
     footer: "You get this e-mail because you are a user of AllSeats CRM. You can turn notifications off under Account and security.",
     dateLocale: "en-GB",
   },
@@ -133,7 +149,7 @@ export async function notifyAssignment(supabase: SupabaseClient<Database>, n: As
   }
 }
 
-/** Sends a new task note to everyone involved (assignee, creator, earlier commenters), except the author. Never throws. */
+/** Sends a new task note to everyone involved (assignee, collaborators, creator, earlier commenters), except the author. Never throws. */
 export async function notifyComment(
   supabase: SupabaseClient<Database>,
   n: { taskId: string; authorId: string; body: string },
@@ -141,13 +157,20 @@ export async function notifyComment(
   try {
     const mailer = transport();
     if (!mailer) return;
-    const [{ data: task }, { data: earlier }] = await Promise.all([
+    const [{ data: task }, { data: earlier }, { data: collaborators }] = await Promise.all([
       supabase.from("tasks").select("title, assignee_id, created_by").eq("id", n.taskId).maybeSingle(),
       supabase.from("task_comments").select("author_id").eq("task_id", n.taskId),
+      supabase.from("task_members").select("user_id").eq("task_id", n.taskId),
     ]);
     if (!task) return;
     const ids = new Set<string>();
-    for (const id of [task.assignee_id, task.created_by, ...(earlier ?? []).map((c) => c.author_id)]) if (id) ids.add(id);
+    for (const id of [
+      task.assignee_id,
+      task.created_by,
+      ...(collaborators ?? []).map((c) => c.user_id),
+      ...(earlier ?? []).map((c) => c.author_id),
+    ])
+      if (id) ids.add(id);
     ids.delete(n.authorId);
     if (ids.size === 0) return;
     const list = await people(supabase, [...ids, n.authorId]);

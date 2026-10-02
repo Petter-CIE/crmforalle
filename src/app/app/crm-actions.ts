@@ -405,6 +405,9 @@ export async function reassignTask(formData: FormData) {
       .eq("workspace_id", workspace.id)
       .select("title, due_at, done_at")
       .maybeSingle();
+    if (data && before?.assignee_id !== assigneeId) {
+      await supabase.from("task_members").delete().eq("task_id", taskId).eq("user_id", assigneeId);
+    }
     if (data && !data.done_at && before?.assignee_id !== assigneeId) {
       after(() =>
         notifyAssignment(supabase, {
