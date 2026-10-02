@@ -9,8 +9,8 @@ export const ACCOUNTING_ADDON_PRICE = 50;
 /** Yearly billing: 12 months for the price of 10. */
 export const MONTHS_PAID_PER_YEAR = 10;
 
-/** Default number of companies + contacts per plan. */
-export const PLAN_CONTACT_LIMIT: Record<PlanType, number> = { trial: 2000, free: 25000, start: 2000, bedrift: 25000 };
+/** Default number of companies + contacts per plan (0 = unlimited). */
+export const PLAN_CONTACT_LIMIT: Record<PlanType, number> = { trial: 2000, free: 0, start: 2000, bedrift: 25000 };
 
 /**
  * Monthly revenue from a company after add-on, yearly billing and an active discount

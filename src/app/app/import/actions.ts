@@ -79,7 +79,9 @@ export async function importChunk(input: {
     supabase.from("contacts").select("*", { count: "exact", head: true }).eq("workspace_id", workspace.id),
   ]);
   const { data: ws } = await supabase.from("workspaces").select("contact_limit").eq("id", workspace.id).single();
-  let capacity = Math.max(0, (ws?.contact_limit ?? 0) - (companyCount ?? 0) - (contactCount ?? 0));
+  // contact_limit 0 = unlimited
+  const limitValue = ws?.contact_limit ?? 0;
+  let capacity = limitValue > 0 ? Math.max(0, limitValue - (companyCount ?? 0) - (contactCount ?? 0)) : Number.MAX_SAFE_INTEGER;
 
   // --- companies --------------------------------------------------------------
   const companyByOrg = new Map<string, string>();

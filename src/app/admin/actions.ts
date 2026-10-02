@@ -24,10 +24,9 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
 
   // When the plan changes and the limit was still the old plan's default, move it to the new plan's default.
   const prevPlan = String(formData.get("prev_plan") ?? "") as PlanType;
-  // An empty or invalid limit must never become 0 (that would block the company from adding anything).
+  // 0 = unlimited. An empty or invalid value falls back to the plan's default.
   const raw = String(formData.get("contact_limit") ?? "").replace(/\s/g, "");
-  const parsed = /^\d+$/.test(raw) ? Number(raw) : NaN;
-  let limit = Number.isFinite(parsed) && parsed > 0 ? Math.min(1_000_000, parsed) : PLAN_CONTACT_LIMIT[plan];
+  let limit = /^\d+$/.test(raw) ? Math.min(1_000_000, Number(raw)) : PLAN_CONTACT_LIMIT[plan];
   if (PLANS.includes(prevPlan) && prevPlan !== plan && limit === PLAN_CONTACT_LIMIT[prevPlan]) limit = PLAN_CONTACT_LIMIT[plan];
 
   const { error } = await supabase.rpc("admin_update_workspace", {
