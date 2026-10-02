@@ -32,7 +32,14 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
     <div className="space-y-6">
       <PageHeader
         title={t.companies.title}
-        actions={<ButtonLink href="/app/bedrifter/ny">+ {t.companies.new}</ButtonLink>}
+        actions={
+          <>
+            <ButtonLink href="/app/import" variant="secondary">
+              {t.import.button}
+            </ButtonLink>
+            <ButtonLink href="/app/bedrifter/ny">+ {t.companies.new}</ButtonLink>
+          </>
+        }
       />
       <form className="flex gap-2">
         <Input name="q" defaultValue={query} placeholder={t.companies.searchPlaceholder} aria-label={t.crm.search} />

@@ -45,9 +45,14 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
       <PageHeader
         title={t.contacts.title}
         actions={
-          <ButtonLink href={projectId ? `/app/kontakter/ny?prosjekt=${projectId}` : "/app/kontakter/ny"}>
-            + {t.contacts.new}
-          </ButtonLink>
+          <>
+            <ButtonLink href="/app/import" variant="secondary">
+              {t.import.button}
+            </ButtonLink>
+            <ButtonLink href={projectId ? `/app/kontakter/ny?prosjekt=${projectId}` : "/app/kontakter/ny"}>
+              + {t.contacts.new}
+            </ButtonLink>
+          </>
         }
       />
       <form className="flex flex-col gap-2 sm:flex-row">
