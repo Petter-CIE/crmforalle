@@ -153,6 +153,13 @@ const nb: Faq = {
           ],
         },
         {
+          q: "Kan jeg lagre e-poster i CRM-et?",
+          a: [
+            "Ja. Under E-post får bedriften en egen CRM-adresse. Legg den i blindkopi (Bcc) når du skriver til en kunde, eller videresend e-poster du har fått. Det virker fra Outlook, Gmail og mobilen.",
+            "E-posten lagres på kontakten med samme e-postadresse eller på bedriften med samme domene. Finner vi ingen, venter den i en liste til du har opprettet kontakten.",
+          ],
+        },
+        {
           q: "Når får jeg e-post fra CRM-et?",
           a: [
             "Når du får en oppgave eller et prosjekt, når noen legger deg til på en oppgave, og når noen skriver et notat på en oppgave du er med på.",
@@ -348,6 +355,13 @@ const en: Faq = {
           a: [
             "A task has an assignee and can have several people working on it. It can be open, in progress or done, and you can write notes and attach files.",
             "Admins see all tasks first; others see their own. You can filter by person and project.",
+          ],
+        },
+        {
+          q: "Can I save e-mails in the CRM?",
+          a: [
+            "Yes. Under E-mail your company gets its own CRM address. Put it in Bcc when you write to a customer, or forward e-mails you've received. It works from Outlook, Gmail and your phone.",
+            "The e-mail is saved on the contact with the same e-mail address or on the company with the same domain. If we find none, it waits in a list until you've created the contact.",
           ],
         },
         {

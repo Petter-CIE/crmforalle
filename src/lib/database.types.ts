@@ -364,6 +364,75 @@ export type Database = {
           },
         ];
       };
+      inbound_emails: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          message_id: string | null;
+          from_email: string;
+          from_name: string | null;
+          to_emails: string[];
+          cc_emails: string[];
+          external_emails: string[];
+          subject: string | null;
+          body: string | null;
+          sent_at: string;
+          author_id: string | null;
+          status: string;
+          linked_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          message_id?: string | null;
+          from_email: string;
+          from_name?: string | null;
+          to_emails?: string[];
+          cc_emails?: string[];
+          external_emails?: string[];
+          subject?: string | null;
+          body?: string | null;
+          sent_at?: string;
+          author_id?: string | null;
+          status?: string;
+          linked_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          message_id?: string | null;
+          from_email?: string;
+          from_name?: string | null;
+          to_emails?: string[];
+          cc_emails?: string[];
+          external_emails?: string[];
+          subject?: string | null;
+          body?: string | null;
+          sent_at?: string;
+          author_id?: string | null;
+          status?: string;
+          linked_count?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbound_emails_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_emails_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       invitations: {
         Row: {
           id: string;
@@ -913,6 +982,7 @@ export type Database = {
           terms_version: string | null;
           terms_accepted_at: string | null;
           terms_accepted_by: string | null;
+          inbound_token: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -934,6 +1004,7 @@ export type Database = {
           terms_version?: string | null;
           terms_accepted_at?: string | null;
           terms_accepted_by?: string | null;
+          inbound_token?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -955,6 +1026,7 @@ export type Database = {
           terms_version?: string | null;
           terms_accepted_at?: string | null;
           terms_accepted_by?: string | null;
+          inbound_token?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1058,6 +1130,24 @@ export type Database = {
       };
       admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };
       accept_terms: { Args: { p_workspace: string; p_version: string }; Returns: undefined };
+      rotate_inbound_token: { Args: { p_workspace: string }; Returns: string };
+      disable_inbound: { Args: { p_workspace: string }; Returns: undefined };
+      inbound_try_lock: { Args: Record<string, never>; Returns: boolean };
+      ingest_inbound_email: {
+        Args: {
+          p_token: string;
+          p_message_id: string | null;
+          p_from_email: string;
+          p_from_name: string | null;
+          p_to: string[];
+          p_cc: string[];
+          p_forwarded_from: string | null;
+          p_subject: string | null;
+          p_body: string | null;
+          p_sent_at: string | null;
+        };
+        Returns: string;
+      };
       my_invitations: {
         Args: never;
         Returns: {

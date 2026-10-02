@@ -15,11 +15,16 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
   const sp = await searchParams;
   const companyId = typeof sp.bedrift === "string" ? sp.bedrift : null;
   const projectId = typeof sp.prosjekt === "string" ? sp.prosjekt : null;
+  // prefilled from an e-mail that didn't match anyone (/app/e-post)
+  const email = typeof sp.epost === "string" ? sp.epost.slice(0, 200) : null;
+  const name = typeof sp.navn === "string" ? sp.navn.trim().slice(0, 200) : "";
+  const parts = name.split(/\s+/).filter(Boolean);
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
   const { data: companies } = await supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000);
   const hidden: Record<string, string> = {};
   if (projectId) hidden.project_id = projectId;
+  if (email) hidden.tilbake = "/app/e-post";
   if (companyId) hidden.tilbake = `/app/bedrifter/${companyId}`;
   else if (projectId) hidden.tilbake = `/app/prosjekter/${projectId}`;
 
@@ -33,7 +38,10 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
       <Card>
         <ContactForm
           action={createContact}
-          initial={{ first_name: "", last_name: null, email: null, phone: null, title: null, company_id: companyId, notes: null }}
+          initial={{
+            first_name: parts.length > 1 ? parts.slice(0, -1).join(" ") : (parts[0] ?? ""),
+            last_name: parts.length > 1 ? parts[parts.length - 1] : null,
+            email, phone: null, title: null, company_id: companyId, notes: null }}
           companies={companies ?? []}
           t={t}
           hidden={hidden}

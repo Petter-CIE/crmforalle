@@ -4,7 +4,7 @@ S, N = "string", "number"
 B = "boolean"
 # column: (name, ts_type, nullable, has_default)
 T = {
- "workspaces": [("id",S,0,1),("name",S,0,0),("org_number",S,1,1),("plan",'Database["public"]["Enums"]["plan_type"]',0,1),("contact_limit",N,0,1),("stripe_customer_id",S,1,1),("trial_ends_at",S,0,1),("discount_percent",N,0,1),("discount_until",S,1,1),("discount_note",S,1,1),("admin_note",S,1,1),("suspended_at",S,1,1),("billing_interval",S,0,1),("accounting_addon",B,0,1),("terms_version",S,1,1),("terms_accepted_at",S,1,1),("terms_accepted_by",S,1,1),("created_by",S,1,1),("created_at",S,0,1)],
+ "workspaces": [("id",S,0,1),("name",S,0,0),("org_number",S,1,1),("plan",'Database["public"]["Enums"]["plan_type"]',0,1),("contact_limit",N,0,1),("stripe_customer_id",S,1,1),("trial_ends_at",S,0,1),("discount_percent",N,0,1),("discount_until",S,1,1),("discount_note",S,1,1),("admin_note",S,1,1),("suspended_at",S,1,1),("billing_interval",S,0,1),("accounting_addon",B,0,1),("terms_version",S,1,1),("terms_accepted_at",S,1,1),("terms_accepted_by",S,1,1),("inbound_token",S,1,1),("created_by",S,1,1),("created_at",S,0,1)],
  "profiles": [("id",S,0,0),("email",S,0,0),("full_name",S,1,1),("locale",S,0,1),("notify_email",B,0,1),("created_at",S,0,1)],
  "members": [("workspace_id",S,0,0),("user_id",S,0,0),("role",'Database["public"]["Enums"]["member_role"]',0,1),("created_at",S,0,1)],
  "invitations": [("id",S,0,1),("workspace_id",S,0,0),("email",S,0,0),("role",'Database["public"]["Enums"]["member_role"]',0,1),("token",S,0,1),("invited_by",S,1,1),("created_at",S,0,1),("expires_at",S,0,1),("accepted_at",S,1,1)],
@@ -19,6 +19,7 @@ T = {
  "task_members": [("task_id",S,0,0),("workspace_id",S,0,0),("user_id",S,0,0),("added_by",S,1,1),("created_at",S,0,1)],
  "task_comments": [("id",S,0,1),("workspace_id",S,0,0),("task_id",S,0,0),("author_id",S,1,1),("body",S,0,0),("created_at",S,0,1)],
  "task_attachments": [("id",S,0,1),("workspace_id",S,0,0),("task_id",S,0,0),("path",S,0,0),("name",S,0,0),("size",N,0,1),("mime",S,1,1),("uploaded_by",S,1,1),("created_at",S,0,1)],
+ "inbound_emails": [("id",S,0,1),("workspace_id",S,0,0),("message_id",S,1,1),("from_email",S,0,0),("from_name",S,1,1),("to_emails","string[]",0,1),("cc_emails","string[]",0,1),("external_emails","string[]",0,1),("subject",S,1,1),("body",S,1,1),("sent_at",S,0,1),("author_id",S,1,1),("status",S,0,1),("linked_count",N,0,1),("created_at",S,0,1)],
  "activities": [("id",S,0,1),("workspace_id",S,0,0),("type",S,0,0),("body",S,1,1),("company_id",S,1,1),("contact_id",S,1,1),("deal_id",S,1,1),("author_id",S,1,1),("occurred_at",S,0,1),("created_at",S,0,1)],
 }
 # relationships: table -> [(fk_name, [cols], ref_table, [ref_cols])]
@@ -34,6 +35,7 @@ R = {
  "contacts": [ws("contacts","company_id","companies"), p("contacts","created_by"), p("contacts","owner_id"), w("contacts")],
  "projects": [p("projects","created_by"), p("projects","owner_id"), w("projects")],
  "project_contacts": [ws("project_contacts","contact_id","contacts"), ws("project_contacts","project_id","projects"), w("project_contacts")],
+ "inbound_emails": [p("inbound_emails","author_id"), w("inbound_emails")],
  "project_companies": [ws("project_companies","company_id","companies"), ws("project_companies","project_id","projects"), w("project_companies")],
  "pipeline_stages": [w("pipeline_stages")],
  "deals": [ws("deals","company_id","companies"), ws("deals","contact_id","contacts"), p("deals","created_by"), p("deals","owner_id"), ws("deals","project_id","projects"), ws("deals","stage_id","pipeline_stages"), w("deals")],
@@ -66,6 +68,10 @@ o += ["    };", "    Views: { [_ in never]: never };", "    Functions: {",
       '      admin_workspaces_v2: { Args: never; Returns: { id: string; name: string; org_number: string | null; plan: Database["public"]["Enums"]["plan_type"]; trial_ends_at: string; contact_limit: number; discount_percent: number; discount_until: string | null; discount_note: string | null; admin_note: string | null; suspended_at: string | null; created_at: string; owner_email: string | null; owner_name: string | null; member_count: number; contact_count: number; last_activity: string | null; billing_interval: string; accounting_addon: boolean }[] };',
       '      admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };',
       '      accept_terms: { Args: { p_workspace: string; p_version: string }; Returns: undefined };',
+      '      rotate_inbound_token: { Args: { p_workspace: string }; Returns: string };',
+      '      disable_inbound: { Args: { p_workspace: string }; Returns: undefined };',
+      '      inbound_try_lock: { Args: Record<string, never>; Returns: boolean };',
+      '      ingest_inbound_email: { Args: { p_token: string; p_message_id: string | null; p_from_email: string; p_from_name: string | null; p_to: string[]; p_cc: string[]; p_forwarded_from: string | null; p_subject: string | null; p_body: string | null; p_sent_at: string | null }; Returns: string };',
       '      my_invitations: { Args: never; Returns: { token: string; workspace_name: string; role: Database["public"]["Enums"]["member_role"]; invited_by_name: string | null }[] };',
       "    };", "    Enums: {", '      member_role: "owner" | "admin" | "user";', '      plan_type: "trial" | "start" | "bedrift" | "free";',
       "    };", "    CompositeTypes: { [_ in never]: never };", "  };", "};", "",

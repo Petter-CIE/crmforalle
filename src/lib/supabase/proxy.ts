@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/personvern",
   "/databehandleravtale",
   "/faq",
+  "/api/inbound",
 ];
 
 function isPublic(pathname: string) {

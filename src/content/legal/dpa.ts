@@ -18,7 +18,7 @@ const nb: LegalDoc = {
           list: [
             "Formål: lagring, organisering og visning av Kundens kunde- og kontaktdata, salg, oppgaver og vedlegg, og utsending av varsler til Kundens brukere.",
             "Kategorier av registrerte: Kundens kontaktpersoner, kunder (også privatpersoner), leverandører og andre forbindelser, samt Kundens egne brukere.",
-            "Typer opplysninger: navn, stilling, e-post, telefon, adresse, bedriftstilknytning, samtykke til markedsføring, notater, oppgaver, salgsinformasjon og innholdet i opplastede filer.",
+            "Typer opplysninger: navn, stilling, e-post, telefon, adresse, bedriftstilknytning, samtykke til markedsføring, notater, oppgaver, salgsinformasjon, innholdet i opplastede filer og e-poster Kunden sender til bedriftens CRM-adresse.",
             "Varighet: så lenge Kunden har et aktivt abonnement, og deretter til opplysningene er slettet etter punkt 9.",
           ],
         },
@@ -68,7 +68,7 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, innlogging og fillagring. Data lagres i AWS-regionen eu-central-1 (Frankfurt). Overføring sikres med EUs standard personvernbestemmelser (SCC).",
             "Vercel Inc. (USA) – drift av applikasjonen, serverfunksjoner i Frankfurt. Sertifisert under EU–US Data Privacy Framework, i tillegg til SCC.",
-            "One.com Group AB (Sverige) – utsending av e-post. Behandlingen skjer i datasentre i Danmark (EU), og databehandleravtale inngår i avtalen med One.com.",
+            "One.com Group AB (Sverige) – utsending og mottak av e-post. Behandlingen skjer i datasentre i Danmark (EU), og databehandleravtale inngår i avtalen med One.com.",
           ],
         },
         "Databehandleren varsler Kunden på e-post minst 30 dager før en ny underleverandør tas i bruk. Kunden kan protestere innen fristen og har da rett til å si opp avtalen uten kostnad.",
@@ -128,7 +128,7 @@ const en: LegalDoc = {
           list: [
             "Purpose: storing, organising and displaying the Customer’s customer and contact data, deals, tasks and attachments, and sending notifications to the Customer’s users.",
             "Categories of data subjects: the Customer’s contact persons, customers (including private individuals), suppliers and other relations, and the Customer’s own users.",
-            "Types of data: name, job title, e-mail, phone, address, company affiliation, marketing consent, notes, tasks, sales information and the content of uploaded files.",
+            "Types of data: name, job title, e-mail, phone, address, company affiliation, marketing consent, notes, tasks, sales information, the content of uploaded files and e-mails the Customer sends to the company's CRM address.",
             "Duration: as long as the Customer has an active subscription, and thereafter until the data is deleted under section 9.",
           ],
         },
@@ -178,7 +178,7 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, login and file storage. Data is stored in the AWS region eu-central-1 (Frankfurt). Transfers are covered by the EU Standard Contractual Clauses (SCC).",
             "Vercel Inc. (USA) – application hosting, server functions in Frankfurt. Certified under the EU–US Data Privacy Framework, in addition to SCC.",
-            "One.com Group AB (Sweden) – sending e-mail. Processing takes place in data centres in Denmark (EU), and a data processing agreement forms part of the agreement with One.com.",
+            "One.com Group AB (Sweden) – sending and receiving e-mail. Processing takes place in data centres in Denmark (EU), and a data processing agreement forms part of the agreement with One.com.",
           ],
         },
         "The Processor notifies the Customer by e-mail at least 30 days before a new sub-processor is used. The Customer may object within that period and then has the right to terminate the agreement at no cost.",
