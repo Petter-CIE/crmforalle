@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -64,6 +65,18 @@ export default async function ImportPage() {
           toCompanies: i.toCompanies,
         }}
       />
+      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-semibold">{i.helpTitle}</h2>
+          <p className="mt-1 text-sm text-muted">{i.helpText}</p>
+        </div>
+        <a
+          href={`mailto:post@allseats.no?subject=${encodeURIComponent(`${i.helpSubject} – ${workspace.name}`)}`}
+          className="inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background"
+        >
+          {i.helpButton}
+        </a>
+      </Card>
     </div>
   );
 }
