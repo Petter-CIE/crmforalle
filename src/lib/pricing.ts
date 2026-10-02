@@ -13,3 +13,6 @@ export function monthlyPrice(
   const active = w.discount_percent > 0 && (!w.discount_until || w.discount_until >= todayIso);
   return Math.round(active ? base * (1 - w.discount_percent / 100) : base);
 }
+
+/** Default number of companies + contacts per plan. */
+export const PLAN_CONTACT_LIMIT: Record<PlanType, number> = { trial: 2000, free: 25000, start: 2000, bedrift: 25000 };

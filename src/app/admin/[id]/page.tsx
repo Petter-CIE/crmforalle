@@ -103,6 +103,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
           </p>
           <ActionForm action={updateWorkspaceAdmin} submitLabel={a.save} pendingLabel={t.crm.saving} successText={a.saved}>
             <input type="hidden" name="id" value={w.id} />
+            <input type="hidden" name="prev_plan" value={w.plan} />
             <Field label={a.plan} htmlFor="a_plan">
               <Select id="a_plan" name="plan" defaultValue={w.plan} className="w-full">
                 {PLANS.map((p) => (

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
+import { PLAN_CONTACT_LIMIT } from "@/lib/pricing";
 import { adminStatus } from "./guard";
 
 const PLANS: PlanType[] = ["trial", "start", "bedrift", "free"];
@@ -21,12 +22,17 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
   const until = String(formData.get("discount_until") ?? "");
   if (!UUID.test(id) || !PLANS.includes(plan) || !DATE.test(trialEnds)) return { error: t.admin.failed };
 
+  // When the plan changes and the limit was still the old plan's default, move it to the new plan's default.
+  const prevPlan = String(formData.get("prev_plan") ?? "") as PlanType;
+  let limit = Math.max(0, Math.min(1_000_000, Number(formData.get("contact_limit")) || 0));
+  if (PLANS.includes(prevPlan) && prevPlan !== plan && limit === PLAN_CONTACT_LIMIT[prevPlan]) limit = PLAN_CONTACT_LIMIT[plan];
+
   const { error } = await supabase.rpc("admin_update_workspace", {
     p_id: id,
     p_plan: plan,
     // late evening of the chosen day in Oslo (summer and winter time)
     p_trial_ends_at: new Date(`${trialEnds}T21:00:00Z`).toISOString(),
-    p_contact_limit: Math.max(0, Math.min(1_000_000, Number(formData.get("contact_limit")) || 0)),
+    p_contact_limit: limit,
     p_discount_percent: Math.max(0, Math.min(100, Math.round(Number(formData.get("discount_percent")) || 0))),
     p_discount_until: DATE.test(until) ? until : null,
     p_discount_note: String(formData.get("discount_note") ?? "").slice(0, 500) || null,

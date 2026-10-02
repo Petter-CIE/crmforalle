@@ -193,7 +193,17 @@ export default async function Home() {
       </main>
 
       <footer className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between md:px-8">
-        <span>© {new Date().getFullYear()} AllSeats CRM</span>
+        <span>
+          © {new Date().getFullYear()}{" "}
+          <a
+            href="https://virksomhet.brreg.no/nb/oppslag/enheter/818823452"
+            className="hover:text-foreground hover:underline"
+            rel="noopener"
+            target="_blank"
+          >
+            {l.operator}
+          </a>
+        </span>
         <a href="mailto:post@allseats.no" className="hover:text-foreground">
           {l.contact}
         </a>
