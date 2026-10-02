@@ -379,6 +379,9 @@ const nb = {
     invalid: "Invitasjonen er ugyldig, allerede brukt eller utløpt. Be om en ny.",
     join: "Bli med",
     notYou: "Ikke deg? Logg ut",
+    pending: "Du er invitert",
+    pendingIntro: (ws: string, by: string | null) => `${by ? `${by} har invitert deg` : "Du er invitert"} til ${ws}.`,
+    orCreate: "Eller opprett en egen bedrift",
   },
 };
 
@@ -756,6 +759,9 @@ const en: Dictionary = {
     invalid: "The invitation is invalid, already used or expired. Ask for a new one.",
     join: "Join",
     notYou: "Not you? Log out",
+    pending: "You're invited",
+    pendingIntro: (ws: string, by: string | null) => `${by ? `${by} invited you` : "You're invited"} to ${ws}.`,
+    orCreate: "Or create your own company",
   },
 };
 

@@ -740,6 +740,15 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
+      my_invitations: {
+        Args: never;
+        Returns: {
+          token: string;
+          workspace_name: string;
+          role: Database["public"]["Enums"]["member_role"];
+          invited_by_name: string | null;
+        }[];
+      };
     };
     Enums: {
       member_role: "owner" | "admin" | "user";

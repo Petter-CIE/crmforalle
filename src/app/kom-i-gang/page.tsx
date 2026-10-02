@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Card, Logo } from "@/components/ui";
+import { Button, Card, Logo } from "@/components/ui";
+import { acceptInvitation } from "@/app/invitasjon/[token]/actions";
 import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/session";
 import { OnboardingForm } from "./onboarding-form";
@@ -13,7 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function OnboardingPage() {
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+  const [{ data: profile }, { data: invitations }] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user.id).single(),
+    supabase.rpc("my_invitations"),
+  ]);
   const { locale, t } = await getI18n();
 
   return (
@@ -22,6 +26,23 @@ export default async function OnboardingPage() {
         <div className="text-center">
           <Logo />
         </div>
+        {(invitations ?? []).map((inv) => (
+          <Card key={inv.token} className="border-brand">
+            <h1 className="mb-1 text-lg font-semibold">{t.invitation.pending}</h1>
+            <p className="mb-4 text-sm text-muted">
+              {t.invitation.pendingIntro(inv.workspace_name, inv.invited_by_name)} {t.common.roles[inv.role]} · {user.email}
+            </p>
+            <form action={acceptInvitation}>
+              <input type="hidden" name="token" value={inv.token} />
+              <Button type="submit" className="w-full">
+                {t.invitation.join}
+              </Button>
+            </form>
+          </Card>
+        ))}
+        {invitations && invitations.length > 0 && (
+          <p className="text-center text-sm text-muted">{t.invitation.orCreate}</p>
+        )}
         <Card>
           <h1 className="mb-1 text-lg font-semibold">{t.onboarding.title}</h1>
           <p className="mb-6 text-sm text-muted">{t.onboarding.intro}</p>
