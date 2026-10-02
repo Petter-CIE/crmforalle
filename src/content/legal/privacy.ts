@@ -7,7 +7,7 @@ const nb: LegalDoc = {
     {
       h: "1. Hvem som er ansvarlig",
       body: [
-        "CIE AS (org.nr. 818 823 452, Bjørøyhamn, Øygarden) er behandlingsansvarlig for opplysninger om brukerne av AllSeats CRM og om besøkende på allseats.no. Spørsmål om personvern sendes til post@allseats.no.",
+        "CIE AS (org.nr. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn) er behandlingsansvarlig for opplysninger om brukerne av AllSeats CRM og om besøkende på allseats.no. Spørsmål om personvern sendes til post@allseats.no.",
         "Opplysningene kundene våre legger inn i CRM-et om sine egne kunder og kontakter, behandler vi på vegne av kunden som databehandler. For disse er kunden behandlingsansvarlig, og databehandleravtalen gjelder.",
       ],
     },
@@ -110,7 +110,7 @@ const en: LegalDoc = {
     {
       h: "1. Who is responsible",
       body: [
-        "CIE AS (org. no. 818 823 452, Bjørøyhamn, Øygarden, Norway) is the controller for data about the users of AllSeats CRM and about visitors to allseats.no. Questions about privacy can be sent to post@allseats.no.",
+        "CIE AS (org. no. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn, Norway) is the controller for data about the users of AllSeats CRM and about visitors to allseats.no. Questions about privacy can be sent to post@allseats.no.",
         "Data our customers enter into the CRM about their own customers and contacts is processed by us on the customer’s behalf, as a processor. For that data the customer is the controller, and the data processing agreement applies.",
       ],
     },

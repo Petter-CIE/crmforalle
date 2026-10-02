@@ -107,7 +107,7 @@ const nb: LegalDoc = {
     },
     {
       h: "13. Kontakt",
-      body: ["CIE AS, org.nr. 818 823 452, Bjørøyhamn, Øygarden. E-post: post@allseats.no."],
+      body: ["CIE AS, org.nr. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn. E-post: post@allseats.no."],
     },
   ],
 };
@@ -219,7 +219,7 @@ const en: LegalDoc = {
     },
     {
       h: "13. Contact",
-      body: ["CIE AS, org. no. 818 823 452, Bjørøyhamn, Øygarden, Norway. E-mail: post@allseats.no."],
+      body: ["CIE AS, org. no. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn, Norway. E-mail: post@allseats.no."],
     },
   ],
 };

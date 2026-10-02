@@ -14,6 +14,6 @@ export const TERMS_VERSION = "2026-10-02";
 export const OPERATOR = {
   name: "CIE AS",
   orgNo: "818 823 452",
-  place: "Bjørøyhamn, Øygarden",
+  place: "Bjørøyvegen 332, 5177 Bjørøyhamn",
   email: "post@allseats.no",
 };
