@@ -191,9 +191,20 @@ export default async function Home() {
             {l.operator}
           </a>
         </span>
-        <a href="mailto:post@allseats.no" className="hover:text-foreground">
-          {l.contact}
-        </a>
+        <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label={t.legal.nav}>
+          <Link href="/vilkar" className="hover:text-foreground hover:underline">
+            {t.legal.terms}
+          </Link>
+          <Link href="/personvern" className="hover:text-foreground hover:underline">
+            {t.legal.privacy}
+          </Link>
+          <Link href="/databehandleravtale" className="hover:text-foreground hover:underline">
+            {t.legal.dpa}
+          </Link>
+          <a href="mailto:post@allseats.no" className="hover:text-foreground hover:underline">
+            post@allseats.no
+          </a>
+        </nav>
         <Suspense>
           <LanguageSwitcher locale={locale} label={t.common.language} />
         </Suspense>

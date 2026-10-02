@@ -144,6 +144,24 @@ export default async function SettingsPage() {
           </div>
         )}
       </Card>
+
+      {manager && (
+        <Card>
+          <h2 className="mb-1 font-semibold">{t.exportData.title}</h2>
+          <p className="mb-4 text-sm text-muted">{t.exportData.intro}</p>
+          <div className="flex flex-wrap gap-3">
+            <a href="/app/eksport?type=kontakter" className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-background">
+              ⬇ {t.exportData.contacts}
+            </a>
+            <a href="/app/eksport?type=bedrifter" className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-background">
+              ⬇ {t.exportData.companies}
+            </a>
+            <a href="/app/import" className="px-2 py-2 text-sm text-brand hover:underline">
+              {t.import.title}
+            </a>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

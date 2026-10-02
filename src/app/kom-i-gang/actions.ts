@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
+import { TERMS_VERSION } from "@/content/legal/types";
 import { WORKSPACE_COOKIE } from "@/lib/session";
 
 export type OnboardingState = { error?: string };
@@ -15,6 +16,7 @@ export async function createWorkspace(_prev: OnboardingState, formData: FormData
   const fullName = String(formData.get("full_name") ?? "").trim();
 
   if (!name) return { error: t.onboarding.nameRequired };
+  if (formData.get("accept_terms") !== "1") return { error: t.legal.mustAccept };
   if (orgRaw && !/^\d{9}$/.test(orgRaw)) return { error: t.common.orgNumberDigits };
 
   const supabase = await createClient();
@@ -30,6 +32,8 @@ export async function createWorkspace(_prev: OnboardingState, formData: FormData
     p_org_number: orgRaw || undefined,
   });
   if (error || !workspaceId) return { error: t.onboarding.failed };
+  // Records the accepted terms/DPA version with a database timestamp.
+  await supabase.rpc("accept_terms", { p_workspace: workspaceId, p_version: TERMS_VERSION });
 
   (await cookies()).set(WORKSPACE_COOKIE, workspaceId, {
     httpOnly: true,

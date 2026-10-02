@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { Card, Input } from "@/components/ui";
 import { Field } from "@/components/ui-extra";
@@ -63,6 +64,17 @@ export default async function AccountPage() {
         <PasskeySection t={texts} dateLocale={dateLocale} />
       </Card>
 
+      <p className="flex flex-wrap gap-x-4 text-xs text-muted">
+        <Link href="/vilkar" className="hover:underline">
+          {t.legal.terms}
+        </Link>
+        <Link href="/personvern" className="hover:underline">
+          {t.legal.privacy}
+        </Link>
+        <Link href="/databehandleravtale" className="hover:underline">
+          {t.legal.dpa}
+        </Link>
+      </p>
     </div>
   );
 }

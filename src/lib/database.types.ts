@@ -882,6 +882,9 @@ export type Database = {
           suspended_at: string | null;
           billing_interval: string;
           accounting_addon: boolean;
+          terms_version: string | null;
+          terms_accepted_at: string | null;
+          terms_accepted_by: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -900,6 +903,9 @@ export type Database = {
           suspended_at?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
+          terms_version?: string | null;
+          terms_accepted_at?: string | null;
+          terms_accepted_by?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -918,6 +924,9 @@ export type Database = {
           suspended_at?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
+          terms_version?: string | null;
+          terms_accepted_at?: string | null;
+          terms_accepted_by?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -925,6 +934,13 @@ export type Database = {
           {
             foreignKeyName: "workspaces_created_by_fkey";
             columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workspaces_terms_accepted_by_fkey";
+            columns: ["terms_accepted_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -1013,6 +1029,7 @@ export type Database = {
         }[];
       };
       admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };
+      accept_terms: { Args: { p_workspace: string; p_version: string }; Returns: undefined };
       my_invitations: {
         Args: never;
         Returns: {

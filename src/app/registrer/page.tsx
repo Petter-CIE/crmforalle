@@ -31,6 +31,16 @@ export default async function RegisterPage() {
       }
     >
       <RegisterForm t={{ ...t.register, email: t.login.email, emailPlaceholder: t.login.emailPlaceholder }} />
+      <p className="mt-4 text-center text-xs text-muted">
+        {t.legal.registerNote}{" "}
+        <Link href="/personvern" className="text-brand hover:underline">
+          {t.legal.privacy}
+        </Link>
+        {" · "}
+        <Link href="/vilkar" className="text-brand hover:underline">
+          {t.legal.terms}
+        </Link>
+      </p>
     </AuthShell>
   );
 }

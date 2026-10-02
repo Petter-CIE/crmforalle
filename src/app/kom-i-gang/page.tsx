@@ -46,7 +46,12 @@ export default async function OnboardingPage() {
         <Card>
           <h1 className="mb-1 text-lg font-semibold">{t.onboarding.title}</h1>
           <p className="mb-6 text-sm text-muted">{t.onboarding.intro}</p>
-          <OnboardingForm defaultFullName={profile?.full_name ?? ""} t={t.onboarding} brreg={t.brreg} />
+          <OnboardingForm
+            defaultFullName={profile?.full_name ?? ""}
+            t={t.onboarding}
+            brreg={t.brreg}
+            legal={{ accept: t.legal.accept, terms: t.legal.terms, privacy: t.legal.privacy, dpa: t.legal.dpa }}
+          />
         </Card>
         <div className="flex justify-center">
           <Suspense>

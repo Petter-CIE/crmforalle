@@ -18,14 +18,18 @@ type Texts = {
   trialNote: string;
 };
 
+type LegalTexts = { accept: string; terms: string; privacy: string; dpa: string };
+
 export function OnboardingForm({
   defaultFullName,
   t,
   brreg,
+  legal,
 }: {
   defaultFullName: string;
   t: Texts;
   brreg: BrregTexts;
+  legal: LegalTexts;
 }) {
   const [state, action, pending] = useActionState<OnboardingState, FormData>(createWorkspace, {});
   const [company, setCompany] = useState<{ name: string; org: string; city?: string | null }>({
@@ -74,6 +78,24 @@ export function OnboardingForm({
         </div>
       </div>
       {company.city && <p className="-mt-3 text-xs text-muted">{company.city}</p>}
+
+      <div className="rounded-lg border border-border p-3 text-sm">
+        <label className="flex items-start gap-2">
+          <input type="checkbox" name="accept_terms" value="1" required className="mt-0.5" />
+          <span>{legal.accept}</span>
+        </label>
+        <p className="mt-2 flex flex-wrap gap-x-3 pl-6 text-xs">
+          <a href="/vilkar" target="_blank" className="text-brand hover:underline">
+            {legal.terms}
+          </a>
+          <a href="/databehandleravtale" target="_blank" className="text-brand hover:underline">
+            {legal.dpa}
+          </a>
+          <a href="/personvern" target="_blank" className="text-brand hover:underline">
+            {legal.privacy}
+          </a>
+        </p>
+      </div>
 
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <Button type="submit" disabled={pending} className="w-full">
