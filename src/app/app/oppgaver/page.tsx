@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { TASK_SELECT, TaskForm, TaskRows, type TaskRow } from "@/components/crm/task-list";
 import { Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
@@ -16,19 +17,29 @@ const VIEWS = ["mine", "alle", "fullfort"] as const;
 type View = (typeof VIEWS)[number];
 
 export default async function TasksPage({ searchParams }: PageProps<"/app/oppgaver">) {
-  const { vis } = await searchParams;
+  const { vis, person: personParam } = await searchParams;
   const view: View = VIEWS.includes(vis as View) ? (vis as View) : "mine";
   const ctx = await requireWorkspace();
   const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
+  const members = await listMembers(ctx);
+  const person =
+    view !== "mine" && typeof personParam === "string" && members.some((m) => m.id === personParam) ? personParam : null;
 
   let q = supabase.from("tasks").select(TASK_SELECT).eq("workspace_id", workspace.id).limit(500);
   if (view === "fullfort") q = q.not("done_at", "is", null).order("done_at", { ascending: false });
   else q = q.is("done_at", null).order("due_at", { ascending: true, nullsFirst: false });
   if (view === "mine") q = q.eq("assignee_id", user.id);
-  const [{ data }, members] = await Promise.all([q, listMembers(ctx)]);
+  else if (person) q = q.eq("assignee_id", person);
+  const [{ data }, { data: projects }] = await Promise.all([
+    q,
+    supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+  ]);
   const tasks = (data ?? []) as TaskRow[];
-  const path = `/app/oppgaver${view === "mine" ? "" : `?vis=${view}`}`;
+  const params = new URLSearchParams();
+  if (view !== "mine") params.set("vis", view);
+  if (person) params.set("person", person);
+  const path = `/app/oppgaver${params.size ? `?${params}` : ""}`;
 
   const startOfTomorrow = new Date();
   startOfTomorrow.setHours(24, 0, 0, 0);
@@ -57,6 +68,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
   return (
     <div className="space-y-6">
       <PageHeader title={t.tasks.title} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
       <nav className="flex gap-1">
         {tabs.map((tab) => (
           <Link
@@ -69,9 +81,34 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
           </Link>
         ))}
       </nav>
+      {view !== "mine" && members.length > 1 && (
+        <form action="/app/oppgaver" className="flex items-center gap-2 text-sm text-muted">
+          <input type="hidden" name="vis" value={view} />
+          <label htmlFor="person">{t.tasks.showFor}</label>
+          <AutoSubmitSelect id="person" name="person" defaultValue={person ?? ""} className="!text-sm text-foreground">
+            <option value="">{t.tasks.everyone}</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </AutoSubmitSelect>
+          <noscript>
+            <button type="submit">OK</button>
+          </noscript>
+        </form>
+      )}
+      </div>
       {view !== "fullfort" && (
         <Card>
-          <TaskForm path={path} members={members} me={user.id} t={t.tasks} save={t.crm.saving} />
+          <TaskForm
+            path={path}
+            members={members}
+            me={person ?? user.id}
+            t={t.tasks}
+            save={t.crm.saving}
+            projects={projects ?? []}
+          />
         </Card>
       )}
       {groups
@@ -81,7 +118,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
             <h2 className={`mb-2 text-sm font-semibold ${g.key === "overdue" ? "text-danger" : ""}`}>
               {g.label} ({g.items.length})
             </h2>
-            <TaskRows tasks={g.items} path={path} showLinks />
+            <TaskRows tasks={g.items} path={path} members={members} showLinks />
           </Card>
         ))}
       {view !== "fullfort" && tasks.length === 0 && <p className="text-sm text-muted">{t.tasks.empty}</p>}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Label, Notice } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
@@ -156,11 +156,18 @@ export function TotpSection({ t }: { t: SecurityTexts }) {
 type PasskeyItem = { id: string; friendly_name?: string; created_at: string; last_used_at?: string };
 
 /** Passkeys: Windows Hello, Face ID, Touch ID, Android fingerprint, security keys. */
+const noSubscribe = () => () => {};
+
 export function PasskeySection({ t, dateLocale }: { t: SecurityTexts; dateLocale: string }) {
   const [items, setItems] = useState<PasskeyItem[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
-  const supported = typeof window !== "undefined" && "PublicKeyCredential" in window;
+  // Server render assumes support; the client value is read after hydration (avoids a mismatch).
+  const supported = useSyncExternalStore(
+    noSubscribe,
+    () => "PublicKeyCredential" in window,
+    () => true,
+  );
 
   const refresh = useCallback(async () => {
     const { data } = await createClient().auth.passkey.list();

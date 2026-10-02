@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
+import { TaskPanel } from "@/components/crm/task-list";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui-extra";
 import {
@@ -13,7 +14,7 @@ import {
   setProjectArchived,
   updateProject,
 } from "@/app/app/crm-actions";
-import { contactName, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { ProjectFields } from "../project-fields";
@@ -27,9 +28,10 @@ export async function generateMetadata({ params }: PageProps<"/app/prosjekter/[i
 
 export default async function ProjectPage({ params }: PageProps<"/app/prosjekter/[id]">) {
   const { id } = await params;
-  const { supabase, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const [{ data: p }, { data: members }, { data: deals }, { data: allContacts }] = await Promise.all([
+  const [{ data: p }, { data: members }, { data: deals }, { data: allContacts }, team] = await Promise.all([
     supabase.from("projects").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     supabase
       .from("project_contacts")
@@ -37,8 +39,11 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
       .eq("project_id", id),
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("project_id", id).order("created_at", { ascending: false }),
     supabase.from("contacts").select("id, first_name, last_name").eq("workspace_id", workspace.id).order("first_name").limit(1000),
+    listMembers(ctx),
   ]);
   if (!p) notFound();
+  const ownerName = p.owner_id ? team.find((m) => m.id === p.owner_id)?.name : null;
+  const path = `/app/prosjekter/${id}`;
   const inProject = new Set((members ?? []).map((m) => m.contact_id));
   const available = (allContacts ?? []).filter((c) => !inProject.has(c.id));
   const contacts = (members ?? [])
@@ -56,7 +61,16 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
             {p.archived && <span className="text-sm font-normal text-muted">({t.projects.archived})</span>}
           </span>
         }
-        subtitle={p.description}
+        subtitle={
+          <>
+            {team.length > 1 && (
+              <span className="block">
+                {t.projects.owner}: <span className="font-medium text-foreground">{ownerName ?? t.projects.noOwner}</span>
+              </span>
+            )}
+            {p.description}
+          </>
+        }
         backHref="/app/prosjekter"
         backLabel={t.projects.title}
         actions={
@@ -132,6 +146,11 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
           </Card>
 
           <Card>
+            <h2 className="mb-3 font-semibold">{t.projects.tasks}</h2>
+            <TaskPanel links={{ project_id: id }} path={path} />
+          </Card>
+
+          <Card>
             <h2 className="mb-3 font-semibold">{t.projects.deals}</h2>
             <DealList deals={(deals ?? []) as DealRow[]} />
           </Card>
@@ -141,7 +160,7 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
           <h2 className="mb-3 font-semibold">{t.projects.edit}</h2>
           <ActionForm action={updateProject} submitLabel={t.crm.save} pendingLabel={t.crm.saving} successText={t.settings.saved}>
             <input type="hidden" name="id" value={id} />
-            <ProjectFields t={t} initial={p} />
+            <ProjectFields t={t} initial={p} members={team} me={user.id} />
           </ActionForm>
         </Card>
       </div>

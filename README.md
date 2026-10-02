@@ -2,7 +2,7 @@
 
 CRM for små bedrifter – én fast pris per bedrift, alle brukere inkludert ("every seat included").
 
-Status: MVP under utvikling. Fase 1 (innlogging, bedrift, brukere og invitasjoner) er ferdig.
+Status: MVP under utvikling. Fase 1 (innlogging, bedrift, brukere og invitasjoner) og fase 2 (bedrifter, kontakter, prosjekter, salg, oppgaver og delegering) er ferdig.
 
 ## Teknologi
 
@@ -28,8 +28,15 @@ npm run dev                  # http://localhost:3000
 - `src/lib/supabase` – Supabase-klienter for nettleser, server og proxy
 - `supabase/migrations` – databaseskjema (kilde til sannhet for databasen)
 
+## E-postvarsler
+
+Når noen får en oppgave eller blir prosjektleder, sendes en e-post fra noreply@allseats.no via One.com SMTP.
+Sett `SMTP_PASSWORD` (Sensitive) i Vercel → Settings → Environment Variables. Uten den hoppes varslene over.
+Hver bruker kan slå av varsler under Konto og sikkerhet.
+
 ## Sikkerhet
 
 - Hver bedrift er en *workspace*; all data skilles med Row Level Security.
 - Abonnementsfelt (plan, kontaktgrense, Stripe-ID) kan bare endres av backend.
+- Ansvarlig/prosjektleder må være medlem av samme bedrift (databasetrigger).
 - Kun publishable key brukes i appen. Service role-nøkkelen skal aldri inn i koden.

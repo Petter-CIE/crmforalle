@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Card } from "@/components/ui";
+import { ActionForm } from "@/components/action-form";
+import { Card, Input } from "@/components/ui";
+import { Field } from "@/components/ui-extra";
 import { PasswordForm } from "@/components/password-form";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { changePassword } from "@/app/nytt-passord/actions";
+import { updateProfile } from "./actions";
 import { PasskeySection, TotpSection, type SecurityTexts } from "./security-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AccountPage() {
-  const { user } = await requireWorkspace();
+  const { supabase, user } = await requireWorkspace();
+  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email").eq("id", user.id).maybeSingle();
   const { t, dateLocale } = await getI18n();
   const s = t.security;
   const texts: SecurityTexts = { ...s, invalidCode: t.mfa.invalid };
@@ -23,6 +27,20 @@ export default async function AccountPage() {
         <h1 className="text-2xl font-semibold tracking-tight">{s.title}</h1>
         <p className="text-sm text-muted">{user.email}</p>
       </header>
+
+      <Card>
+        <h2 className="mb-1 font-semibold">{s.profile}</h2>
+        <p className="mb-4 text-sm text-muted">{s.profileIntro}</p>
+        <ActionForm action={updateProfile} submitLabel={s.saveProfile} pendingLabel={t.crm.saving} successText={s.profileSaved}>
+          <Field label={s.name} htmlFor="full_name">
+            <Input id="full_name" name="full_name" autoComplete="name" defaultValue={profile?.full_name ?? ""} className="w-full" />
+          </Field>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="notify_email" value="1" defaultChecked={profile?.notify_email ?? true} className="mt-0.5" />
+            <span>{s.notifyEmail}</span>
+          </label>
+        </ActionForm>
+      </Card>
 
       <Card>
         <h2 className="mb-1 font-semibold">{s.password}</h2>
