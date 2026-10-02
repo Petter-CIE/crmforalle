@@ -40,6 +40,13 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
     p_suspended: formData.get("suspended") === "1",
   });
   if (error) return { error: t.admin.failed };
+  const interval = formData.get("billing_interval") === "year" ? "year" : "month";
+  const { error: billingError } = await supabase.rpc("admin_update_billing", {
+    p_id: id,
+    p_interval: interval,
+    p_addon: formData.get("accounting_addon") === "1",
+  });
+  if (billingError) return { error: t.admin.failed };
   revalidatePath("/admin");
   revalidatePath(`/admin/${id}`);
   return { ok: true };

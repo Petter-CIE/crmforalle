@@ -880,6 +880,8 @@ export type Database = {
           discount_note: string | null;
           admin_note: string | null;
           suspended_at: string | null;
+          billing_interval: string;
+          accounting_addon: boolean;
           created_by: string | null;
           created_at: string;
         };
@@ -896,6 +898,8 @@ export type Database = {
           discount_note?: string | null;
           admin_note?: string | null;
           suspended_at?: string | null;
+          billing_interval?: string;
+          accounting_addon?: boolean;
           created_by?: string | null;
           created_at?: string;
         };
@@ -912,6 +916,8 @@ export type Database = {
           discount_note?: string | null;
           admin_note?: string | null;
           suspended_at?: string | null;
+          billing_interval?: string;
+          accounting_addon?: boolean;
           created_by?: string | null;
           created_at?: string;
         };
@@ -982,6 +988,31 @@ export type Database = {
         };
         Returns: undefined;
       };
+      admin_workspaces_v2: {
+        Args: never;
+        Returns: {
+          id: string;
+          name: string;
+          org_number: string | null;
+          plan: Database["public"]["Enums"]["plan_type"];
+          trial_ends_at: string;
+          contact_limit: number;
+          discount_percent: number;
+          discount_until: string | null;
+          discount_note: string | null;
+          admin_note: string | null;
+          suspended_at: string | null;
+          created_at: string;
+          owner_email: string | null;
+          owner_name: string | null;
+          member_count: number;
+          contact_count: number;
+          last_activity: string | null;
+          billing_interval: string;
+          accounting_addon: boolean;
+        }[];
+      };
+      admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };
       my_invitations: {
         Args: never;
         Returns: {

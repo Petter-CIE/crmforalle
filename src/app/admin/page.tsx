@@ -17,7 +17,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
   const filter: Filter = FILTERS.includes(sp.vis as Filter) ? (sp.vis as Filter) : "all";
 
-  const { data, error } = await supabase.rpc("admin_workspaces");
+  const { data, error } = await supabase.rpc("admin_workspaces_v2");
   if (error) throw new Error("admin_workspaces failed");
   const rows = data ?? [];
   const now = nowMs();
@@ -173,7 +173,16 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{w.member_count}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{w.contact_count}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatMoney(monthlyPrice(w, today), dateLocale)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {formatMoney(monthlyPrice(w, today), dateLocale)}
+                    {(w.billing_interval === "year" || (w.plan === "start" && w.accounting_addon)) && (
+                      <span className="block text-xs text-muted">
+                        {[w.billing_interval === "year" ? a.yearlyShort : null, w.plan === "start" && w.accounting_addon ? "+ Tripletex/Fiken" : null]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap text-muted">{formatDate(w.created_at, dateLocale)}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-muted">
                     {w.last_activity ? formatDate(w.last_activity, dateLocale) : "–"}

@@ -28,7 +28,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
   const a = t.admin;
 
   const [{ data: all }, { data: members }, { data: log }] = await Promise.all([
-    supabase.rpc("admin_workspaces"),
+    supabase.rpc("admin_workspaces_v2"),
     supabase.rpc("admin_workspace_members", { p_id: id }),
     supabase.rpc("admin_audit_log", { p_id: id }),
   ]);
@@ -115,6 +115,19 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
               </Select>
               <p className="mt-1 text-xs text-muted">{a.planHelp}</p>
             </Field>
+            <Field label={a.billing} htmlFor="a_billing">
+              <Select id="a_billing" name="billing_interval" defaultValue={w.billing_interval} className="w-full">
+                <option value="month">{a.monthly}</option>
+                <option value="year">{a.yearly}</option>
+              </Select>
+            </Field>
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" name="accounting_addon" value="1" defaultChecked={w.accounting_addon} className="mt-0.5" />
+              <span>
+                {a.addon}
+                <span className="block text-xs text-muted">{a.addonHelp}</span>
+              </span>
+            </label>
             <Field label={a.trialEnds} htmlFor="a_trial">
               <TrialInput initial={osloDate(w.trial_ends_at)} labels={{ d7: a.extend(7), d14: a.extend(14), d30: a.extend(30) }} />
             </Field>

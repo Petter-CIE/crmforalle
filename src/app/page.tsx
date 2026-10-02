@@ -5,6 +5,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
+import { PricingPlans } from "./pricing-plans";
 import { SeatCalculator } from "./seat-calculator";
 
 function CtaLink({ href, children, tone = "brand" }: { href: string; children: React.ReactNode; tone?: "brand" | "light" }) {
@@ -127,34 +128,20 @@ export default async function Home() {
           <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-8">
             <h2 className="font-display text-3xl font-bold tracking-[-0.015em] text-[var(--ink)] sm:text-4xl">{l.pricingTitle}</h2>
             <p className="mt-3 text-muted">{l.pricingLead}</p>
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-              {l.plans.map((p, i) => (
-                <div
-                  key={p.name}
-                  className={`flex flex-col rounded-[24px] p-8 ${i === 0 ? "border border-border bg-white" : "bg-brand-soft"}`}
-                >
-                  <h3 className="font-display text-xl font-bold text-[var(--ink)]">{p.name}</h3>
-                  <p className="mt-1 text-sm text-muted">{p.text}</p>
-                  <p className="mt-6 font-display text-[var(--ink)]">
-                    <span className="text-5xl font-extrabold tracking-[-0.03em] tabular-nums">{p.price}</span>{" "}
-                    <span className="text-base font-medium text-muted">{l.perMonth}</span>
-                  </p>
-                  <ul className="mt-6 flex-1 space-y-2.5">
-                    {p.items.map((it) => (
-                      <li key={it} className="flex gap-2.5">
-                        <span aria-hidden className="text-brand">
-                          ✓
-                        </span>
-                        {it}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8">
-                    <CtaLink href="/registrer">{l.cta}</CtaLink>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PricingPlans
+              plans={l.plans}
+              locale={dateLocale}
+              t={{
+                perMonth: l.perMonth,
+                perYear: l.perYear,
+                billingMonthly: l.billingMonthly,
+                billingYearly: l.billingYearly,
+                yearlyBadge: l.yearlyBadge,
+                yearlyEquals: l.yearlyEquals("{amount}"),
+                monthlyNote: l.monthlyNote,
+                cta: l.cta,
+              }}
+            />
           </div>
         </section>
 
