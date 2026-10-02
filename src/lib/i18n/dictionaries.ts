@@ -260,6 +260,7 @@ const nb = {
     tasks: "Oppgaver",
     projects: "Prosjekter",
     settings: "Innstillinger",
+    help: "Hjelp",
     account: "Konto og sikkerhet",
     mainMenu: "Hovedmeny",
     switchCompany: "Bytt bedrift",
@@ -548,6 +549,13 @@ const nb = {
     intro: "Last ned alle kontakter eller bedrifter som CSV-fil, som kan åpnes i Excel.",
     contacts: "Kontakter (.csv)",
     companies: "Bedrifter (.csv)",
+  },
+  help: {
+    nav: "Hjelp og spørsmål",
+    toApp: "Til CRM-et",
+    contents: "Innhold",
+    allQuestions: "Se alle spørsmål og svar →",
+    write: "Skriv til post@allseats.no",
   },
   legal: {
     nav: "Juridiske dokumenter",
@@ -939,6 +947,7 @@ const en: Dictionary = {
     tasks: "Tasks",
     projects: "Projects",
     settings: "Settings",
+    help: "Help",
     account: "Account and security",
     mainMenu: "Main menu",
     switchCompany: "Switch company",
@@ -1227,6 +1236,13 @@ const en: Dictionary = {
     intro: "Download all contacts or companies as a CSV file that opens in Excel.",
     contacts: "Contacts (.csv)",
     companies: "Companies (.csv)",
+  },
+  help: {
+    nav: "Help and questions",
+    toApp: "Go to the CRM",
+    contents: "Contents",
+    allQuestions: "See all questions and answers →",
+    write: "Write to post@allseats.no",
   },
   legal: {
     nav: "Legal documents",

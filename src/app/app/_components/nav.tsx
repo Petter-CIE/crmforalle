@@ -11,6 +11,7 @@ export type NavTexts = {
   tasks: string;
   projects: string;
   settings: string;
+  help: string;
   mainMenu: string;
 };
 
@@ -24,6 +25,7 @@ export function Nav({ t }: { t: NavTexts }) {
     { href: "/app/prosjekter", label: t.projects },
     { href: "/app/oppgaver", label: t.tasks },
     { href: "/app/innstillinger", label: t.settings },
+    { href: "/faq", label: t.help },
   ];
   return (
     <nav aria-label={t.mainMenu} className="flex gap-1 overflow-x-auto md:flex-col">

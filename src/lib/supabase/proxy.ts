@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
   "/vilkar",
   "/personvern",
   "/databehandleravtale",
+  "/faq",
 ];
 
 function isPublic(pathname: string) {

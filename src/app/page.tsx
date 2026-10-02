@@ -161,6 +161,11 @@ export default async function Home() {
                   <p className="mt-3 max-w-[60ch] leading-relaxed text-muted">{f.a}</p>
                 </details>
               ))}
+              <p className="pt-5">
+                <Link href="/faq" className="font-medium text-brand hover:underline">
+                  {t.help.allQuestions}
+                </Link>
+              </p>
             </div>
           </div>
         </section>
@@ -192,6 +197,9 @@ export default async function Home() {
           </a>
         </span>
         <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label={t.legal.nav}>
+          <Link href="/faq" className="hover:text-foreground hover:underline">
+            {t.help.nav}
+          </Link>
           <Link href="/vilkar" className="hover:text-foreground hover:underline">
             {t.legal.terms}
           </Link>
