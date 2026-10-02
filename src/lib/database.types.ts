@@ -593,12 +593,121 @@ export type Database = {
           },
         ];
       };
+      task_attachments: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          task_id: string;
+          path: string;
+          name: string;
+          size: number;
+          mime: string | null;
+          uploaded_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          task_id: string;
+          path: string;
+          name: string;
+          size?: number;
+          mime?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          task_id?: string;
+          path?: string;
+          name?: string;
+          size?: number;
+          mime?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_attachments_task_id_workspace_id_fkey";
+            columns: ["task_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "task_attachments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      task_comments: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          task_id: string;
+          author_id: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          task_id: string;
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          task_id?: string;
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_comments_task_id_workspace_id_fkey";
+            columns: ["task_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "task_comments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           id: string;
           workspace_id: string;
           title: string;
+          description: string | null;
           due_at: string | null;
+          started_at: string | null;
           done_at: string | null;
           assignee_id: string | null;
           company_id: string | null;
@@ -613,7 +722,9 @@ export type Database = {
           id?: string;
           workspace_id: string;
           title: string;
+          description?: string | null;
           due_at?: string | null;
+          started_at?: string | null;
           done_at?: string | null;
           assignee_id?: string | null;
           company_id?: string | null;
@@ -628,7 +739,9 @@ export type Database = {
           id?: string;
           workspace_id?: string;
           title?: string;
+          description?: string | null;
           due_at?: string | null;
+          started_at?: string | null;
           done_at?: string | null;
           assignee_id?: string | null;
           company_id?: string | null;

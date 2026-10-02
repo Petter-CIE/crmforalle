@@ -14,7 +14,10 @@ export type TaskRow = {
   title: string;
   due_at: string | null;
   done_at: string | null;
+  started_at: string | null;
   assignee_id: string | null;
+  task_comments?: { count: number }[];
+  task_attachments?: { count: number }[];
   companies?: { id: string; name: string } | null;
   contacts?: { id: string; first_name: string; last_name: string | null } | null;
   deals?: { id: string; title: string } | null;
@@ -25,7 +28,7 @@ type Member = { id: string; name: string };
 type Links = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null; project_id?: string | null };
 
 export const TASK_SELECT =
-  "id, title, due_at, done_at, assignee_id, companies(id, name), contacts(id, first_name, last_name), deals(id, title), projects(id, name, color)";
+  "id, title, due_at, done_at, started_at, assignee_id, task_comments(count), task_attachments(count), companies(id, name), contacts(id, first_name, last_name), deals(id, title), projects(id, name, color)";
 
 /** Renders tasks with a done checkbox; shows what each task relates to when `showLinks`. */
 export async function TaskRows({
@@ -66,8 +69,22 @@ export async function TaskRows({
               </button>
             </form>
             <div className="min-w-0 flex-1">
-              <p className={`text-sm ${task.done_at ? "text-muted line-through" : ""}`}>{task.title}</p>
-              <div className="flex flex-wrap gap-x-3 text-xs text-muted">
+              <Link
+                href={`/app/oppgaver/${task.id}`}
+                className={`text-sm hover:text-brand hover:underline ${task.done_at ? "text-muted line-through" : ""}`}
+              >
+                {task.title}
+              </Link>
+              <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted">
+                {task.started_at && !task.done_at && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">{t.tasks.inProgress}</span>
+                )}
+                {(task.task_comments?.[0]?.count ?? 0) > 0 && (
+                  <span title={t.tasks.comments}>💬 {task.task_comments![0].count}</span>
+                )}
+                {(task.task_attachments?.[0]?.count ?? 0) > 0 && (
+                  <span title={t.tasks.attachments}>📎 {task.task_attachments![0].count}</span>
+                )}
                 {task.due_at && <span className={overdue ? "font-medium text-danger" : ""}>{formatDate(task.due_at, dateLocale)}</span>}
                 {showLinks && task.projects && (
                   <Link href={`/app/prosjekter/${task.projects.id}`} className="inline-flex items-center gap-1 hover:underline">

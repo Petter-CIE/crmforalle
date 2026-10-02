@@ -6,7 +6,7 @@ import { Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
 import { listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
-import { requireWorkspace } from "@/lib/session";
+import { canManage, requireWorkspace } from "@/lib/session";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -18,9 +18,11 @@ type View = (typeof VIEWS)[number];
 
 export default async function TasksPage({ searchParams }: PageProps<"/app/oppgaver">) {
   const { vis, person: personParam } = await searchParams;
-  const view: View = VIEWS.includes(vis as View) ? (vis as View) : "mine";
   const ctx = await requireWorkspace();
   const { supabase, user, workspace } = ctx;
+  // Owners/admins start with the whole team's tasks; everyone else with their own.
+  const defaultView: View = canManage(workspace.role) ? "alle" : "mine";
+  const view: View = VIEWS.includes(vis as View) ? (vis as View) : defaultView;
   const { t } = await getI18n();
   const members = await listMembers(ctx);
   const person =
@@ -37,7 +39,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
   ]);
   const tasks = (data ?? []) as TaskRow[];
   const params = new URLSearchParams();
-  if (view !== "mine") params.set("vis", view);
+  if (view !== defaultView) params.set("vis", view);
   if (person) params.set("person", person);
   const path = `/app/oppgaver${params.size ? `?${params}` : ""}`;
 
@@ -45,25 +47,42 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
   startOfTomorrow.setHours(24, 0, 0, 0);
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
+  const notStarted = tasks.filter((x) => !x.started_at);
   const groups =
     view === "fullfort"
       ? [{ key: "done", label: t.tasks.done, items: tasks }]
       : [
-          { key: "overdue", label: t.tasks.overdue, items: tasks.filter((x) => x.due_at && new Date(x.due_at) < startOfToday) },
-          {
-            key: "today",
-            label: t.tasks.today,
-            items: tasks.filter((x) => x.due_at && new Date(x.due_at) >= startOfToday && new Date(x.due_at) < startOfTomorrow),
-          },
-          { key: "upcoming", label: t.tasks.upcoming, items: tasks.filter((x) => x.due_at && new Date(x.due_at) >= startOfTomorrow) },
-          { key: "nodate", label: t.tasks.noDate, items: tasks.filter((x) => !x.due_at) },
+          { key: "progress", label: t.tasks.inProgress, items: tasks.filter((x) => x.started_at) },
+          ...[
+            { key: "overdue", label: t.tasks.overdue, items: notStarted.filter((x) => x.due_at && new Date(x.due_at) < startOfToday) },
+            {
+              key: "today",
+              label: t.tasks.today,
+              items: notStarted.filter(
+                (x) => x.due_at && new Date(x.due_at) >= startOfToday && new Date(x.due_at) < startOfTomorrow,
+              ),
+            },
+            {
+              key: "upcoming",
+              label: t.tasks.upcoming,
+              items: notStarted.filter((x) => x.due_at && new Date(x.due_at) >= startOfTomorrow),
+            },
+            { key: "nodate", label: t.tasks.noDate, items: notStarted.filter((x) => !x.due_at) },
+          ],
         ];
 
-  const tabs: { v: View; label: string }[] = [
-    { v: "mine", label: t.tasks.mine },
-    { v: "alle", label: t.tasks.all },
-    { v: "fullfort", label: t.tasks.done },
-  ];
+  const tabs: { v: View; label: string }[] =
+    defaultView === "alle"
+      ? [
+          { v: "alle", label: t.tasks.all },
+          { v: "mine", label: t.tasks.mine },
+          { v: "fullfort", label: t.tasks.done },
+        ]
+      : [
+          { v: "mine", label: t.tasks.mine },
+          { v: "alle", label: t.tasks.all },
+          { v: "fullfort", label: t.tasks.done },
+        ];
 
   return (
     <div className="space-y-6">
@@ -73,7 +92,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
         {tabs.map((tab) => (
           <Link
             key={tab.v}
-            href={tab.v === "mine" ? "/app/oppgaver" : `/app/oppgaver?vis=${tab.v}`}
+            href={tab.v === defaultView ? "/app/oppgaver" : `/app/oppgaver?vis=${tab.v}`}
             aria-current={view === tab.v ? "page" : undefined}
             className={`rounded-lg px-3 py-1.5 text-sm ${view === tab.v ? "bg-brand-soft font-medium text-brand" : "text-muted hover:bg-background"}`}
           >

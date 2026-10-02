@@ -441,8 +441,14 @@ export async function toggleTask(formData: FormData) {
 export async function deleteTask(formData: FormData) {
   const { supabase, workspace } = await requireWorkspace();
   const taskId = id(formData.get("id"));
-  if (taskId) await supabase.from("tasks").delete().eq("id", taskId).eq("workspace_id", workspace.id);
+  if (taskId) {
+    const { data: files } = await supabase.from("task_attachments").select("path").eq("task_id", taskId).eq("workspace_id", workspace.id);
+    if (files && files.length > 0) await supabase.storage.from("attachments").remove(files.map((f) => f.path));
+    await supabase.from("tasks").delete().eq("id", taskId).eq("workspace_id", workspace.id);
+  }
   revalidatePath(back(formData, "/app/oppgaver"));
+  revalidatePath("/app");
+  if (formData.get("redirect") === "1") redirect(back(formData, "/app/oppgaver"));
 }
 
 // ---------------------------------------------------------------- notes / activities
