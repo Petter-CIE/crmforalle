@@ -53,9 +53,9 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
             </thead>
             <tbody className="divide-y divide-border">
               {companies.map((c) => (
-                <tr key={c.id} className="hover:bg-background">
+                <tr key={c.id} className="relative hover:bg-background">
                   <td className="px-4 py-2.5">
-                    <Link href={`/app/bedrifter/${c.id}`} className="font-medium hover:text-brand">
+                    <Link href={`/app/bedrifter/${c.id}`} className="row-link font-medium hover:text-brand">
                       {c.name}
                     </Link>
                   </td>

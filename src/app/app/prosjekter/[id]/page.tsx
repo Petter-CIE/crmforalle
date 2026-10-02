@@ -109,14 +109,14 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
             ) : (
               <ul className="divide-y divide-border">
                 {contacts.map((c) => (
-                  <li key={c.id} className="flex items-center gap-3 py-2 text-sm">
+                  <li key={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
                     <div className="min-w-0 flex-1">
-                      <Link href={`/app/kontakter/${c.id}`} className="font-medium hover:text-brand">
+                      <Link href={`/app/kontakter/${c.id}`} className="row-link font-medium hover:text-brand">
                         {contactName(c)}
                       </Link>
                       <p className="text-xs text-muted">{[c.title, c.companies?.name, c.phone, c.email].filter(Boolean).join(" · ")}</p>
                     </div>
-                    <form action={removeContactFromProject}>
+                    <form action={removeContactFromProject} className="row-above">
                       <input type="hidden" name="project_id" value={id} />
                       <input type="hidden" name="contact_id" value={c.id} />
                       <button type="submit" className="text-xs text-muted hover:text-danger">

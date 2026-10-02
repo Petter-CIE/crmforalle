@@ -70,9 +70,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
         <Card className="!p-0 overflow-hidden">
           <ul className="divide-y divide-border">
             {contacts.map((k) => (
-              <li key={k.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-background">
+              <li key={k.id} className="relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-background">
                 <div className="min-w-0 flex-1">
-                  <Link href={`/app/kontakter/${k.id}`} className="font-medium hover:text-brand">
+                  <Link href={`/app/kontakter/${k.id}`} className="row-link font-medium hover:text-brand">
                     {contactName(k)}
                   </Link>
                   <p className="text-xs text-muted">
@@ -87,7 +87,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
                       <Link
                         key={pc.project_id}
                         href={`/app/kontakter?prosjekt=${p.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-background px-2 py-0.5 text-xs hover:underline"
+                        className="row-above inline-flex items-center gap-1.5 rounded-full bg-background px-2 py-0.5 text-xs hover:underline"
                       >
                         <span className={`h-2 w-2 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
                         {p.name}

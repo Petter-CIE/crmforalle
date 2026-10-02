@@ -65,8 +65,8 @@ export async function TaskRows({
       {tasks.map((task) => {
         const overdue = !task.done_at && task.due_at && new Date(task.due_at).getTime() < now;
         return (
-          <li key={task.id} className="flex items-start gap-3 py-2.5">
-            <form action={toggleTask}>
+          <li key={task.id} className="relative -mx-2 flex items-start gap-3 rounded-md px-2 py-2.5 hover:bg-background">
+            <form action={toggleTask} className="row-above">
               <input type="hidden" name="id" value={task.id} />
               <input type="hidden" name="done" value={task.done_at ? "false" : "true"} />
               <input type="hidden" name="tilbake" value={path} />
@@ -83,7 +83,7 @@ export async function TaskRows({
             <div className="min-w-0 flex-1">
               <Link
                 href={`/app/oppgaver/${task.id}`}
-                className={`text-sm hover:text-brand hover:underline ${task.done_at ? "text-muted line-through" : ""}`}
+                className={`row-link text-sm hover:text-brand ${task.done_at ? "text-muted line-through" : ""}`}
               >
                 {task.title}
               </Link>
@@ -99,23 +99,23 @@ export async function TaskRows({
                 )}
                 {task.due_at && <span className={overdue ? "font-medium text-danger" : ""}>{formatDate(task.due_at, dateLocale)}</span>}
                 {showLinks && task.projects && (
-                  <Link href={`/app/prosjekter/${task.projects.id}`} className="inline-flex items-center gap-1 hover:underline">
+                  <Link href={`/app/prosjekter/${task.projects.id}`} className="row-above inline-flex items-center gap-1 hover:underline">
                     <span className={`h-2 w-2 rounded-full ${PROJECT_COLORS[task.projects.color as ProjectColor] ?? "bg-zinc-400"}`} />
                     {task.projects.name}
                   </Link>
                 )}
                 {showLinks && task.deals && (
-                  <Link href={`/app/salg/${task.deals.id}`} className="hover:underline">
+                  <Link href={`/app/salg/${task.deals.id}`} className="row-above hover:underline">
                     {task.deals.title}
                   </Link>
                 )}
                 {showLinks && task.contacts && (
-                  <Link href={`/app/kontakter/${task.contacts.id}`} className="hover:underline">
+                  <Link href={`/app/kontakter/${task.contacts.id}`} className="row-above hover:underline">
                     {contactName(task.contacts)}
                   </Link>
                 )}
                 {showLinks && task.companies && (
-                  <Link href={`/app/bedrifter/${task.companies.id}`} className="hover:underline">
+                  <Link href={`/app/bedrifter/${task.companies.id}`} className="row-above hover:underline">
                     {task.companies.name}
                   </Link>
                 )}
@@ -145,7 +145,7 @@ export async function TaskRows({
               (task.done_at ? (
                 <span className="text-xs text-muted">{task.assignee_id ? nameOf.get(task.assignee_id) : ""}</span>
               ) : (
-                <form action={reassignTask}>
+                <form action={reassignTask} className="row-above">
                   <input type="hidden" name="id" value={task.id} />
                   <input type="hidden" name="tilbake" value={path} />
                   <AutoSubmitSelect
@@ -164,7 +164,7 @@ export async function TaskRows({
                   </AutoSubmitSelect>
                 </form>
               ))}
-            <form action={deleteTask}>
+            <form action={deleteTask} className="row-above">
               <input type="hidden" name="id" value={task.id} />
               <input type="hidden" name="tilbake" value={path} />
               <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={t.crm.delete}>

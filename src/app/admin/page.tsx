@@ -152,9 +152,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
             </thead>
             <tbody className="divide-y divide-border">
               {shown.map((w) => (
-                <tr key={w.id} className="hover:bg-background">
+                <tr key={w.id} className="relative hover:bg-background">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/${w.id}`} className="font-medium hover:text-brand hover:underline">
+                    <Link href={`/admin/${w.id}`} className="row-link font-medium hover:text-brand">
                       {w.name}
                     </Link>
                     {w.org_number && <span className="block text-xs text-muted">{w.org_number}</span>}

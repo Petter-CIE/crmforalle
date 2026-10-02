@@ -79,3 +79,14 @@ body {
     transition: none;
   }
 }
+
+/* Whole-row links: the main link stretches over its row; controls inside stay clickable. */
+.row-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.row-above {
+  position: relative;
+  z-index: 1;
+}

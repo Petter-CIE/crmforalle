@@ -18,8 +18,8 @@ export async function DealList({ deals }: { deals: DealRow[] }) {
   return (
     <ul className="divide-y divide-border">
       {deals.map((d) => (
-        <li key={d.id} className="flex items-center gap-3 py-2 text-sm">
-          <Link href={`/app/salg/${d.id}`} className="min-w-0 flex-1 truncate font-medium hover:text-brand">
+        <li key={d.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
+          <Link href={`/app/salg/${d.id}`} className="row-link min-w-0 flex-1 truncate font-medium hover:text-brand">
             {d.title}
           </Link>
           <Pill
