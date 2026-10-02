@@ -8,8 +8,10 @@ import { TaskPanel } from "@/components/crm/task-list";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui-extra";
 import {
+  addCompanyToProject,
   addContactToProject,
   deleteProject,
+  removeCompanyFromProject,
   removeContactFromProject,
   setProjectArchived,
   updateProject,
@@ -31,7 +33,8 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
   const ctx = await requireWorkspace();
   const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const [{ data: p }, { data: members }, { data: deals }, { data: allContacts }, team] = await Promise.all([
+  const [{ data: p }, { data: members }, { data: deals }, { data: allContacts }, team, { data: linked }, { data: allCompanies }] =
+    await Promise.all([
     supabase.from("projects").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     supabase
       .from("project_contacts")
@@ -40,8 +43,16 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("project_id", id).order("created_at", { ascending: false }),
     supabase.from("contacts").select("id, first_name, last_name").eq("workspace_id", workspace.id).order("first_name").limit(1000),
     listMembers(ctx),
+    supabase.from("project_companies").select("company_id, companies(id, name, city, org_number)").eq("project_id", id),
+    supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
   ]);
   if (!p) notFound();
+  const companies = (linked ?? [])
+    .map((l) => l.companies)
+    .filter((c) => c !== null)
+    .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+  const companyIds = new Set(companies.map((c) => c.id));
+  const availableCompanies = (allCompanies ?? []).filter((c) => !companyIds.has(c.id));
   const ownerName = p.owner_id ? team.find((m) => m.id === p.owner_id)?.name : null;
   const path = `/app/prosjekter/${id}`;
   const inProject = new Set((members ?? []).map((m) => m.contact_id));
@@ -135,6 +146,56 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
                   {available.map((c) => (
                     <option key={c.id} value={c.id}>
                       {contactName(c)}
+                    </option>
+                  ))}
+                </Select>
+                <Button type="submit" variant="secondary">
+                  {t.tasks.add}
+                </Button>
+              </form>
+            )}
+          </Card>
+
+          <Card>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-semibold">
+                {t.projects.companies} ({companies.length})
+              </h2>
+              <Link href={`/app/bedrifter?prosjekt=${id}`} className="text-sm text-brand hover:underline">
+                {t.companies.title} →
+              </Link>
+            </div>
+            {companies.length === 0 ? (
+              <EmptyState>{t.projects.noCompanies}</EmptyState>
+            ) : (
+              <ul className="max-h-[28rem] divide-y divide-border overflow-y-auto">
+                {companies.map((c) => (
+                  <li key={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/app/bedrifter/${c.id}`} className="row-link font-medium hover:text-brand">
+                        {c.name}
+                      </Link>
+                      <p className="text-xs text-muted">{[c.org_number, c.city].filter(Boolean).join(" · ")}</p>
+                    </div>
+                    <form action={removeCompanyFromProject} className="row-above">
+                      <input type="hidden" name="project_id" value={id} />
+                      <input type="hidden" name="company_id" value={c.id} />
+                      <button type="submit" className="text-xs text-muted hover:text-danger">
+                        {t.projects.remove}
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {availableCompanies.length > 0 && (
+              <form action={addCompanyToProject} className="mt-4 flex gap-2">
+                <input type="hidden" name="project_id" value={id} />
+                <Select name="company_id" required aria-label={t.projects.addCompany} className="min-w-0 flex-1">
+                  <option value="">{t.projects.addCompany}</option>
+                  {availableCompanies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
                     </option>
                   ))}
                 </Select>

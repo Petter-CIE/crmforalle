@@ -147,6 +147,19 @@ export async function importChunk(input: {
     }
   }
 
+  // companies in the file (new or existing) join the chosen project too
+  if (projectId) {
+    const companyIds = [...new Set(rows.map(findCompany).filter((v): v is string => !!v))];
+    if (companyIds.length) {
+      await supabase
+        .from("project_companies")
+        .upsert(
+          companyIds.map((company_id) => ({ workspace_id: workspace.id, project_id: projectId, company_id })),
+          { ignoreDuplicates: true },
+        );
+    }
+  }
+
   // --- contacts ----------------------------------------------------------------
   const people = rows.filter((r) => r.first_name || r.last_name);
   result.invalid += rows.filter((r) => !r.first_name && !r.last_name && !r.company).length;

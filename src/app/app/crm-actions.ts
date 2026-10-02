@@ -244,6 +244,7 @@ export async function addContactToProject(formData: FormData) {
   }
   revalidatePath(`/app/prosjekter/${projectId}`);
   revalidatePath(`/app/kontakter/${contactId}`);
+  revalidatePath("/app/kontakter");
 }
 
 export async function removeContactFromProject(formData: FormData) {
@@ -260,6 +261,37 @@ export async function removeContactFromProject(formData: FormData) {
   }
   revalidatePath(`/app/prosjekter/${projectId}`);
   revalidatePath(`/app/kontakter/${contactId}`);
+}
+
+export async function addCompanyToProject(formData: FormData) {
+  const { supabase, workspace } = await requireWorkspace();
+  const projectId = id(formData.get("project_id"));
+  const companyId = id(formData.get("company_id"));
+  if (projectId && companyId) {
+    await supabase
+      .from("project_companies")
+      .upsert({ workspace_id: workspace.id, project_id: projectId, company_id: companyId }, { ignoreDuplicates: true });
+  }
+  revalidatePath(`/app/prosjekter/${projectId}`);
+  revalidatePath(`/app/bedrifter/${companyId}`);
+  revalidatePath("/app/bedrifter");
+}
+
+export async function removeCompanyFromProject(formData: FormData) {
+  const { supabase, workspace } = await requireWorkspace();
+  const projectId = id(formData.get("project_id"));
+  const companyId = id(formData.get("company_id"));
+  if (projectId && companyId) {
+    await supabase
+      .from("project_companies")
+      .delete()
+      .eq("workspace_id", workspace.id)
+      .eq("project_id", projectId)
+      .eq("company_id", companyId);
+  }
+  revalidatePath(`/app/prosjekter/${projectId}`);
+  revalidatePath(`/app/bedrifter/${companyId}`);
+  revalidatePath("/app/bedrifter");
 }
 
 // ---------------------------------------------------------------- deals

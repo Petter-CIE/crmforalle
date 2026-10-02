@@ -519,6 +519,34 @@ export type Database = {
         };
         Relationships: [];
       };
+      project_companies: {
+        Row: { workspace_id: string; project_id: string; company_id: string; created_at: string };
+        Insert: { workspace_id: string; project_id: string; company_id: string; created_at?: string };
+        Update: { workspace_id?: string; project_id?: string; company_id?: string; created_at?: string };
+        Relationships: [
+          {
+            foreignKeyName: "project_companies_company_id_workspace_id_fkey";
+            columns: ["company_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "project_companies_project_id_workspace_id_fkey";
+            columns: ["project_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "project_companies_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       project_contacts: {
         Row: { workspace_id: string; project_id: string; contact_id: string; created_at: string };
         Insert: { workspace_id: string; project_id: string; contact_id: string; created_at?: string };

@@ -5,10 +5,10 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
-import { ButtonLink, Card } from "@/components/ui";
+import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { EmptyState, InfoRow, PageHeader } from "@/components/ui-extra";
-import { deleteCompany } from "@/app/app/crm-actions";
-import { contactName } from "@/lib/crm";
+import { addCompanyToProject, deleteCompany, removeCompanyFromProject } from "@/app/app/crm-actions";
+import { contactName, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 
@@ -23,12 +23,20 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: c }, { data: contacts }, { data: deals }] = await Promise.all([
-    supabase.from("companies").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
+  const [{ data: c }, { data: contacts }, { data: deals }, { data: allProjects }] = await Promise.all([
+    supabase
+      .from("companies")
+      .select("*, project_companies(project_id, projects(id, name, color))")
+      .eq("id", id)
+      .eq("workspace_id", workspace.id)
+      .maybeSingle(),
     supabase.from("contacts").select("id, first_name, last_name, title, email, phone").eq("company_id", id).order("first_name"),
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("company_id", id).order("created_at", { ascending: false }),
+    supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
   ]);
   if (!c) notFound();
+  const inProjects = (c.project_companies ?? []).map((pc) => pc.projects).filter((p) => p !== null);
+  const available = (allProjects ?? []).filter((p) => !inProjects.some((ip) => ip.id === p.id));
   const path = `/app/bedrifter/${id}`;
   const website = c.website ? (c.website.startsWith("http") ? c.website : `https://${c.website}`) : null;
 
@@ -75,6 +83,47 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <h2 className="mb-3 font-semibold">{t.companies.projects}</h2>
+            {inProjects.length === 0 ? (
+              <p className="mb-3 text-sm text-muted">{t.companies.noProjects}</p>
+            ) : (
+              <ul className="mb-3 space-y-1.5">
+                {inProjects.map((p) => (
+                  <li key={p.id} className="flex items-center gap-2 text-sm">
+                    <span className={`h-2.5 w-2.5 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+                    <Link href={`/app/prosjekter/${p.id}`} className="flex-1 hover:text-brand">
+                      {p.name}
+                    </Link>
+                    <form action={removeCompanyFromProject}>
+                      <input type="hidden" name="project_id" value={p.id} />
+                      <input type="hidden" name="company_id" value={id} />
+                      <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={t.projects.remove}>
+                        ✕
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {available.length > 0 && (
+              <form action={addCompanyToProject} className="flex gap-2">
+                <input type="hidden" name="company_id" value={id} />
+                <Select name="project_id" required aria-label={t.contacts.addToProject} className="min-w-0 flex-1">
+                  <option value="">{t.contacts.addToProject}</option>
+                  {available.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+                <Button type="submit" variant="secondary" className="!px-3">
+                  +
+                </Button>
+              </form>
+            )}
+          </Card>
+
           <Card>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold">{t.companies.contacts}</h2>
