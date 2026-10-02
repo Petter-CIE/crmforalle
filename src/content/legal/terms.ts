@@ -39,7 +39,7 @@ const nb: LegalDoc = {
       h: "5. Priser og betaling",
       body: [
         "Prisene står på allseats.no og gjelder per bedrift, uansett antall brukere. Alle priser er oppgitt eksklusive merverdiavgift, som kommer i tillegg med gjeldende sats (i dag 25 %).",
-        "Abonnementet betales forskuddsvis månedlig eller årlig. Ved årlig betaling betaler Kunden for 10 måneder og får 12.",
+        "Abonnementet faktureres forskuddsvis månedlig eller årlig. Fakturaen sendes på e-post, og betalingsfristen står på fakturaen. Ved årlig betaling betaler Kunden for 10 måneder og får 12.",
         "Tillegg, som regnskapskobling, faktureres sammen med abonnementet.",
         "Ved forsinket betaling kan Leverandøren kreve forsinkelsesrente etter forsinkelsesrenteloven og, etter skriftlig varsel med minst 14 dagers frist, begrense Kundens tilgang til lesing og eksport til betaling er mottatt.",
         "Leverandøren kan endre prisene med minst 30 dagers varsel på e-post. For årsabonnement gjelder ny pris fra neste fornyelse. Kunden kan si opp abonnementet før endringen trer i kraft.",
@@ -152,7 +152,7 @@ const en: LegalDoc = {
       h: "5. Prices and payment",
       body: [
         "Prices are shown on allseats.no and apply per company, regardless of the number of users. All prices exclude Norwegian VAT, which is added at the applicable rate (currently 25%).",
-        "The subscription is paid in advance monthly or yearly. With yearly billing the Customer pays for 10 months and gets 12.",
+        "The subscription is invoiced in advance monthly or yearly. The invoice is sent by e-mail, and the due date is stated on the invoice. With yearly billing the Customer pays for 10 months and gets 12.",
         "Add-ons, such as the accounting integration, are invoiced together with the subscription.",
         "If payment is late, the Supplier may charge late-payment interest under the Norwegian Late Payment Interest Act and, after written notice with at least 14 days to pay, limit the Customer’s access to reading and export until payment is received.",
         "The Supplier may change prices with at least 30 days’ notice by e-mail. For yearly subscriptions the new price applies from the next renewal. The Customer may cancel the subscription before the change takes effect.",

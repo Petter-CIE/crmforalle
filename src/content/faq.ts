@@ -45,6 +45,13 @@ const nb: Faq = {
           a: ["Skriv til post@allseats.no, så setter vi opp eller endrer abonnementet for dere. Dere kan bytte mellom Start og Bedrift og mellom månedlig og årlig betaling."],
         },
         {
+          q: "Hvordan betaler vi?",
+          a: [
+            "Med faktura. Vi sender fakturaen på e-post forskuddsvis for en måned eller et år om gangen, med mva. i tillegg. Vi tar ikke betalt med kort.",
+            "Fortell oss hvilken e-postadresse fakturaen skal til, og om dere trenger en referanse eller et bestillingsnummer på den.",
+          ],
+        },
+        {
           q: "Hva er tillegget for Tripletex og Fiken?",
           a: [
             "En kobling til regnskapsprogrammet, slik at kunder og fakturaer henger sammen med CRM-et. Den er under utvikling.",
@@ -234,6 +241,13 @@ const en: Faq = {
         {
           q: "How do we choose or change our subscription?",
           a: ["Write to post@allseats.no and we'll set up or change the subscription for you. You can switch between Start and Bedrift and between monthly and yearly payment."],
+        },
+        {
+          q: "How do we pay?",
+          a: [
+            "By invoice. We send the invoice by e-mail in advance for one month or one year at a time, with VAT added. We don't take card payments.",
+            "Tell us which e-mail address the invoice should go to, and whether you need a reference or purchase order number on it.",
+          ],
         },
         {
           q: "What is the Tripletex and Fiken add-on?",
