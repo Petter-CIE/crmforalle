@@ -132,7 +132,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
               <TrialInput initial={osloDate(w.trial_ends_at)} labels={{ d7: a.extend(7), d14: a.extend(14), d30: a.extend(30) }} />
             </Field>
             <Field label={a.contactLimit} htmlFor="a_limit">
-              <Input id="a_limit" name="contact_limit" type="number" min={0} defaultValue={w.contact_limit} className="w-full" />
+              <Input id="a_limit" name="contact_limit" type="number" min={1} defaultValue={w.contact_limit} className="w-full" />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={a.discount} htmlFor="a_disc">
