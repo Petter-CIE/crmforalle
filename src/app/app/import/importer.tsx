@@ -40,6 +40,7 @@ const SYNONYMS: Record<Field, string[]> = {
   city: ["sted", "poststed", "by", "city", "town", "kommune"],
   notes: ["notater", "notat", "kommentar", "merknad", "notes", "note", "comment", "comments"],
 };
+const EXAMPLE_EMAIL = /@(eksempel\.no|example\.com)$/i;
 const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9æøå]/g, "");
 function guess(header: string): Field | "" {
   const h = norm(header);
@@ -52,6 +53,7 @@ type Texts = {
   choose: string;
   dropHint: string;
   template: string;
+  templateFile: string;
   reading: string;
   badFile: string;
   empty: string;
@@ -135,7 +137,10 @@ export function Importer({ t, projects }: { t: Texts; projects: { id: string; na
     setResult(null);
     setBusy("reading");
     try {
-      const rows = (await readFile(file)).filter((r) => r.some((c) => String(c).trim() !== ""));
+      // skip empty rows and the template's grey example rows (…@eksempel.no / …@example.com)
+      const rows = (await readFile(file)).filter(
+        (r) => r.some((c) => String(c).trim() !== "") && !r.some((c) => EXAMPLE_EMAIL.test(String(c ?? "").trim())),
+      );
       if (rows.length < 2) {
         setError(t.empty);
         setHeaders([]);
@@ -290,7 +295,7 @@ export function Importer({ t, projects }: { t: Texts; projects: { id: string; na
             onChange={(e) => void onFile(e.currentTarget.files?.[0])}
           />
         </label>
-        <a href="/import-eksempel.csv" download className="mt-3 inline-block text-xs text-brand hover:underline">
+        <a href={t.templateFile} download className="mt-3 inline-block text-xs text-brand hover:underline">
           {t.template}
         </a>
         {error && (

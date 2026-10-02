@@ -30,6 +30,7 @@ export default async function ImportPage() {
           choose: i.choose,
           dropHint: i.dropHint,
           template: i.template,
+          templateFile: i.templateFile,
           reading: i.reading,
           badFile: i.badFile,
           empty: i.empty,
