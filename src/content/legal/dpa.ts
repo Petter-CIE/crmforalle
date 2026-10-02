@@ -2,7 +2,7 @@ import type { LegalDoc } from "./types";
 
 const nb: LegalDoc = {
   title: "Databehandleravtale",
-  lead: "Avtale etter personvernforordningen (GDPR) artikkel 28 mellom Kunden som behandlingsansvarlig og CIE AS (org.nr. 818 823 452) som databehandler. Inngås når Kunden godtar brukervilkårene for AllSeats CRM. Gjelder fra 2. oktober 2026.",
+  lead: "Avtale etter personvernforordningen (GDPR) artikkel 28 mellom Kunden som behandlingsansvarlig og CIE AS (org.nr. 818 823 452 MVA) som databehandler. Inngås når Kunden godtar brukervilkårene for AllSeats CRM. Gjelder fra 2. oktober 2026.",
   sections: [
     {
       h: "1. Formål og omfang",
@@ -68,7 +68,7 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, innlogging og fillagring. Data lagres i AWS-regionen eu-central-1 (Frankfurt). Overføring sikres med EUs standard personvernbestemmelser (SCC).",
             "Vercel Inc. (USA) – drift av applikasjonen, serverfunksjoner i Frankfurt. Sertifisert under EU–US Data Privacy Framework, i tillegg til SCC.",
-            "One.com (EU) – utsending av e-post.",
+            "One.com Group AB (Sverige) – utsending av e-post. Behandlingen skjer i datasentre i Danmark (EU), og databehandleravtale inngår i avtalen med One.com.",
           ],
         },
         "Databehandleren varsler Kunden på e-post minst 30 dager før en ny underleverandør tas i bruk. Kunden kan protestere innen fristen og har da rett til å si opp avtalen uten kostnad.",
@@ -112,7 +112,7 @@ const nb: LegalDoc = {
 
 const en: LegalDoc = {
   title: "Data processing agreement",
-  lead: "Agreement under Article 28 of the General Data Protection Regulation (GDPR) between the Customer as controller and CIE AS (org. no. 818 823 452) as processor. Entered into when the Customer accepts the AllSeats CRM terms of service. Effective from 2 October 2026. In case of doubt, the Norwegian version applies.",
+  lead: "Agreement under Article 28 of the General Data Protection Regulation (GDPR) between the Customer as controller and CIE AS (org. no. 818 823 452 MVA) as processor. Entered into when the Customer accepts the AllSeats CRM terms of service. Effective from 2 October 2026. In case of doubt, the Norwegian version applies.",
   sections: [
     {
       h: "1. Purpose and scope",
@@ -178,7 +178,7 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, login and file storage. Data is stored in the AWS region eu-central-1 (Frankfurt). Transfers are covered by the EU Standard Contractual Clauses (SCC).",
             "Vercel Inc. (USA) – application hosting, server functions in Frankfurt. Certified under the EU–US Data Privacy Framework, in addition to SCC.",
-            "One.com (EU) – sending e-mail.",
+            "One.com Group AB (Sweden) – sending e-mail. Processing takes place in data centres in Denmark (EU), and a data processing agreement forms part of the agreement with One.com.",
           ],
         },
         "The Processor notifies the Customer by e-mail at least 30 days before a new sub-processor is used. The Customer may object within that period and then has the right to terminate the agreement at no cost.",

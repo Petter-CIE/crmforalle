@@ -2,7 +2,7 @@ import type { LegalDoc } from "./types";
 
 const nb: LegalDoc = {
   title: "Brukervilkår for AllSeats CRM",
-  lead: "Avtale mellom CIE AS (org.nr. 818 823 452) og bedriften som tar i bruk AllSeats CRM («Kunden»). Gjelder fra 2. oktober 2026.",
+  lead: "Avtale mellom CIE AS (org.nr. 818 823 452 MVA) og bedriften som tar i bruk AllSeats CRM («Kunden»). Gjelder fra 2. oktober 2026.",
   sections: [
     {
       h: "1. Om avtalen",
@@ -38,7 +38,7 @@ const nb: LegalDoc = {
     {
       h: "5. Priser og betaling",
       body: [
-        "Prisene står på allseats.no og gjelder per bedrift, uansett antall brukere. Alle priser er oppgitt eksklusive merverdiavgift.",
+        "Prisene står på allseats.no og gjelder per bedrift, uansett antall brukere. Alle priser er oppgitt eksklusive merverdiavgift, som kommer i tillegg med gjeldende sats (i dag 25 %).",
         "Abonnementet betales forskuddsvis månedlig eller årlig. Ved årlig betaling betaler Kunden for 10 måneder og får 12.",
         "Tillegg, som regnskapskobling, faktureres sammen med abonnementet.",
         "Ved forsinket betaling kan Leverandøren kreve forsinkelsesrente etter forsinkelsesrenteloven og, etter skriftlig varsel med minst 14 dagers frist, begrense Kundens tilgang til lesing og eksport til betaling er mottatt.",
@@ -108,14 +108,14 @@ const nb: LegalDoc = {
     },
     {
       h: "13. Kontakt",
-      body: ["CIE AS, org.nr. 818 823 452, registrert i Foretaksregisteret. Bjørøyvegen 332, 5177 Bjørøyhamn. E-post: post@allseats.no."],
+      body: ["CIE AS, org.nr. 818 823 452 MVA, registrert i Foretaksregisteret. Bjørøyvegen 332, 5177 Bjørøyhamn. E-post: post@allseats.no."],
     },
   ],
 };
 
 const en: LegalDoc = {
   title: "AllSeats CRM terms of service",
-  lead: "Agreement between CIE AS (org. no. 818 823 452) and the company using AllSeats CRM (the “Customer”). Effective from 2 October 2026. In case of doubt, the Norwegian version applies.",
+  lead: "Agreement between CIE AS (org. no. 818 823 452 MVA) and the company using AllSeats CRM (the “Customer”). Effective from 2 October 2026. In case of doubt, the Norwegian version applies.",
   sections: [
     {
       h: "1. About the agreement",
@@ -151,7 +151,7 @@ const en: LegalDoc = {
     {
       h: "5. Prices and payment",
       body: [
-        "Prices are shown on allseats.no and apply per company, regardless of the number of users. All prices exclude VAT.",
+        "Prices are shown on allseats.no and apply per company, regardless of the number of users. All prices exclude Norwegian VAT, which is added at the applicable rate (currently 25%).",
         "The subscription is paid in advance monthly or yearly. With yearly billing the Customer pays for 10 months and gets 12.",
         "Add-ons, such as the accounting integration, are invoiced together with the subscription.",
         "If payment is late, the Supplier may charge late-payment interest under the Norwegian Late Payment Interest Act and, after written notice with at least 14 days to pay, limit the Customer’s access to reading and export until payment is received.",
@@ -221,7 +221,7 @@ const en: LegalDoc = {
     },
     {
       h: "13. Contact",
-      body: ["CIE AS, org. no. 818 823 452, registered in the Norwegian Register of Business Enterprises. Bjørøyvegen 332, 5177 Bjørøyhamn, Norway. E-mail: post@allseats.no."],
+      body: ["CIE AS, org. no. 818 823 452 MVA, registered in the Norwegian Register of Business Enterprises. Bjørøyvegen 332, 5177 Bjørøyhamn, Norway. E-mail: post@allseats.no."],
     },
   ],
 };
