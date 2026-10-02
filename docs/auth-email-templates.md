@@ -1,14 +1,20 @@
-# Supabase Auth – e-postmaler
+# Supabase Auth – e-postmaler og innstillinger
 
-Appen bruker `token_hash`-lenker, slik at innloggingslenken virker uansett hvilken
-enhet eller nettleser e-posten åpnes i (også for invitasjoner).
+Appen bruker `token_hash`-lenker, slik at lenkene virker uansett hvilken enhet
+eller nettleser e-posten åpnes i.
 
-Supabase → Authentication → Emails (Templates). Bytt lenken i **Magic Link** og
-**Confirm signup** til:
+Supabase → Authentication → Emails → Templates. Lenken i malene:
 
-```html
-<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Logg inn</a>
-```
+| Mal | Lenke |
+| --- | --- |
+| Magic link (invitasjoner) | `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email` |
+| Confirm signup | `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email` |
+| Reset password | `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery` |
 
 `RedirectTo` inneholder alltid `?neste=...`, derfor `&` foran `token_hash`.
-Callback-ruten `/auth/callback` håndterer både `code` og `token_hash`.
+
+## Innlogging
+- E-post + passord er standard. Brukere uten passord (opprettet via invitasjon)
+  sendes til `/nytt-passord` (styres av `user_metadata.has_password`).
+- To-trinnsverifisering (TOTP) er valgfri per bruker, under Konto og sikkerhet.
+- Passkeys: Authentication → Passkeys. RP ID `allseats.no`, origin `https://allseats.no`.

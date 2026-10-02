@@ -1,35 +1,37 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
-import { siteUrl } from "@/lib/session";
+import { safeNext } from "@/lib/session";
 
-export type LoginState = { status: "idle" | "sent" | "error"; message?: string; email?: string };
+export type LoginState = { error?: string; email?: string };
 
-function safeNext(value: FormDataEntryValue | null) {
-  const v = typeof value === "string" ? value : "";
-  return v.startsWith("/") && !v.startsWith("//") ? v : "/app";
-}
-
-export async function sendMagicLink(_prev: LoginState, formData: FormData): Promise<LoginState> {
+export async function signIn(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const { t } = await getI18n();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { status: "error", message: t.common.invalidEmail, email };
-  }
+  const password = String(formData.get("password") ?? "");
   const next = safeNext(formData.get("neste"));
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail, email };
+  if (!password) return { error: t.login.invalidCredentials, email };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${siteUrl()}/auth/callback?neste=${encodeURIComponent(next)}`,
-      shouldCreateUser: true,
-    },
-  });
-
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    return { status: "error", email, message: error.status === 429 ? t.login.rateLimited : t.login.failed };
+    const message =
+      error.code === "invalid_credentials"
+        ? t.login.invalidCredentials
+        : error.code === "email_not_confirmed"
+          ? t.login.notConfirmed
+          : error.status === 429
+            ? t.login.rateLimited
+            : t.login.failed;
+    return { error: message, email };
   }
-  return { status: "sent", email };
+
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect(`/logg-inn/mfa?neste=${encodeURIComponent(next)}`);
+  }
+  redirect(next);
 }

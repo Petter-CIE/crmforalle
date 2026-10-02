@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Card, Logo, Notice } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
+import { safeNext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
 
@@ -15,8 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">) {
   const params = await searchParams;
-  const rawNext = typeof params.neste === "string" ? params.neste : "/app";
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
+  const next = safeNext(params.neste);
   const failed = params.feil === "lenke";
 
   const supabase = await createClient();
@@ -40,6 +40,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
           )}
           <LoginForm next={next} t={t.login} />
         </Card>
+        <p className="text-center text-sm text-muted">
+          {t.login.noAccount}{" "}
+          <Link href="/registrer" className="font-medium text-brand hover:underline">
+            {t.login.register}
+          </Link>
+        </p>
         <div className="flex justify-center">
           <Suspense>
             <LanguageSwitcher locale={locale} label={t.common.language} />

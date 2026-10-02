@@ -15,17 +15,40 @@ export type WorkspaceSummary = {
   role: MemberRole;
 };
 
-/** Logged-in user or redirect to login. */
-export async function requireUser() {
+type GuardOptions = {
+  /** Skip the "must have a password" check (used by the set-password page). */
+  allowNoPassword?: boolean;
+  /** Path to return to after an intermediate step (MFA / set password). */
+  returnTo?: string;
+};
+
+/**
+ * Logged-in user or redirect to login. Also enforces:
+ * - two-step verification when the user has enabled it (AAL2),
+ * - that the user has chosen a password (users created by an invitation link).
+ */
+export async function requireUser(opts: GuardOptions = {}) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) redirect("/logg-inn");
+
+  const returnTo = opts.returnTo ?? "/app";
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect(`/logg-inn/mfa?neste=${encodeURIComponent(returnTo)}`);
+  }
+
+  if (!opts.allowNoPassword && !data.user.user_metadata?.has_password) {
+    redirect(`/nytt-passord?neste=${encodeURIComponent(returnTo)}`);
+  }
   return { supabase, user: data.user };
 }
 
 /** All workspaces the user belongs to, with their role. */
-export async function listWorkspaces(): Promise<WorkspaceSummary[]> {
-  const { supabase, user } = await requireUser();
+export async function listWorkspaces(
+  ctx?: Awaited<ReturnType<typeof requireUser>>,
+): Promise<WorkspaceSummary[]> {
+  const { supabase, user } = ctx ?? (await requireUser());
   const { data, error } = await supabase
     .from("members")
     .select("role, workspaces(id, name, org_number, plan, trial_ends_at)")
@@ -39,8 +62,9 @@ export async function listWorkspaces(): Promise<WorkspaceSummary[]> {
 
 /** Current workspace (from cookie, else the first one) or redirect to onboarding. */
 export async function requireWorkspace() {
-  const { supabase, user } = await requireUser();
-  const workspaces = await listWorkspaces();
+  const ctx = await requireUser();
+  const { supabase, user } = ctx;
+  const workspaces = await listWorkspaces(ctx);
   if (workspaces.length === 0) redirect("/kom-i-gang");
   const wanted = (await cookies()).get(WORKSPACE_COOKIE)?.value;
   const workspace = workspaces.find((w) => w.id === wanted) ?? workspaces[0];
@@ -51,6 +75,11 @@ export function canManage(role: MemberRole) {
   return role === "owner" || role === "admin";
 }
 
+
+export function safeNext(value: unknown, fallback = "/app") {
+  const v = typeof value === "string" ? value : "";
+  return v.startsWith("/") && !v.startsWith("//") ? v : fallback;
+}
 
 export function siteUrl() {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;

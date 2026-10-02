@@ -43,9 +43,12 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         )}
         <Nav t={t.nav} />
         <div className="mt-6 hidden space-y-2 border-t border-border pt-4 text-xs text-muted md:block">
-          <p className="truncate" title={user.email}>
+          <Link href="/app/konto" className="block truncate hover:text-foreground hover:underline" title={user.email}>
             {user.email}
-          </p>
+          </Link>
+          <Link href="/app/konto" className="block hover:text-foreground hover:underline">
+            {t.nav.account}
+          </Link>
           <form action="/auth/logg-ut" method="post">
             <button type="submit" className="hover:text-foreground hover:underline">
               {t.common.logout}
@@ -67,6 +70,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           <Suspense>
             <LanguageSwitcher locale={locale} label={t.common.language} />
           </Suspense>
+          <Link href="/app/konto" className="text-xs text-muted hover:underline">
+            {t.nav.account}
+          </Link>
           <form action="/auth/logg-ut" method="post">
             <button type="submit" className="text-xs text-muted hover:underline">
               {t.common.logout} ({user.email})

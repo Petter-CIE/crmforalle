@@ -28,7 +28,7 @@ export default async function Home() {
         <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">{t.landing.headline}</h1>
         <p className="mt-4 max-w-xl text-lg text-muted">{t.landing.lead}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <ButtonLink href="/logg-inn">{t.landing.cta}</ButtonLink>
+          <ButtonLink href="/registrer">{t.landing.cta}</ButtonLink>
         </div>
         <p className="mt-3 text-sm text-muted">{t.landing.price}</p>
       </main>
