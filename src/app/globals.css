@@ -31,3 +31,51 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* ---------- Landing page ---------- */
+.landing {
+  --ink: #0f2e24;
+  --seat-off: #2a4a3f;
+  --seat-on: #7fd1a8;
+  --ochre: #c98a1e;
+  --ochre-light: #f0b85a;
+  --paper: #f7f7f5;
+}
+.font-display {
+  font-family: var(--font-display), var(--font-geist-sans), system-ui, sans-serif;
+}
+.seat {
+  aspect-ratio: 1 / 1.1;
+  border-radius: 7px 7px 3px 3px;
+  background: var(--seat-off);
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.seat-on {
+  background: var(--seat-on);
+  transform: translateY(-2px);
+}
+.bar {
+  transition: width 260ms ease;
+}
+.seat-range {
+  accent-color: var(--seat-on);
+  height: 1.5rem;
+  cursor: pointer;
+}
+.seat-range:focus-visible,
+.landing a:focus-visible,
+.landing summary:focus-visible {
+  outline: 2px solid var(--seat-on);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.landing a:focus-visible,
+.landing summary:focus-visible {
+  outline-color: var(--brand);
+}
+@media (prefers-reduced-motion: reduce) {
+  .seat,
+  .bar {
+    transition: none;
+  }
+}
