@@ -875,6 +875,11 @@ export type Database = {
           contact_limit: number;
           stripe_customer_id: string | null;
           trial_ends_at: string;
+          discount_percent: number;
+          discount_until: string | null;
+          discount_note: string | null;
+          admin_note: string | null;
+          suspended_at: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -886,6 +891,11 @@ export type Database = {
           contact_limit?: number;
           stripe_customer_id?: string | null;
           trial_ends_at?: string;
+          discount_percent?: number;
+          discount_until?: string | null;
+          discount_note?: string | null;
+          admin_note?: string | null;
+          suspended_at?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -897,6 +907,11 @@ export type Database = {
           contact_limit?: number;
           stripe_customer_id?: string | null;
           trial_ends_at?: string;
+          discount_percent?: number;
+          discount_until?: string | null;
+          discount_note?: string | null;
+          admin_note?: string | null;
+          suspended_at?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -915,6 +930,58 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
+      platform_admin_status: { Args: never; Returns: { is_admin: boolean; has_aal2: boolean }[] };
+      admin_workspaces: {
+        Args: never;
+        Returns: {
+          id: string;
+          name: string;
+          org_number: string | null;
+          plan: Database["public"]["Enums"]["plan_type"];
+          trial_ends_at: string;
+          contact_limit: number;
+          discount_percent: number;
+          discount_until: string | null;
+          discount_note: string | null;
+          admin_note: string | null;
+          suspended_at: string | null;
+          created_at: string;
+          owner_email: string | null;
+          owner_name: string | null;
+          member_count: number;
+          contact_count: number;
+          last_activity: string | null;
+        }[];
+      };
+      admin_workspace_members: {
+        Args: { p_id: string };
+        Returns: {
+          user_id: string;
+          email: string;
+          full_name: string | null;
+          role: Database["public"]["Enums"]["member_role"];
+          joined_at: string;
+          last_sign_in_at: string | null;
+        }[];
+      };
+      admin_audit_log: {
+        Args: { p_id: string };
+        Returns: { created_at: string; admin_email: string | null; changes: Json }[];
+      };
+      admin_update_workspace: {
+        Args: {
+          p_id: string;
+          p_plan: Database["public"]["Enums"]["plan_type"];
+          p_trial_ends_at: string;
+          p_contact_limit: number;
+          p_discount_percent: number;
+          p_discount_until: string | null;
+          p_discount_note: string | null;
+          p_admin_note: string | null;
+          p_suspended: boolean;
+        };
+        Returns: undefined;
+      };
       my_invitations: {
         Args: never;
         Returns: {
@@ -927,7 +994,7 @@ export type Database = {
     };
     Enums: {
       member_role: "owner" | "admin" | "user";
-      plan_type: "trial" | "start" | "bedrift";
+      plan_type: "trial" | "start" | "bedrift" | "free";
     };
     CompositeTypes: { [_ in never]: never };
   };

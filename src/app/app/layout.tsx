@@ -11,7 +11,11 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const { supabase, user, workspace, workspaces } = await requireWorkspace();
   const { locale, t } = await getI18n();
   const daysLeft = trialDaysLeft(workspace.trial_ends_at);
-  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+  const [{ data: profile }, { data: adminRows }] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    supabase.rpc("platform_admin_status"),
+  ]);
+  const isPlatformAdmin = !!adminRows?.[0]?.is_admin;
   const displayName = profile?.full_name || user.email || "";
   const initials =
     displayName
@@ -75,6 +79,11 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             <Link href="/app/konto" className="hover:text-foreground hover:underline">
               {t.nav.account}
             </Link>
+            {isPlatformAdmin && (
+              <Link href="/admin" className="font-medium text-amber-800 hover:underline">
+                {t.admin.nav}
+              </Link>
+            )}
             <form action="/auth/logg-ut" method="post">
               <button type="submit" className="hover:text-foreground hover:underline">
                 {t.common.logout}

@@ -12,6 +12,7 @@ export type WorkspaceSummary = {
   org_number: string | null;
   plan: PlanType;
   trial_ends_at: string;
+  suspended_at: string | null;
   role: MemberRole;
 };
 
@@ -51,7 +52,7 @@ export async function listWorkspaces(
   const { supabase, user } = ctx ?? (await requireUser());
   const { data, error } = await supabase
     .from("members")
-    .select("role, workspaces(id, name, org_number, plan, trial_ends_at)")
+    .select("role, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -68,6 +69,8 @@ export async function requireWorkspace() {
   if (workspaces.length === 0) redirect("/kom-i-gang");
   const wanted = (await cookies()).get(WORKSPACE_COOKIE)?.value;
   const workspace = workspaces.find((w) => w.id === wanted) ?? workspaces[0];
+  // Access suspended by the platform admin: the CRM stays closed, data is kept.
+  if (workspace.suspended_at) redirect("/sperret");
   return { supabase, user, workspace, workspaces };
 }
 
