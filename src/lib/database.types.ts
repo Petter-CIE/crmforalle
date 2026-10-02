@@ -172,6 +172,11 @@ export type Database = {
           email: string | null;
           phone: string | null;
           title: string | null;
+          address: string | null;
+          postal_code: string | null;
+          city: string | null;
+          marketing_consent: boolean;
+          marketing_consent_at: string | null;
           notes: string | null;
           owner_id: string | null;
           created_by: string | null;
@@ -187,6 +192,11 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           title?: string | null;
+          address?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
+          marketing_consent?: boolean;
+          marketing_consent_at?: string | null;
           notes?: string | null;
           owner_id?: string | null;
           created_by?: string | null;
@@ -202,6 +212,11 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           title?: string | null;
+          address?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
+          marketing_consent?: boolean;
+          marketing_consent_at?: string | null;
           notes?: string | null;
           owner_id?: string | null;
           created_by?: string | null;

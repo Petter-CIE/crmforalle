@@ -8,7 +8,7 @@ import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { InfoRow, PageHeader } from "@/components/ui-extra";
 import { addContactToProject, deleteContact, removeContactFromProject } from "@/app/app/crm-actions";
-import { contactName, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, formatDateTime, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps<"/app/kontakter/[id
 export default async function ContactPage({ params }: PageProps<"/app/kontakter/[id]">) {
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
-  const { t } = await getI18n();
+  const { t, dateLocale } = await getI18n();
   const [{ data: k }, { data: deals }, { data: allProjects }] = await Promise.all([
     supabase
       .from("contacts")
@@ -79,6 +79,22 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
             <dl>
               <InfoRow label={t.contacts.phone}>{k.phone && <a href={`tel:${k.phone}`} className="hover:underline">{k.phone}</a>}</InfoRow>
               <InfoRow label={t.contacts.email}>{k.email && <a href={`mailto:${k.email}`} className="hover:underline">{k.email}</a>}</InfoRow>
+              {(k.address || k.postal_code || k.city) && (
+                <InfoRow label={t.contacts.address}>
+                  <span>
+                    {k.address}
+                    {k.address && (k.postal_code || k.city) && <br />}
+                    {[k.postal_code, k.city].filter(Boolean).join(" ")}
+                  </span>
+                </InfoRow>
+              )}
+              <InfoRow label={t.contacts.consent}>
+                {k.marketing_consent && k.marketing_consent_at ? (
+                  <span className="text-brand">✓ {t.contacts.consentGiven(formatDateTime(k.marketing_consent_at, dateLocale))}</span>
+                ) : (
+                  <span className="text-muted">{t.contacts.noConsent}</span>
+                )}
+              </InfoRow>
               <InfoRow label={t.crm.notes}>{k.notes && <span className="whitespace-pre-wrap">{k.notes}</span>}</InfoRow>
             </dl>
           </Card>

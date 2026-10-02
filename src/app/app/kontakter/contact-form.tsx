@@ -12,6 +12,10 @@ export type ContactValues = {
   phone: string | null;
   title: string | null;
   company_id: string | null;
+  address?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  marketing_consent?: boolean;
   notes: string | null;
 };
 
@@ -62,6 +66,30 @@ export function ContactForm({
           </Select>
         </Field>
       </div>
+      <fieldset className="space-y-3">
+        <legend className="mb-1 text-sm font-medium">
+          {c.address} <span className="font-normal text-muted">({c.addressHint})</span>
+        </legend>
+        <Input id="k_address" name="address" aria-label={c.street} placeholder={c.street} defaultValue={initial.address ?? ""} />
+        <div className="grid grid-cols-[8rem_1fr] gap-3">
+          <Input
+            id="k_postal"
+            name="postal_code"
+            inputMode="numeric"
+            aria-label={c.postalCode}
+            placeholder={c.postalCode}
+            defaultValue={initial.postal_code ?? ""}
+          />
+          <Input id="k_city" name="city" aria-label={c.city} placeholder={c.city} defaultValue={initial.city ?? ""} />
+        </div>
+      </fieldset>
+      <label className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm">
+        <input type="checkbox" name="marketing_consent" value="1" defaultChecked={initial.marketing_consent ?? false} className="mt-0.5" />
+        <span>
+          <span className="font-medium">{c.consent}</span>
+          <span className="block text-xs text-muted">{c.consentHelp}</span>
+        </span>
+      </label>
       <Field label={t.crm.notes} htmlFor="k_notes">
         <Textarea id="k_notes" name="notes" rows={3} defaultValue={initial.notes ?? ""} />
       </Field>

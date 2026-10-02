@@ -93,6 +93,10 @@ function contactFields(formData: FormData) {
     phone: opt(formData.get("phone"), 50),
     title: opt(formData.get("title"), 100),
     company_id: id(formData.get("company_id")),
+    address: opt(formData.get("address"), 300),
+    postal_code: opt(formData.get("postal_code"), 20),
+    city: opt(formData.get("city"), 100),
+    marketing_consent: formData.get("marketing_consent") === "1",
     notes: opt(formData.get("notes"), 5000),
   };
 }
