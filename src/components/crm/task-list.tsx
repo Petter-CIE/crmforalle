@@ -1,0 +1,156 @@
+import Link from "next/link";
+import { ActionForm } from "@/components/action-form";
+import { Input, Select } from "@/components/ui";
+import { EmptyState } from "@/components/ui-extra";
+import { createTask, deleteTask, toggleTask } from "@/app/app/crm-actions";
+import { contactName, formatDate, listMembers } from "@/lib/crm";
+import { getI18n } from "@/lib/i18n/server";
+import { nowMs } from "@/lib/time";
+import { requireWorkspace } from "@/lib/session";
+
+export type TaskRow = {
+  id: string;
+  title: string;
+  due_at: string | null;
+  done_at: string | null;
+  assignee_id: string | null;
+  companies?: { id: string; name: string } | null;
+  contacts?: { id: string; first_name: string; last_name: string | null } | null;
+  deals?: { id: string; title: string } | null;
+};
+
+export const TASK_SELECT =
+  "id, title, due_at, done_at, assignee_id, companies(id, name), contacts(id, first_name, last_name), deals(id, title)";
+
+/** Renders tasks with a done checkbox; shows what each task relates to when `showLinks`. */
+export async function TaskRows({ tasks, path, showLinks = false }: { tasks: TaskRow[]; path: string; showLinks?: boolean }) {
+  const { t, dateLocale } = await getI18n();
+  const now = nowMs();
+  if (tasks.length === 0) return <EmptyState>{t.tasks.empty}</EmptyState>;
+  return (
+    <ul className="divide-y divide-border">
+      {tasks.map((task) => {
+        const overdue = !task.done_at && task.due_at && new Date(task.due_at).getTime() < now;
+        return (
+          <li key={task.id} className="flex items-start gap-3 py-2.5">
+            <form action={toggleTask}>
+              <input type="hidden" name="id" value={task.id} />
+              <input type="hidden" name="done" value={task.done_at ? "false" : "true"} />
+              <input type="hidden" name="tilbake" value={path} />
+              <button
+                type="submit"
+                aria-label={task.done_at ? t.tasks.reopen : t.tasks.markDone}
+                className={`mt-0.5 grid h-5 w-5 place-items-center rounded-full border text-[10px] ${
+                  task.done_at ? "border-brand bg-brand text-white" : "border-border hover:border-brand"
+                }`}
+              >
+                {task.done_at ? "✓" : ""}
+              </button>
+            </form>
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm ${task.done_at ? "text-muted line-through" : ""}`}>{task.title}</p>
+              <div className="flex flex-wrap gap-x-3 text-xs text-muted">
+                {task.due_at && <span className={overdue ? "font-medium text-danger" : ""}>{formatDate(task.due_at, dateLocale)}</span>}
+                {showLinks && task.deals && (
+                  <Link href={`/app/salg/${task.deals.id}`} className="hover:underline">
+                    {task.deals.title}
+                  </Link>
+                )}
+                {showLinks && task.contacts && (
+                  <Link href={`/app/kontakter/${task.contacts.id}`} className="hover:underline">
+                    {contactName(task.contacts)}
+                  </Link>
+                )}
+                {showLinks && task.companies && (
+                  <Link href={`/app/bedrifter/${task.companies.id}`} className="hover:underline">
+                    {task.companies.name}
+                  </Link>
+                )}
+              </div>
+            </div>
+            <form action={deleteTask}>
+              <input type="hidden" name="id" value={task.id} />
+              <input type="hidden" name="tilbake" value={path} />
+              <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={t.crm.delete}>
+                ✕
+              </button>
+            </form>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Tasks for one company/contact/deal plus a quick-add form. */
+export async function TaskPanel({
+  links,
+  path,
+}: {
+  links: { company_id?: string | null; contact_id?: string | null; deal_id?: string | null };
+  path: string;
+}) {
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
+  const { t } = await getI18n();
+  let q = supabase
+    .from("tasks")
+    .select(TASK_SELECT)
+    .eq("workspace_id", workspace.id)
+    .order("done_at", { ascending: true, nullsFirst: true })
+    .order("due_at", { ascending: true, nullsFirst: false })
+    .limit(50);
+  if (links.deal_id) q = q.eq("deal_id", links.deal_id);
+  else if (links.contact_id) q = q.eq("contact_id", links.contact_id);
+  else if (links.company_id) q = q.eq("company_id", links.company_id);
+  const [{ data: tasks }, members] = await Promise.all([q, listMembers(ctx)]);
+
+  return (
+    <div className="space-y-4">
+      <TaskRows tasks={(tasks ?? []) as TaskRow[]} path={path} />
+      <TaskForm links={links} path={path} members={members} me={user.id} t={t.tasks} save={t.crm.saving} />
+    </div>
+  );
+}
+
+export function TaskForm({
+  links = {},
+  path,
+  members,
+  me,
+  t,
+  save,
+}: {
+  links?: { company_id?: string | null; contact_id?: string | null; deal_id?: string | null };
+  path: string;
+  members: { id: string; name: string }[];
+  me: string;
+  t: { placeholder: string; due: string; assignee: string; add: string; new: string };
+  save: string;
+}) {
+  return (
+    <ActionForm
+      action={createTask}
+      submitLabel={t.add}
+      pendingLabel={save}
+      resetOnSuccess
+      className="flex flex-wrap items-end gap-2"
+    >
+      <input type="hidden" name="tilbake" value={path} />
+      {links.company_id && <input type="hidden" name="company_id" value={links.company_id} />}
+      {links.contact_id && <input type="hidden" name="contact_id" value={links.contact_id} />}
+      {links.deal_id && <input type="hidden" name="deal_id" value={links.deal_id} />}
+      <Input name="title" required placeholder={t.placeholder} aria-label={t.new} className="min-w-[12rem] flex-1" />
+      <Input name="due" type="date" aria-label={t.due} className="w-auto" />
+      {members.length > 1 && (
+        <Select name="assignee_id" defaultValue={me} aria-label={t.assignee}>
+          {members.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </Select>
+      )}
+    </ActionForm>
+  );
+}

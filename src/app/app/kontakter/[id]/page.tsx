@@ -1,0 +1,146 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ConfirmButton } from "@/components/confirm-button";
+import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
+import { TaskPanel } from "@/components/crm/task-list";
+import { Timeline } from "@/components/crm/timeline";
+import { Button, ButtonLink, Card, Select } from "@/components/ui";
+import { InfoRow, PageHeader } from "@/components/ui-extra";
+import { addContactToProject, deleteContact, removeContactFromProject } from "@/app/app/crm-actions";
+import { contactName, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { getI18n } from "@/lib/i18n/server";
+import { requireWorkspace } from "@/lib/session";
+
+export async function generateMetadata({ params }: PageProps<"/app/kontakter/[id]">): Promise<Metadata> {
+  const { id } = await params;
+  const { supabase, workspace } = await requireWorkspace();
+  const { data } = await supabase.from("contacts").select("first_name, last_name").eq("id", id).eq("workspace_id", workspace.id).maybeSingle();
+  return { title: data ? contactName(data) : "" };
+}
+
+export default async function ContactPage({ params }: PageProps<"/app/kontakter/[id]">) {
+  const { id } = await params;
+  const { supabase, workspace } = await requireWorkspace();
+  const { t } = await getI18n();
+  const [{ data: k }, { data: deals }, { data: allProjects }] = await Promise.all([
+    supabase
+      .from("contacts")
+      .select("*, companies(id, name), project_contacts(project_id, projects(id, name, color))")
+      .eq("id", id)
+      .eq("workspace_id", workspace.id)
+      .maybeSingle(),
+    supabase.from("deals").select(DEAL_ROW_SELECT).eq("contact_id", id).order("created_at", { ascending: false }),
+    supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+  ]);
+  if (!k) notFound();
+  const path = `/app/kontakter/${id}`;
+  const inProjects = (k.project_contacts ?? []).map((pc) => pc.projects).filter((p) => p !== null);
+  const available = (allProjects ?? []).filter((p) => !inProjects.some((ip) => ip.id === p.id));
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={contactName(k)}
+        subtitle={
+          <>
+            {k.title}
+            {k.title && k.companies && " · "}
+            {k.companies && (
+              <Link href={`/app/bedrifter/${k.companies.id}`} className="hover:underline">
+                {k.companies.name}
+              </Link>
+            )}
+          </>
+        }
+        backHref="/app/kontakter"
+        backLabel={t.contacts.title}
+        actions={
+          <>
+            <ButtonLink href={`/app/salg/ny?kontakt=${id}${k.company_id ? `&bedrift=${k.company_id}` : ""}`}>
+              + {t.deals.new}
+            </ButtonLink>
+            <ButtonLink href={`${path}/rediger`} variant="secondary">
+              {t.crm.edit}
+            </ButtonLink>
+            <form action={deleteContact}>
+              <input type="hidden" name="id" value={id} />
+              <ConfirmButton message={t.crm.confirmDelete} variant="danger">
+                {t.crm.delete}
+              </ConfirmButton>
+            </form>
+          </>
+        }
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+        <div className="space-y-6">
+          <Card>
+            <dl>
+              <InfoRow label={t.contacts.phone}>{k.phone && <a href={`tel:${k.phone}`} className="hover:underline">{k.phone}</a>}</InfoRow>
+              <InfoRow label={t.contacts.email}>{k.email && <a href={`mailto:${k.email}`} className="hover:underline">{k.email}</a>}</InfoRow>
+              <InfoRow label={t.crm.notes}>{k.notes && <span className="whitespace-pre-wrap">{k.notes}</span>}</InfoRow>
+            </dl>
+          </Card>
+          <Card>
+            <h2 className="mb-3 font-semibold">{t.crm.timeline}</h2>
+            <Timeline filter={{ contact_id: id }} links={{ contact_id: id, company_id: k.company_id }} path={path} />
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <h2 className="mb-3 font-semibold">{t.contacts.projects}</h2>
+            {inProjects.length === 0 ? (
+              <p className="mb-3 text-sm text-muted">{t.contacts.noProjects}</p>
+            ) : (
+              <ul className="mb-3 space-y-1.5">
+                {inProjects.map((p) => (
+                  <li key={p.id} className="flex items-center gap-2 text-sm">
+                    <span className={`h-2.5 w-2.5 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+                    <Link href={`/app/prosjekter/${p.id}`} className="flex-1 hover:text-brand">
+                      {p.name}
+                    </Link>
+                    <form action={removeContactFromProject}>
+                      <input type="hidden" name="project_id" value={p.id} />
+                      <input type="hidden" name="contact_id" value={id} />
+                      <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={t.projects.remove}>
+                        ✕
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {available.length > 0 && (
+              <form action={addContactToProject} className="flex gap-2">
+                <input type="hidden" name="contact_id" value={id} />
+                <Select name="project_id" required aria-label={t.contacts.addToProject} className="min-w-0 flex-1">
+                  <option value="">{t.contacts.addToProject}</option>
+                  {available.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+                <Button type="submit" variant="secondary" className="!px-3">
+                  +
+                </Button>
+              </form>
+            )}
+          </Card>
+
+          <Card>
+            <h2 className="mb-3 font-semibold">{t.deals.title}</h2>
+            <DealList deals={(deals ?? []) as DealRow[]} />
+          </Card>
+
+          <Card>
+            <h2 className="mb-3 font-semibold">{t.tasks.title}</h2>
+            <TaskPanel links={{ contact_id: id, company_id: k.company_id }} path={path} />
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
