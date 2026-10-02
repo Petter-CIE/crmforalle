@@ -8,7 +8,7 @@ const nb: LegalDoc = {
       h: "1. Om avtalen",
       body: [
         "AllSeats CRM («Tjenesten») er et nettbasert kundesystem som leveres av CIE AS («Leverandøren»). Disse vilkårene gjelder for all bruk av Tjenesten.",
-        "Den som oppretter en bedrift i Tjenesten og godtar vilkårene, bekrefter å ha fullmakt til å inngå avtalen på vegne av Kunden. Tjenesten er laget for næringsdrivende, og forbrukerkjøpsloven gjelder ikke.",
+        "Den som oppretter en bedrift i Tjenesten og godtar vilkårene, bekrefter å ha fullmakt til å inngå avtalen på vegne av Kunden. Tjenesten selges bare til næringsdrivende. Forbrukerlovgivningen, som digitalytelsesloven og angrerettloven, gjelder derfor ikke.",
         "Databehandleravtalen og personvernerklæringen er en del av avtalen. Ved motstrid gjelder databehandleravtalen for behandling av personopplysninger.",
       ],
     },
@@ -42,7 +42,7 @@ const nb: LegalDoc = {
         "Abonnementet betales forskuddsvis månedlig eller årlig. Ved årlig betaling betaler Kunden for 10 måneder og får 12.",
         "Tillegg, som regnskapskobling, faktureres sammen med abonnementet.",
         "Ved forsinket betaling kan Leverandøren kreve forsinkelsesrente etter forsinkelsesrenteloven og, etter skriftlig varsel med minst 14 dagers frist, begrense Kundens tilgang til lesing og eksport til betaling er mottatt.",
-        "Leverandøren kan endre prisene med minst 30 dagers varsel. For årsabonnement gjelder ny pris fra neste fornyelse.",
+        "Leverandøren kan endre prisene med minst 30 dagers varsel på e-post. For årsabonnement gjelder ny pris fra neste fornyelse. Kunden kan si opp abonnementet før endringen trer i kraft.",
       ],
     },
     {
@@ -59,7 +59,7 @@ const nb: LegalDoc = {
         "Kunden skal ikke:",
         {
           list: [
-            "bruke Tjenesten til å sende søppelpost eller markedsføring uten nødvendig samtykke,",
+            "bruke Tjenesten til å sende søppelpost eller elektronisk markedsføring i strid med markedsføringsloven § 15,",
             "forsøke å få tilgang til andre kunders data eller omgå sikkerhetstiltak,",
             "belaste Tjenesten unormalt, for eksempel med automatiserte forespørsler utenom funksjoner Leverandøren tilbyr,",
             "videreselge eller gi tredjeparter tilgang til Tjenesten uten skriftlig avtale.",
@@ -88,15 +88,16 @@ const nb: LegalDoc = {
       h: "10. Oppsigelse og avslutning",
       body: [
         "Månedsabonnement kan sies opp når som helst og løper ut inneværende betalte periode. Årsabonnement løper ut perioden som er betalt, og fornyes ikke etter oppsigelse.",
-        "Betalt abonnement refunderes ikke ved oppsigelse.",
+        "Betalt abonnement refunderes ikke ved Kundens oppsigelse. Avsluttes avtalen på grunn av Leverandørens vesentlige mislighold, eller fordi Leverandøren legger ned Tjenesten, refunderes forskuddsbetalt beløp for gjenværende periode.",
         "Etter avsluttet abonnement er kontoen tilgjengelig for lesing og eksport i 30 dager. Deretter slettes Kundedata, innen 60 dager etter avslutning. Opplysninger Leverandøren må oppbevare etter bokføringsloven, som fakturaer, oppbevares så lenge loven krever.",
         "Hver av partene kan heve avtalen ved vesentlig mislighold som ikke er rettet innen 14 dager etter skriftlig varsel.",
+        "Leverandøren kan avslutte Tjenesten med minst tre måneders skriftlig varsel. Kunden får da eksportere sine data før avslutning.",
       ],
     },
     {
       h: "11. Endringer i vilkårene",
       body: [
-        "Leverandøren kan endre vilkårene. Vesentlige endringer varsles på e-post til bedriftens eier minst 30 dager før de trer i kraft. Fortsetter Kunden å bruke Tjenesten etter dette, gjelder de nye vilkårene.",
+        "Leverandøren kan endre vilkårene. Vesentlige endringer varsles på e-post til bedriftens eier minst 30 dager før de trer i kraft. Kunden kan si opp avtalen med virkning fra endringstidspunktet. Fortsetter Kunden å bruke Tjenesten etter dette, gjelder de nye vilkårene.",
       ],
     },
     {
@@ -107,7 +108,7 @@ const nb: LegalDoc = {
     },
     {
       h: "13. Kontakt",
-      body: ["CIE AS, org.nr. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn. E-post: post@allseats.no."],
+      body: ["CIE AS, org.nr. 818 823 452, registrert i Foretaksregisteret. Bjørøyvegen 332, 5177 Bjørøyhamn. E-post: post@allseats.no."],
     },
   ],
 };
@@ -120,7 +121,7 @@ const en: LegalDoc = {
       h: "1. About the agreement",
       body: [
         "AllSeats CRM (the “Service”) is a web-based customer system provided by CIE AS (the “Supplier”). These terms apply to all use of the Service.",
-        "The person who creates a company in the Service and accepts these terms confirms that they are authorised to enter into the agreement on behalf of the Customer. The Service is made for businesses, and consumer protection law does not apply.",
+        "The person who creates a company in the Service and accepts these terms confirms that they are authorised to enter into the agreement on behalf of the Customer. The Service is sold to businesses only. Consumer protection legislation, such as the Norwegian Digital Services Act (digitalytelsesloven) and the Cancellation Act (angrerettloven), therefore does not apply.",
         "The data processing agreement and the privacy policy form part of the agreement. In case of conflict, the data processing agreement governs the processing of personal data.",
       ],
     },
@@ -154,7 +155,7 @@ const en: LegalDoc = {
         "The subscription is paid in advance monthly or yearly. With yearly billing the Customer pays for 10 months and gets 12.",
         "Add-ons, such as the accounting integration, are invoiced together with the subscription.",
         "If payment is late, the Supplier may charge late-payment interest under the Norwegian Late Payment Interest Act and, after written notice with at least 14 days to pay, limit the Customer’s access to reading and export until payment is received.",
-        "The Supplier may change prices with at least 30 days’ notice. For yearly subscriptions the new price applies from the next renewal.",
+        "The Supplier may change prices with at least 30 days’ notice by e-mail. For yearly subscriptions the new price applies from the next renewal. The Customer may cancel the subscription before the change takes effect.",
       ],
     },
     {
@@ -171,7 +172,7 @@ const en: LegalDoc = {
         "The Customer must not:",
         {
           list: [
-            "use the Service to send spam or marketing without the necessary consent,",
+            "use the Service to send spam or electronic marketing in breach of section 15 of the Norwegian Marketing Control Act,",
             "try to access other customers’ data or circumvent security measures,",
             "put unusual load on the Service, for example with automated requests outside the features the Supplier offers,",
             "resell the Service or give third parties access to it without a written agreement.",
@@ -200,15 +201,16 @@ const en: LegalDoc = {
       h: "10. Termination",
       body: [
         "A monthly subscription may be cancelled at any time and runs until the end of the current paid period. A yearly subscription runs until the end of the paid period and is not renewed after cancellation.",
-        "Paid subscription fees are not refunded on cancellation.",
+        "Paid subscription fees are not refunded when the Customer cancels. If the agreement ends because of the Supplier’s material breach, or because the Supplier discontinues the Service, prepaid fees for the remaining period are refunded.",
         "After the subscription ends, the account is available for reading and export for 30 days. Customer Data is then deleted, within 60 days after the end. Information the Supplier must keep under the Norwegian Bookkeeping Act, such as invoices, is kept for as long as the law requires.",
         "Either party may terminate the agreement in case of a material breach that is not remedied within 14 days of written notice.",
+        "The Supplier may discontinue the Service with at least three months’ written notice. The Customer may export its data before the Service ends.",
       ],
     },
     {
       h: "11. Changes to the terms",
       body: [
-        "The Supplier may change these terms. Material changes are announced by e-mail to the company’s owner at least 30 days before they take effect. If the Customer continues to use the Service after that, the new terms apply.",
+        "The Supplier may change these terms. Material changes are announced by e-mail to the company’s owner at least 30 days before they take effect. The Customer may terminate the agreement with effect from the date of the change. If the Customer continues to use the Service after that, the new terms apply.",
       ],
     },
     {
@@ -219,7 +221,7 @@ const en: LegalDoc = {
     },
     {
       h: "13. Contact",
-      body: ["CIE AS, org. no. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn, Norway. E-mail: post@allseats.no."],
+      body: ["CIE AS, org. no. 818 823 452, registered in the Norwegian Register of Business Enterprises. Bjørøyvegen 332, 5177 Bjørøyhamn, Norway. E-mail: post@allseats.no."],
     },
   ],
 };

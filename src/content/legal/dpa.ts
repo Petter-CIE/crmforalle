@@ -8,7 +8,7 @@ const nb: LegalDoc = {
       h: "1. Formål og omfang",
       body: [
         "Avtalen regulerer hvordan CIE AS («Databehandleren») behandler personopplysninger på vegne av Kunden («Behandlingsansvarlig») når Kunden bruker AllSeats CRM.",
-        "Databehandleren skal bare behandle personopplysningene for å levere tjenesten og etter Kundens dokumenterte instrukser. Brukervilkårene, denne avtalen og Kundens bruk av funksjonene i tjenesten utgjør instruksene.",
+        "Databehandleren skal bare behandle personopplysningene for å levere tjenesten og etter Kundens dokumenterte instrukser, også når det gjelder overføring til land utenfor EØS. Brukervilkårene, denne avtalen og Kundens bruk av funksjonene i tjenesten utgjør instruksene. Avtalen oppfyller kravene i personopplysningsloven og personvernforordningen artikkel 28 nr. 3.",
       ],
     },
     {
@@ -38,7 +38,8 @@ const nb: LegalDoc = {
           list: [
             "Behandle opplysningene bare etter Kundens instrukser, og varsle Kunden dersom en instruks etter Databehandlerens syn er i strid med personvernregelverket.",
             "Sørge for at alle som har tilgang til opplysningene, har taushetsplikt.",
-            "Bistå Kunden, så langt det er rimelig, med å oppfylle de registrertes rettigheter, med vurderinger av personvernkonsekvenser og med forhåndsdrøftinger med Datatilsynet.",
+            "Bistå Kunden, så langt det er rimelig, med å oppfylle de registrertes rettigheter og med pliktene i artikkel 32–36: sikkerhet, melding om brudd, vurderinger av personvernkonsekvenser og forhåndsdrøftinger med Datatilsynet.",
+            "Føre protokoll over behandlingsaktivitetene etter artikkel 30 nr. 2.",
             "Ikke bruke opplysningene til egne formål, som markedsføring, salg eller trening av kunstig intelligens.",
           ],
         },
@@ -67,7 +68,7 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, innlogging og fillagring. Data lagres i AWS-regionen eu-central-1 (Frankfurt). Overføring sikres med EUs standard personvernbestemmelser (SCC).",
             "Vercel Inc. (USA) – drift av applikasjonen, serverfunksjoner i Frankfurt. Sertifisert under EU–US Data Privacy Framework, i tillegg til SCC.",
-            "One.com Group AB (EU) – utsending av e-post.",
+            "One.com (EU) – utsending av e-post.",
           ],
         },
         "Databehandleren varsler Kunden på e-post minst 30 dager før en ny underleverandør tas i bruk. Kunden kan protestere innen fristen og har da rett til å si opp avtalen uten kostnad.",
@@ -90,7 +91,7 @@ const nb: LegalDoc = {
       h: "9. Avslutning, tilbakelevering og sletting",
       body: [
         "Kunden kan eksportere sine data gjennom hele avtaleperioden og i 30 dager etter at abonnementet er avsluttet. Deretter slettes opplysningene fra tjenesten innen 60 dager etter avslutning. Sikkerhetskopier slettes etter hvert som de roterer ut, senest innen 90 dager.",
-        "Databehandleren bekrefter slettingen skriftlig dersom Kunden ber om det.",
+        "Databehandleren bekrefter slettingen skriftlig dersom Kunden ber om det. Plikten til å slette gjelder ikke opplysninger Databehandleren er pålagt å lagre etter norsk lov eller EU-retten.",
       ],
     },
     {
@@ -117,7 +118,7 @@ const en: LegalDoc = {
       h: "1. Purpose and scope",
       body: [
         "This agreement governs how CIE AS (the “Processor”) processes personal data on behalf of the Customer (the “Controller”) when the Customer uses AllSeats CRM.",
-        "The Processor shall process the personal data only to provide the service and on the Customer’s documented instructions. The terms of service, this agreement and the Customer’s use of the features of the service constitute the instructions.",
+        "The Processor shall process the personal data only to provide the service and on the Customer’s documented instructions, including with regard to transfers outside the EEA. The terms of service, this agreement and the Customer’s use of the features of the service constitute the instructions. This agreement meets the requirements of the Norwegian Personal Data Act and Article 28(3) of the GDPR.",
       ],
     },
     {
@@ -147,7 +148,8 @@ const en: LegalDoc = {
           list: [
             "Process the data only on the Customer’s instructions, and notify the Customer if an instruction in the Processor’s opinion infringes data protection law.",
             "Ensure that everyone with access to the data is bound by confidentiality.",
-            "Assist the Customer, as far as reasonable, in fulfilling data subjects’ rights, with data protection impact assessments and prior consultations with the supervisory authority.",
+            "Assist the Customer, as far as reasonable, in fulfilling data subjects’ rights and with the obligations in Articles 32–36: security, breach notification, data protection impact assessments and prior consultations with the supervisory authority.",
+            "Keep a record of processing activities under Article 30(2).",
             "Not use the data for its own purposes, such as marketing, sale or training artificial intelligence.",
           ],
         },
@@ -176,7 +178,7 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, login and file storage. Data is stored in the AWS region eu-central-1 (Frankfurt). Transfers are covered by the EU Standard Contractual Clauses (SCC).",
             "Vercel Inc. (USA) – application hosting, server functions in Frankfurt. Certified under the EU–US Data Privacy Framework, in addition to SCC.",
-            "One.com Group AB (EU) – sending e-mail.",
+            "One.com (EU) – sending e-mail.",
           ],
         },
         "The Processor notifies the Customer by e-mail at least 30 days before a new sub-processor is used. The Customer may object within that period and then has the right to terminate the agreement at no cost.",
@@ -199,7 +201,7 @@ const en: LegalDoc = {
       h: "9. Termination, return and deletion",
       body: [
         "The Customer can export its data throughout the agreement and for 30 days after the subscription has ended. The data is then deleted from the service within 60 days after the end. Backups are deleted as they rotate out, at the latest within 90 days.",
-        "The Processor confirms the deletion in writing if the Customer asks.",
+        "The Processor confirms the deletion in writing if the Customer asks. The obligation to delete does not apply to data the Processor is required to keep under Norwegian or EU law.",
       ],
     },
     {

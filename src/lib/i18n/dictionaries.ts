@@ -122,7 +122,7 @@ const nb = {
     finalTitle: "Prøv med hele teamet",
     finalText: "Opprett bedriften på ett minutt og inviter kollegene med en gang.",
     contact: "Spørsmål? Skriv til post@allseats.no",
-    operator: "AllSeats CRM leveres av CIE AS, org.nr. 818 823 452",
+    operator: "AllSeats CRM leveres av CIE AS, org.nr. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn",
   },
   login: {
     title: "Logg inn",
@@ -773,7 +773,7 @@ const en: Dictionary = {
     finalTitle: "Try it with the whole team",
     finalText: "Set up your company in a minute and invite your colleagues right away.",
     contact: "Questions? Write to post@allseats.no",
-    operator: "AllSeats CRM is provided by CIE AS, org. no. 818 823 452",
+    operator: "AllSeats CRM is provided by CIE AS, org. no. 818 823 452, Bjørøyvegen 332, 5177 Bjørøyhamn, Norway",
   },
   login: {
     title: "Log in",

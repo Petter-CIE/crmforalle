@@ -38,12 +38,13 @@ const nb: LegalDoc = {
           ],
         },
         "Vi bruker ikke opplysningene til reklame, selger dem ikke og bruker dem ikke til å trene kunstig intelligens.",
+        "Det er ikke lovpålagt å gi oss opplysningene, men uten navn og e-postadresse kan vi ikke opprette en konto. Vi bruker ikke automatiserte avgjørelser eller profilering.",
       ],
     },
     {
       h: "4. Informasjonskapsler (cookies)",
       body: [
-        "Vi bruker bare informasjonskapsler som er nødvendige for at tjenesten skal virke, og derfor ikke krever samtykke:",
+        "Vi bruker bare informasjonskapsler som er strengt nødvendige for å levere tjenesten du har bedt om. De krever derfor ikke samtykke etter ekomloven § 3-15:",
         {
           list: [
             "innloggingsøkt (sb-…-auth-token) – holder deg innlogget,",
@@ -62,7 +63,7 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. – database, innlogging og fillagring. Data lagres i Frankfurt (EU).",
             "Vercel Inc. – drift av nettsiden og applikasjonen. Serverfunksjonene kjører i Frankfurt (EU).",
-            "One.com Group AB – utsending av e-post fra noreply@allseats.no.",
+            "One.com (EU) – utsending av e-post fra noreply@allseats.no.",
           ],
         },
         "Supabase og Vercel er amerikanske selskaper. Overføringer utenfor EØS er sikret med EUs standard personvernbestemmelser (SCC), og Vercel er i tillegg sertifisert under EU–US Data Privacy Framework.",
@@ -76,7 +77,7 @@ const nb: LegalDoc = {
           list: [
             "Kontoopplysninger lagres så lenge du har tilgang til en bedrift i AllSeats CRM. Når bedriften avslutter abonnementet, slettes dataene etter reglene i brukervilkårene.",
             "Serverlogger lagres i kort tid, normalt under 90 dager.",
-            "Fakturagrunnlag lagres i fem år etter bokføringsloven.",
+            "Regnskapsmateriale, som fakturaer, lagres i minst fem år etter utløpet av regnskapsåret, slik bokføringsloven krever.",
           ],
         },
       ],
@@ -90,7 +91,7 @@ const nb: LegalDoc = {
     {
       h: "8. Dine rettigheter",
       body: [
-        "Du har rett til innsyn i, retting og sletting av opplysningene om deg, og til å protestere mot eller be om begrensning av behandlingen. Du kan også be om å få opplysningene utlevert i et maskinlesbart format.",
+        "Du har rett til innsyn i, retting og sletting av opplysningene om deg, og til å protestere mot eller be om begrensning av behandlingen. Du kan også be om å få opplysningene utlevert i et maskinlesbart format (dataportabilitet). Rettighetene følger av personopplysningsloven og personvernforordningen (GDPR).",
         "Gjelder henvendelsen opplysninger en kunde har lagt inn om deg i CRM-et, sender vi den videre til kunden, som er ansvarlig for disse opplysningene.",
         "Skriv til post@allseats.no. Vi svarer innen 30 dager.",
         "Mener du at vi behandler opplysninger i strid med regelverket, kan du klage til Datatilsynet (datatilsynet.no).",
@@ -141,12 +142,13 @@ const en: LegalDoc = {
           ],
         },
         "We do not use the data for advertising, do not sell it and do not use it to train artificial intelligence.",
+        "You are not required by law to give us the data, but without a name and e-mail address we cannot create an account. We do not use automated decision-making or profiling.",
       ],
     },
     {
       h: "4. Cookies",
       body: [
-        "We only use cookies that are necessary for the service to work, which therefore do not require consent:",
+        "We only use cookies that are strictly necessary to provide the service you have asked for. They therefore do not require consent under section 3-15 of the Norwegian Electronic Communications Act:",
         {
           list: [
             "login session (sb-…-auth-token) – keeps you logged in,",
@@ -165,7 +167,7 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. – database, login and file storage. Data is stored in Frankfurt (EU).",
             "Vercel Inc. – hosting of the website and application. Server functions run in Frankfurt (EU).",
-            "One.com Group AB – sending e-mail from noreply@allseats.no.",
+            "One.com (EU) – sending e-mail from noreply@allseats.no.",
           ],
         },
         "Supabase and Vercel are US companies. Transfers outside the EEA are covered by the EU Standard Contractual Clauses (SCC), and Vercel is also certified under the EU–US Data Privacy Framework.",
@@ -179,7 +181,7 @@ const en: LegalDoc = {
           list: [
             "Account data is kept for as long as you have access to a company in AllSeats CRM. When a company ends its subscription, its data is deleted as described in the terms of service.",
             "Server logs are kept for a short time, normally less than 90 days.",
-            "Billing records are kept for five years under the Bookkeeping Act.",
+            "Accounting records, such as invoices, are kept for at least five years after the end of the financial year, as the Bookkeeping Act requires.",
           ],
         },
       ],
@@ -193,7 +195,7 @@ const en: LegalDoc = {
     {
       h: "8. Your rights",
       body: [
-        "You have the right to access, correct and delete data about you, and to object to or ask us to restrict the processing. You can also ask to receive your data in a machine-readable format.",
+        "You have the right to access, correct and delete data about you, and to object to or ask us to restrict the processing. You can also ask to receive your data in a machine-readable format (data portability). These rights follow from the Norwegian Personal Data Act and the GDPR.",
         "If your request concerns data a customer has entered about you in the CRM, we forward it to that customer, who is responsible for that data.",
         "Write to post@allseats.no. We reply within 30 days.",
         "If you believe we process data in breach of the rules, you can complain to the Norwegian Data Protection Authority (Datatilsynet, datatilsynet.no).",
