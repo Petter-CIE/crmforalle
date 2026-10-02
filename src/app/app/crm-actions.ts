@@ -366,7 +366,7 @@ export async function createTask(_p: FormResult, formData: FormData): Promise<Fo
       project_id: id(formData.get("project_id")),
       created_by: user.id,
     })
-    .select("assignee_id, due_at, project_id")
+    .select("id, assignee_id, due_at, project_id")
     .single();
   if (error) return { error: await errorText(error) };
   after(() =>
@@ -377,7 +377,7 @@ export async function createTask(_p: FormResult, formData: FormData): Promise<Fo
       workspaceName: workspace.name,
       title,
       dueAt: data.due_at,
-      path: "/app/oppgaver",
+      path: `/app/oppgaver/${data.id}`,
     }),
   );
   revalidatePath(back(formData, "/app/oppgaver"));
@@ -414,7 +414,7 @@ export async function reassignTask(formData: FormData) {
           workspaceName: workspace.name,
           title: data.title,
           dueAt: data.due_at,
-          path: "/app/oppgaver",
+          path: `/app/oppgaver/${taskId}`,
         }),
       );
     }

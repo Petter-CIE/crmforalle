@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import type { FormResult } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
-import { notifyAssignment } from "@/lib/notify";
+import { notifyAssignment, notifyComment } from "@/lib/notify";
 import { requireWorkspace } from "@/lib/session";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -102,6 +102,7 @@ export async function addTaskComment(_p: FormResult, formData: FormData): Promis
     .from("task_comments")
     .insert({ workspace_id: workspace.id, task_id: taskId, author_id: user.id, body });
   if (error) return { error: t.crm.error };
+  after(() => notifyComment(supabase, { taskId, authorId: user.id, body }));
   refresh(taskId);
   return { ok: true };
 }
