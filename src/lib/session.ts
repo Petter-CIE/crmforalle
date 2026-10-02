@@ -28,6 +28,22 @@ type GuardOptions = {
  * - two-step verification when the user has enabled it (AAL2),
  * - that the user has chosen a password (users created by an invitation link).
  */
+type AalData = {
+  currentLevel: string | null;
+  nextLevel: string | null;
+  currentAuthenticationMethods: ({ method: string } | string)[];
+} | null;
+
+/** A passkey sign-in (device + biometrics/PIN) counts as two-step verification. */
+export function signedInWithPasskey(aal: AalData) {
+  return !!aal?.currentAuthenticationMethods?.some((m) => (typeof m === "string" ? m : m.method) === "passkey");
+}
+
+/** True when the session still needs the authenticator-app code. */
+export function needsSecondFactor(aal: AalData) {
+  return !!aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2" && !signedInWithPasskey(aal);
+}
+
 export async function requireUser(opts: GuardOptions = {}) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
@@ -35,7 +51,7 @@ export async function requireUser(opts: GuardOptions = {}) {
 
   const returnTo = opts.returnTo ?? "/app";
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+  if (needsSecondFactor(aal)) {
     redirect(`/logg-inn/mfa?neste=${encodeURIComponent(returnTo)}`);
   }
 

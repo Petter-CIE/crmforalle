@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { getI18n } from "@/lib/i18n/server";
-import { safeNext } from "@/lib/session";
+import { needsSecondFactor, safeNext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { MfaForm } from "./mfa-form";
 
@@ -18,7 +18,7 @@ export default async function MfaPage({ searchParams }: PageProps<"/logg-inn/mfa
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/logg-inn");
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (!aal || aal.nextLevel !== "aal2" || aal.currentLevel === "aal2") redirect(next);
+  if (!needsSecondFactor(aal)) redirect(next);
   const { t } = await getI18n();
 
   return (
