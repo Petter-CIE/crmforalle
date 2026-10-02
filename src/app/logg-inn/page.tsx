@@ -23,6 +23,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
   const { data } = await supabase.auth.getUser();
   if (data.user) redirect(next);
   const { locale, t } = await getI18n();
+  // Only plain strings can be passed to the client component.
+  const loginTexts = Object.fromEntries(Object.entries(t.login).filter(([, v]) => typeof v === "string")) as Omit<
+    typeof t.login,
+    "linkSent"
+  >;
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
@@ -38,7 +43,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
               <Notice tone="error">{t.login.badLink}</Notice>
             </div>
           )}
-          <LoginForm next={next} t={t.login} />
+          <LoginForm next={next} t={loginTexts} />
         </Card>
         <p className="text-center text-sm text-muted">
           {t.login.noAccount}{" "}

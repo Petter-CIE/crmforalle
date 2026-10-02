@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Button, Input, Label, Notice } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
-import { signIn, type LoginState } from "./actions";
+import { sendLoginLink, signIn, type LinkState, type LoginState } from "./actions";
 
 type Texts = {
   email: string;
@@ -17,10 +17,14 @@ type Texts = {
   passkey: string;
   passkeyHelp: string;
   passkeyFailed: string;
+  sendLink: string;
+  sendingLink: string;
+  linkHelp: string;
 };
 
 export function LoginForm({ next, t }: { next: string; t: Texts }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(signIn, {});
+  const [linkState, linkAction, linkPending] = useActionState<LinkState, FormData>(sendLoginLink, {});
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
 
@@ -65,9 +69,24 @@ export function LoginForm({ next, t }: { next: string; t: Texts }) {
           <Input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
         {state.error && <Notice tone="error">{state.error}</Notice>}
-        <Button type="submit" disabled={pending} className="w-full">
+        <Button type="submit" disabled={pending || linkPending} className="w-full">
           {pending ? t.submitting : t.submit}
         </Button>
+        {/* Same e-mail field, no password needed: send a one-time login link instead. */}
+        <div className="space-y-1 text-center">
+          <button
+            type="submit"
+            formAction={linkAction}
+            formNoValidate
+            disabled={pending || linkPending}
+            className="text-sm font-medium text-brand hover:underline disabled:opacity-60"
+          >
+            ✉️ {linkPending ? t.sendingLink : t.sendLink}
+          </button>
+          <p className="text-xs text-muted">{t.linkHelp}</p>
+        </div>
+        {linkState.error && <Notice tone="error">{linkState.error}</Notice>}
+        {linkState.sent && <Notice tone="success">{linkState.sent}</Notice>}
       </form>
 
       <div className="flex items-center gap-3 text-xs text-muted">
