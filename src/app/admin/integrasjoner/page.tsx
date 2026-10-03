@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui";
+import { SeedButton } from "./seed-button";
 import { createSession, envAuth, TRIPLETEX_BASE, tripletexGet } from "@/lib/tripletex";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,7 @@ export default async function IntegrationsPage() {
         ) : (
           <p className="text-sm text-danger">Ikke tilkoblet: {tt.message}</p>
         )}
+        {tt.ok && TRIPLETEX_BASE.includes("api-test") && <SeedButton />}
       </Card>
     </div>
   );

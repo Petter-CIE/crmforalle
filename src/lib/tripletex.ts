@@ -34,6 +34,26 @@ export async function tripletexGet<T>(session: string, path: string, params: Rec
   return (await res.json()) as T;
 }
 
+export async function tripletexSend<T>(session: string, method: "POST" | "PUT", path: string, body: unknown, params: Record<string, string> = {}) {
+  const url = new URL(`${BASE}${path}`);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const res = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Basic ${Buffer.from(`0:${session}`).toString("base64")}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const text = (await res.text()).slice(0, 400);
+    throw new Error(`tripletex_${method.toLowerCase()}_${res.status}: ${text}`);
+  }
+  return (await res.json()) as T;
+}
+
 /** Our own test account, from env (used by the admin connection check). */
 export function envAuth(): TripletexAuth | null {
   const consumerToken = process.env.TRIPLETEX_CONSUMER_TOKEN;
