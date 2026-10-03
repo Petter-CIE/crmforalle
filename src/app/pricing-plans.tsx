@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-type Plan = { name: string; price: number; text: string; items: string[]; addon: string | null };
+type Plan = { name: string; price: number; text: string; items: string[]; addons: string[] };
 
 export function PricingPlans({
   plans,
@@ -71,14 +71,14 @@ export function PricingPlans({
                   {it}
                 </li>
               ))}
-              {p.addon && (
-                <li className="flex gap-2.5 text-muted">
+              {p.addons.map((ad) => (
+                <li key={ad} className="flex gap-2.5 text-muted">
                   <span aria-hidden className="text-brand">
                     +
                   </span>
-                  {p.addon}
+                  {ad}
                 </li>
-              )}
+              ))}
             </ul>
             <div className="mt-8">
               <Link

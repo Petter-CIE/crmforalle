@@ -30,7 +30,8 @@ const nb: Faq = {
           q: "Hva teller med i grensen på 2 000 eller 25 000?",
           a: [
             "Bedrifter og kontakter til sammen. Salg, oppgaver, notater, prosjekter og vedlegg teller ikke.",
-            "Når grensen er nådd, kan dere fortsatt bruke alt som ligger inne, men ikke legge til nye bedrifter eller kontakter før dere bytter til Bedrift.",
+            "Trenger dere flere, kan dere kjøpe ekstra kontaktpakker: på Start +2 000 for 50 kr/mnd (opptil to pakker), på Bedrift +25 000 for 250 kr/mnd. Skriv til post@allseats.no.",
+            "Når grensen er nådd, kan dere fortsatt bruke alt som ligger inne, men ikke legge til nye bedrifter eller kontakter før dere har kjøpt en pakke eller byttet til Bedrift.",
           ],
         },
         {
@@ -235,7 +236,8 @@ const en: Faq = {
           q: "What counts towards the 2,000 or 25,000 limit?",
           a: [
             "Companies and contacts together. Deals, tasks, notes, projects and attachments don't count.",
-            "Once the limit is reached you can still use everything you have, but you can't add new companies or contacts until you switch to Bedrift.",
+            "Need more? Buy extra contact packs: on Start +2,000 for NOK 50/month (up to two packs), on Bedrift +25,000 for NOK 250/month. Write to post@allseats.no.",
+            "Once the limit is reached you can still use everything you have, but you can't add new companies or contacts until you've bought a pack or switched to Bedrift.",
           ],
         },
         {

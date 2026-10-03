@@ -17,7 +17,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
   const filter: Filter = FILTERS.includes(sp.vis as Filter) ? (sp.vis as Filter) : "all";
 
-  const { data, error } = await supabase.rpc("admin_workspaces_v2");
+  const { data, error } = await supabase.rpc("admin_workspaces_v3");
   if (error) throw new Error("admin_workspaces failed");
   const rows = data ?? [];
   const now = nowMs();

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { effectiveContactLimit } from "@/lib/pricing";
 import { requireWorkspace } from "@/lib/session";
 
 export type ImportRow = {
@@ -78,9 +79,9 @@ export async function importChunk(input: {
     supabase.from("companies").select("*", { count: "exact", head: true }).eq("workspace_id", workspace.id),
     supabase.from("contacts").select("*", { count: "exact", head: true }).eq("workspace_id", workspace.id),
   ]);
-  const { data: ws } = await supabase.from("workspaces").select("contact_limit").eq("id", workspace.id).single();
-  // contact_limit 0 = unlimited
-  const limitValue = ws?.contact_limit ?? 0;
+  const { data: ws } = await supabase.from("workspaces").select("plan, contact_limit, extra_contact_packs").eq("id", workspace.id).single();
+  // 0 = unlimited; extra contact packs raise the limit
+  const limitValue = ws ? effectiveContactLimit(ws) : 0;
   let capacity = limitValue > 0 ? Math.max(0, limitValue - (companyCount ?? 0) - (contactCount ?? 0)) : Number.MAX_SAFE_INTEGER;
 
   // --- companies --------------------------------------------------------------

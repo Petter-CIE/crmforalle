@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
-import { PLAN_CONTACT_LIMIT } from "@/lib/pricing";
+import { CONTACT_PACK, PLAN_CONTACT_LIMIT } from "@/lib/pricing";
 import { adminStatus } from "./guard";
 
 const PLANS: PlanType[] = ["trial", "start", "bedrift", "free"];
@@ -49,6 +49,10 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
     p_addon: formData.get("accounting_addon") === "1",
   });
   if (billingError) return { error: t.admin.failed };
+  // extra contact packs, capped to what the (new) plan allows
+  const packs = Math.max(0, Math.min(CONTACT_PACK[plan]?.max ?? 0, Math.round(Number(formData.get("extra_contact_packs")) || 0)));
+  const { error: packsError } = await supabase.rpc("admin_update_packs", { p_id: id, p_packs: packs });
+  if (packsError) return { error: t.admin.failed };
   revalidatePath("/admin");
   revalidatePath(`/admin/${id}`);
   return { ok: true };

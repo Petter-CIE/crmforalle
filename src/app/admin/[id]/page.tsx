@@ -5,7 +5,7 @@ import { Field, PageHeader, Textarea } from "@/components/ui-extra";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/crm";
 import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
-import { monthlyPrice, PLAN_PRICE } from "@/lib/pricing";
+import { CONTACT_PACK, effectiveContactLimit, monthlyPrice, PLAN_PRICE } from "@/lib/pricing";
 import { nowMs } from "@/lib/time";
 import { updateWorkspaceAdmin } from "../actions";
 import { adminStatus } from "../guard";
@@ -28,7 +28,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
   const a = t.admin;
 
   const [{ data: all }, { data: members }, { data: log }] = await Promise.all([
-    supabase.rpc("admin_workspaces_v2"),
+    supabase.rpc("admin_workspaces_v3"),
     supabase.rpc("admin_workspace_members", { p_id: id }),
     supabase.rpc("admin_audit_log", { p_id: id }),
   ]);
@@ -66,7 +66,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
               ))}
             </ul>
             <p className="mt-3 text-xs text-muted">
-              {a.contacts}: {w.contact_count} / {w.contact_limit > 0 ? w.contact_limit : "∞"} · {a.lastActivity}:{" "}
+              {a.contacts}: {w.contact_count} / {effectiveContactLimit(w) > 0 ? effectiveContactLimit(w) : "∞"} · {a.lastActivity}:{" "}
               {w.last_activity ? formatDateTime(w.last_activity, dateLocale) : "–"}
             </p>
           </Card>
@@ -133,6 +133,18 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
             </Field>
             <Field label={a.contactLimit} htmlFor="a_limit">
               <Input id="a_limit" name="contact_limit" type="number" min={0} defaultValue={w.contact_limit} className="w-full" />
+            </Field>
+            <Field label={a.packs} htmlFor="a_packs">
+              <Input
+                id="a_packs"
+                name="extra_contact_packs"
+                type="number"
+                min={0}
+                max={CONTACT_PACK[w.plan]?.max ?? 0}
+                defaultValue={w.extra_contact_packs}
+                className="w-full"
+              />
+              <p className="mt-1 text-xs text-muted">{a.packsHelp}</p>
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={a.discount} htmlFor="a_disc">
