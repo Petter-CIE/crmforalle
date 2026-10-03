@@ -7,7 +7,7 @@ import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
 import { CONTACT_PACK, effectiveContactLimit, monthlyPrice, PLAN_PRICE } from "@/lib/pricing";
 import { nowMs } from "@/lib/time";
-import { updateWorkspaceAdmin } from "../actions";
+import { deleteWorkspaceAdmin, updateWorkspaceAdmin } from "../actions";
 import { adminStatus } from "../guard";
 import { TrialInput } from "./trial-input";
 
@@ -174,6 +174,23 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
           </ActionForm>
         </Card>
       </div>
+
+      <Card className="border-red-200">
+        <h2 className="font-semibold text-red-900">{a.deleteTitle}</h2>
+        <p className="mb-3 mt-1 text-sm text-muted">{a.deleteHelp}</p>
+        <ActionForm
+          action={deleteWorkspaceAdmin}
+          submitLabel={a.deleteButton}
+          pendingLabel={a.deleting}
+          className="space-y-3"
+          submitClassName="!bg-red-700 hover:!bg-red-800"
+        >
+          <input type="hidden" name="id" value={w.id} />
+          <Field label={a.deleteConfirm(w.name)} htmlFor="a_del">
+            <Input id="a_del" name="confirm_name" autoComplete="off" required className="w-full max-w-sm" />
+          </Field>
+        </ActionForm>
+      </Card>
     </div>
   );
 }

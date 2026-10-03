@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
@@ -56,4 +57,20 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
   revalidatePath("/admin");
   revalidatePath(`/admin/${id}`);
   return { ok: true };
+}
+
+/** Permanently deletes a company. The admin must type the exact company name. */
+export async function deleteWorkspaceAdmin(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { supabase, isAdmin, hasAal2 } = await adminStatus();
+  const { t } = await getI18n();
+  if (!isAdmin || !hasAal2) return { error: t.admin.failed };
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) return { error: t.admin.failed };
+  const { error } = await supabase.rpc("admin_delete_workspace", {
+    p_id: id,
+    p_confirm_name: String(formData.get("confirm_name") ?? "").trim(),
+  });
+  if (error) return { error: error.message.includes("name_mismatch") ? t.admin.deleteMismatch : t.admin.failed };
+  revalidatePath("/admin");
+  redirect("/admin");
 }
