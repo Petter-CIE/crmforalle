@@ -7,6 +7,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace, trialDaysLeft } from "@/lib/session";
 import { switchWorkspace } from "./actions";
 import { AccountingAutoSync } from "./_components/accounting-auto-sync";
+import { GlobalSearch } from "./_components/global-search";
 import { Nav } from "./_components/nav";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
@@ -74,6 +75,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             {workspace.name}
           </p>
         )}
+        <GlobalSearch t={t.search} />
         <Nav t={t.nav} />
         <AccountingAutoSync />
         <IdleLogout

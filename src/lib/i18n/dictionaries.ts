@@ -52,20 +52,32 @@ const nb = {
         text: "Dra salgene mellom fasene fra ny henvendelse til vunnet. Se verdien av alt som er åpent.",
       },
       {
+        title: "Tilbud kunden aksepterer med ett klikk",
+        text: "Lag tilbud med produkter, rabatt og MVA. Kunden får PDF og en lenke for å akseptere – og du ser når det åpnes.",
+      },
+      {
         title: "Oppgaver som blir gjort",
         text: "Gi oppgaver til kolleger, jobb flere på samme oppgave, legg ved filer og skriv notater. Alle får e-post når det skjer noe.",
       },
       {
-        title: "Prosjekter",
-        text: "Samle kontakter, salg og oppgaver i et prosjekt med egen prosjektleder.",
+        title: "Oppfølging av seg selv",
+        text: "Regler som lager oppgaver når et salg flyttes, og en oppsummering på e-post hver morgen med det som må gjøres.",
+      },
+      {
+        title: "E-post rett inn i CRM-et",
+        text: "Legg CRM-adressen i blindkopi, så lagres e-posten på riktig kunde – fra Outlook, Gmail eller mobilen.",
+      },
+      {
+        title: "Rapporter",
+        text: "Vunnet og tapt, vinnrate, salg per måned og hva hver i teamet har gjort. Last ned til Excel.",
+      },
+      {
+        title: "Tilpasset dere",
+        text: "Egne felt på bedrifter, kontakter og salg, prosjekter med egne farger og søk som finner alt.",
       },
       {
         title: "B2B og privatkunder",
         text: "Kontakter med eller uten bedrift, egen adresse og registrert samtykke til markedsføring.",
-      },
-      {
-        title: "I dag-oversikten",
-        text: "Hver morgen: dine oppgaver for i dag, forfalte oppgaver og salg som har stått stille i 14 dager.",
       },
     ],
     securityTitle: "Dataene deres er trygge",
@@ -89,7 +101,14 @@ const nb = {
         name: "Start",
         price: 249,
         text: "For bedrifter som vil komme i gang.",
-        items: ["Ubegrenset antall brukere", "Opptil 2 000 bedrifter og kontakter", "Salg, oppgaver, prosjekter og vedlegg", "Oppslag i Brønnøysundregistrene"],
+        items: [
+          "Ubegrenset antall brukere",
+          "Opptil 2 000 bedrifter og kontakter",
+          "Salg, oppgaver, prosjekter og vedlegg",
+          "Tilbud med PDF og digital aksept",
+          "Rapporter, automatisering og egne felt",
+          "E-post inn i CRM-et og oppslag i Brønnøysund",
+        ],
         addons: ["Flere kontakter: +2 000 for 50 kr/mnd (opptil 2 ganger)", "Tripletex og Fiken som tillegg: +50 kr/mnd (kommer)"],
       },
       {
@@ -113,6 +132,10 @@ const nb = {
       {
         q: "Hvor lagres dataene?",
         a: "Hos Supabase i Frankfurt i EU. Hver bedrift er skilt fra de andre i databasen, så ingen andre kan se dataene deres.",
+      },
+      {
+        q: "Kan kunden akseptere tilbud digitalt?",
+        a: "Ja. Kunden får tilbudet som PDF på e-post og en lenke der det kan aksepteres eller avslås med ett klikk. Du ser når tilbudet er åpnet og får beskjed når kunden svarer.",
       },
       {
         q: "Kan vi bruke CRM-et på mobilen?",
@@ -883,6 +906,12 @@ const nb = {
     orgNr: "Org.nr.",
     poweredBy: "Sendt med AllSeats CRM",
   },
+  search: {
+    placeholder: "Søk …  (/)",
+    label: "Søk i CRM-et",
+    empty: "Ingen treff.",
+    groups: { company: "Bedrifter", contact: "Kontakter", deal: "Salg", quote: "Tilbud", task: "Oppgaver" },
+  },
   help: {
     nav: "Hjelp og spørsmål",
     toApp: "Til CRM-et",
@@ -1081,27 +1110,39 @@ const en: Dictionary = {
     features: [
       {
         title: "Companies fill themselves in",
-        text: "Type the name or org. number and the address, industry and number come from the Norwegian business register.",
+        text: "Type the name or org. no. and the address, industry and org. no. are fetched from the Brønnøysund registers.",
       },
       {
-        title: "Sales on a board",
+        title: "Deals on a board",
         text: "Drag deals between stages from new lead to won. See the value of everything that's open.",
       },
       {
+        title: "Quotes the customer accepts with one click",
+        text: "Create quotes with products, discounts and VAT. The customer gets a PDF and a link to accept – and you see when it's opened.",
+      },
+      {
         title: "Tasks that get done",
-        text: "Assign tasks to colleagues, work together on one task, attach files and write notes. Everyone gets an e-mail when something happens.",
+        text: "Give tasks to colleagues, work several people on one task, attach files and write notes. Everyone gets an e-mail when something happens.",
       },
       {
-        title: "Projects",
-        text: "Group contacts, deals and tasks in a project with its own project lead.",
+        title: "Follow-up on autopilot",
+        text: "Rules that create tasks when a deal moves, and a summary e-mail every morning with what needs doing.",
       },
       {
-        title: "Businesses and private customers",
+        title: "E-mail straight into the CRM",
+        text: "Put the CRM address in Bcc and the e-mail is saved on the right customer – from Outlook, Gmail or your phone.",
+      },
+      {
+        title: "Reports",
+        text: "Won and lost, win rate, deals per month and what each team member has done. Download to Excel.",
+      },
+      {
+        title: "Made to fit you",
+        text: "Custom fields on companies, contacts and deals, projects with their own colours and search that finds everything.",
+      },
+      {
+        title: "B2B and private customers",
         text: "Contacts with or without a company, their own address and recorded marketing consent.",
-      },
-      {
-        title: "The Today overview",
-        text: "Every morning: your tasks for today, overdue tasks and deals that haven't moved for 14 days.",
       },
     ],
     securityTitle: "Your data is safe",
@@ -1125,7 +1166,14 @@ const en: Dictionary = {
         name: "Start",
         price: 249,
         text: "For companies getting started.",
-        items: ["Unlimited users", "Up to 2,000 companies and contacts", "Sales, tasks, projects and attachments", "Norwegian business register lookup"],
+        items: [
+          "Unlimited users",
+          "Up to 2,000 companies and contacts",
+          "Sales, tasks, projects and attachments",
+          "Quotes with PDF and digital acceptance",
+          "Reports, automation and custom fields",
+          "E-mail into the CRM and business register lookup",
+        ],
         addons: ["More contacts: +2,000 for NOK 50/mo (up to twice)", "Tripletex and Fiken as an add-on: +NOK 50/mo (coming)"],
       },
       {
@@ -1149,6 +1197,10 @@ const en: Dictionary = {
       {
         q: "Where is the data stored?",
         a: "With Supabase in Frankfurt in the EU. Each company is separated from the others in the database, so nobody else can see your data.",
+      },
+      {
+        q: "Can the customer accept quotes digitally?",
+        a: "Yes. The customer gets the quote as a PDF by e-mail and a link where it can be accepted or declined with one click. You see when the quote is opened and are notified when the customer replies.",
       },
       {
         q: "Can we use it on a phone?",
@@ -1918,6 +1970,12 @@ const en: Dictionary = {
     contactPerson: "Contact person",
     orgNr: "Org. no.",
     poweredBy: "Sent with AllSeats CRM",
+  },
+  search: {
+    placeholder: "Search …  (/)",
+    label: "Search the CRM",
+    empty: "No matches.",
+    groups: { company: "Companies", contact: "Contacts", deal: "Deals", quote: "Quotes", task: "Tasks" },
   },
   help: {
     nav: "Help and questions",

@@ -5,7 +5,7 @@ import { requireWorkspace } from "@/lib/session";
 
 const LIMIT = 20;
 
-/** Type-to-search for pickers: companies, contacts, deals and products of the current company. */
+/** Type-to-search for pickers (company, contact, deal, product) and the global search (all). */
 export async function GET(req: NextRequest) {
   const { supabase, workspace } = await requireWorkspace();
   const { dateLocale } = await getI18n();
@@ -78,6 +78,45 @@ export async function GET(req: NextRequest) {
         data: { description: p.description, unit: p.unit, unit_price: Number(p.unit_price), vat_rate: Number(p.vat_rate) },
       })),
     );
+  }
+
+  if (type === "all") {
+    if (!q) return Response.json([]);
+    const n = 5;
+    const words = q.split(/\s+/).filter(Boolean);
+    const digits = q.replace(/\s/g, "");
+    let contacts = supabase.from("contacts").select("id, first_name, last_name, email, phone, companies(name)").eq("workspace_id", ws).limit(n);
+    contacts =
+      words.length > 1
+        ? contacts.ilike("first_name", `%${words[0]}%`).ilike("last_name", `%${words.slice(1).join(" ")}%`)
+        : contacts.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like}${/^\+?\d{3,}$/.test(digits) ? `,phone.ilike.%${digits}%` : ""}`);
+    const [companies, contactRows, deals, quotes, tasks] = await Promise.all([
+      supabase
+        .from("companies")
+        .select("id, name, city, org_number")
+        .eq("workspace_id", ws)
+        .or(/^\d{3,9}$/.test(digits) ? `org_number.like.${digits}%` : `name.ilike.${like},email.ilike.${like}`)
+        .order("name")
+        .limit(n),
+      contacts,
+      supabase.from("deals").select("id, title, value, companies(name)").eq("workspace_id", ws).ilike("title", like).order("updated_at", { ascending: false }).limit(n),
+      supabase
+        .from("quotes")
+        .select("id, number, title, companies(name)")
+        .eq("workspace_id", ws)
+        .or(/^\d{1,6}$/.test(digits) ? `number.eq.${digits},title.ilike.${like}` : `title.ilike.${like}`)
+        .order("number", { ascending: false })
+        .limit(n),
+      supabase.from("tasks").select("id, title, done_at").eq("workspace_id", ws).ilike("title", like).order("done_at", { nullsFirst: true }).order("due_at").limit(n),
+    ]);
+    const out = [
+      ...(companies.data ?? []).map((c) => ({ group: "company", id: c.id, label: c.name, hint: [c.org_number, c.city].filter(Boolean).join(" · ") || null, href: `/app/bedrifter/${c.id}` })),
+      ...(contactRows.data ?? []).map((c) => ({ group: "contact", id: c.id, label: contactName(c), hint: [c.companies?.name, c.email ?? c.phone].filter(Boolean).join(" · ") || null, href: `/app/kontakter/${c.id}` })),
+      ...(deals.data ?? []).map((d) => ({ group: "deal", id: d.id, label: d.title, hint: [d.companies?.name, formatMoney(Number(d.value), dateLocale)].filter(Boolean).join(" · "), href: `/app/salg/${d.id}` })),
+      ...(quotes.data ?? []).map((x) => ({ group: "quote", id: x.id, label: `#${x.number} ${x.title}`, hint: x.companies?.name ?? null, href: `/app/tilbud/${x.id}` })),
+      ...(tasks.data ?? []).map((x) => ({ group: "task", id: x.id, label: x.title, hint: null, done: !!x.done_at, href: `/app/oppgaver/${x.id}` })),
+    ];
+    return Response.json(out);
   }
 
   return Response.json([], { status: 400 });

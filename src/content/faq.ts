@@ -163,8 +163,60 @@ const nb: Faq = {
         {
           q: "Når får jeg e-post fra CRM-et?",
           a: [
-            "Når du får en oppgave eller et prosjekt, når noen legger deg til på en oppgave, og når noen skriver et notat på en oppgave du er med på.",
-            "Du kan slå av e-postvarslene under Konto og sikkerhet.",
+            "Når du får en oppgave eller et prosjekt, når noen legger deg til på en oppgave, når noen skriver et notat på en oppgave du er med på, og når en kunde svarer på et tilbud du har sendt.",
+            "I tillegg får du en kort oppsummering hverdager kl. 7 med dagens og forfalte oppgaver, salg uten aktivitet og svar på tilbud – bare når det er noe å følge opp.",
+            "Du kan slå av både varslene og oppsummeringen under Konto og sikkerhet.",
+          ],
+        },
+      ],
+    },
+    {
+      id: "tilbud",
+      title: "Tilbud, rapporter og tilpasning",
+      items: [
+        {
+          q: "Hvordan lager og sender jeg et tilbud?",
+          a: [
+            "Åpne et salg og trykk «Lag tilbud». Kunde, kontaktperson og tittel fylles inn. Legg til produkter fra produktlisten eller skriv egne linjer – MVA (25, 15, 12 eller 0 %) og rabatt regnes ut automatisk.",
+            "Trykk «Send tilbudet», så får kunden e-post med tilbudet som PDF og en lenke der det kan aksepteres eller avslås med ett klikk. Svarer kunden på e-posten, kommer svaret til deg.",
+          ],
+          link: { href: "/app/tilbud", label: "Gå til tilbud" },
+        },
+        {
+          q: "Ser jeg når kunden har åpnet tilbudet?",
+          a: [
+            "Ja. Du ser om og hvor mange ganger tilbudet er åpnet, og når kunden aksepterer eller avslår, får du e-post og det noteres på salget – med kundens kommentar.",
+            "Har kunden sagt ja på telefon, kan du merke tilbudet som akseptert selv.",
+          ],
+        },
+        {
+          q: "Hvor legger vi inn adresse, kontonummer og vilkår på tilbudene?",
+          a: ["Under Tilbud → Innstillinger (eier og administratorer). Der velger dere også hvor mange dager tilbudene skal gjelde."],
+        },
+        {
+          q: "Kan vi legge til egne felt?",
+          a: [
+            "Ja. Under Innstillinger → Egne felt kan eier og administratorer legge til felt på bedrifter, kontakter og salg – for eksempel «Kundetype», «Bilmodell» eller «Kilde».",
+            "Feltene kan være tekst, tall, dato, valgliste, ja/nei eller lenke. De vises i skjemaene og på kortet, og kommer med når dere eksporterer.",
+          ],
+        },
+        {
+          q: "Kan CRM-et lage oppfølgingsoppgaver automatisk?",
+          a: [
+            "Ja. Under Innstillinger → Automatisering lager dere regler som «når et salg flyttes til Tilbud sendt, opprett ‘Følg opp tilbudet’ med frist om 3 dager». Oppgaven gis til den som er ansvarlig for salget.",
+          ],
+        },
+        {
+          q: "Hvilke rapporter finnes?",
+          a: [
+            "Under Rapporter ser dere vunnet og tapt, vinnrate, snitt per salg, salgstid, åpne salg per fase, vunnet per måned og aktiviteten til hver i teamet. Velg periode og person, og last ned salgene til Excel.",
+          ],
+        },
+        {
+          q: "Hvordan finner jeg en kunde raskt?",
+          a: [
+            "Bruk søkefeltet øverst i menyen. Skriv navn, e-post, telefon, org.nr. eller tittel, så får du treff blant bedrifter, kontakter, salg, tilbud og oppgaver. Hurtigtast: / eller Ctrl+K.",
+            "Også når du velger bedrift eller kontakt i et skjema, kan du bare skrive – du trenger ikke bla i lange lister.",
           ],
         },
       ],
@@ -369,8 +421,60 @@ const en: Faq = {
         {
           q: "When does the CRM send me e-mail?",
           a: [
-            "When you're given a task or a project, when someone adds you to a task, and when someone writes a note on a task you're part of.",
-            "You can turn the e-mail notifications off under Account and security.",
+            "When you're given a task or a project, when someone adds you to a task, when someone writes a note on a task you're part of, and when a customer replies to a quote you sent.",
+            "You also get a short summary on weekdays at 7 with today's and overdue tasks, deals without activity and replies to quotes – only when there is something to follow up.",
+            "You can turn off both the notifications and the summary under Account and security.",
+          ],
+        },
+      ],
+    },
+    {
+      id: "tilbud",
+      title: "Quotes, reports and customization",
+      items: [
+        {
+          q: "How do I create and send a quote?",
+          a: [
+            "Open a deal and press “Create quote”. Customer, contact person and title are filled in. Add products from the product list or write your own lines – VAT (25, 15, 12 or 0 %) and discounts are calculated automatically.",
+            "Press “Send quote”, and the customer gets an e-mail with the quote as a PDF and a link where it can be accepted or declined with one click. If the customer replies to the e-mail, the reply comes to you.",
+          ],
+          link: { href: "/app/tilbud", label: "Go to quotes" },
+        },
+        {
+          q: "Can I see when the customer opened the quote?",
+          a: [
+            "Yes. You see whether and how many times the quote was opened, and when the customer accepts or declines, you get an e-mail and it's noted on the deal – with the customer's comment.",
+            "If the customer said yes on the phone, you can mark the quote as accepted yourself.",
+          ],
+        },
+        {
+          q: "Where do we enter our address, bank account and terms for quotes?",
+          a: ["Under Quotes → Settings (owner and admins). There you also choose how many days quotes are valid."],
+        },
+        {
+          q: "Can we add our own fields?",
+          a: [
+            "Yes. Under Settings → Custom fields, owners and admins can add fields to companies, contacts and deals – for example “Customer type”, “Car model” or “Source”.",
+            "Fields can be text, number, date, drop-down, yes/no or link. They show in the forms and on the record, and are included when you export.",
+          ],
+        },
+        {
+          q: "Can the CRM create follow-up tasks automatically?",
+          a: [
+            "Yes. Under Settings → Automation you create rules like “when a deal moves to Quote sent, create ‘Follow up the quote’ due in 3 days”. The task goes to the deal owner.",
+          ],
+        },
+        {
+          q: "Which reports are there?",
+          a: [
+            "Under Reports you see won and lost, win rate, average deal, sales cycle, open deals by stage, won per month and each team member's activity. Choose period and person, and download the deals to Excel.",
+          ],
+        },
+        {
+          q: "How do I find a customer quickly?",
+          a: [
+            "Use the search field at the top of the menu. Type a name, e-mail, phone, org. no. or title to find companies, contacts, deals, quotes and tasks. Shortcut: / or Ctrl+K.",
+            "When you pick a company or contact in a form, you can also just type – no need to scroll through long lists.",
           ],
         },
       ],
