@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Input, Select } from "@/components/ui";
 import { Field, Textarea } from "@/components/ui-extra";
@@ -25,12 +26,15 @@ export function ContactForm({
   companies,
   t,
   hidden = {},
+  extra,
 }: {
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: ContactValues;
   companies: { id: string; name: string }[];
   t: Dictionary;
   hidden?: Record<string, string>;
+  /** Extra inputs (custom fields), rendered before the notes. */
+  extra?: ReactNode;
 }) {
   const c = t.contacts;
   return (
@@ -90,6 +94,7 @@ export function ContactForm({
           <span className="block text-xs text-muted">{c.consentHelp}</span>
         </span>
       </label>
+      {extra}
       <Field label={t.crm.notes} htmlFor="k_notes">
         <Textarea id="k_notes" name="notes" rows={3} defaultValue={initial.notes ?? ""} />
       </Field>

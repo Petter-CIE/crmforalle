@@ -8,6 +8,8 @@ import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { InfoRow, PageHeader } from "@/components/ui-extra";
+import { CustomFieldValues } from "@/components/crm/custom-fields";
+import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { addContactToProject, deleteContact, removeContactFromProject } from "@/app/app/crm-actions";
 import { contactName, formatDateTime } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
@@ -24,7 +26,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t, dateLocale } = await getI18n();
-  const [{ data: k }, { data: deals }, { data: allProjects }] = await Promise.all([
+  const [{ data: k }, { data: deals }, { data: allProjects }, fields] = await Promise.all([
     supabase
       .from("contacts")
       .select("*, companies(id, name), project_contacts(project_id, projects(id, name, color))")
@@ -33,6 +35,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
       .maybeSingle(),
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("contact_id", id).order("created_at", { ascending: false }),
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+    loadCustomFields(supabase, workspace.id, "contact"),
   ]);
   if (!k) notFound();
   const path = `/app/kontakter/${id}`;
@@ -98,6 +101,9 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
               </InfoRow>
               <InfoRow label={t.crm.notes}>{k.notes && <span className="whitespace-pre-wrap">{k.notes}</span>}</InfoRow>
             </dl>
+            <div className="mt-3">
+              <CustomFieldValues fields={fields} values={asCustomValues(k.custom)} dateLocale={dateLocale} yes={t.crm.yes} />
+            </div>
           </Card>
           <Card>
             <h2 className="mb-3 font-semibold">{t.crm.timeline}</h2>

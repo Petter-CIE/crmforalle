@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { parseProjectColor } from "@/lib/colors";
 import { dbErrorKey, opt } from "@/lib/crm";
+import { loadCustomFields, parseCustomValues, type CustomEntity } from "@/lib/custom-fields";
 import { getI18n } from "@/lib/i18n/server";
 import { notifyAssignment } from "@/lib/notify";
 import { requireWorkspace } from "@/lib/session";
@@ -24,6 +25,12 @@ async function errorText(error: { code?: string; message?: string } | null, dupl
   if (key === "limit") return t.crm.limitReached;
   if (key === "duplicate" && duplicate) return duplicate;
   return t.crm.error;
+}
+
+/** Custom field values from the form, validated against the company's field definitions. */
+async function customFrom(ctx: Awaited<ReturnType<typeof requireWorkspace>>, entity: CustomEntity, formData: FormData) {
+  const fields = await loadCustomFields(ctx.supabase, ctx.workspace.id, entity);
+  return parseCustomValues(formData, fields);
 }
 
 function back(formData: FormData, fallback: string) {
@@ -50,9 +57,10 @@ function companyFields(formData: FormData) {
 }
 
 export async function createCompany(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, user, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const fields = companyFields(formData);
+  const fields = { ...companyFields(formData), custom: await customFrom(ctx, "company", formData) };
   if (!fields.name) return { error: t.crm.required };
   const { data, error } = await supabase
     .from("companies")
@@ -65,10 +73,11 @@ export async function createCompany(_p: FormResult, formData: FormData): Promise
 }
 
 export async function updateCompany(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, workspace } = ctx;
   const { t } = await getI18n();
   const companyId = id(formData.get("id"));
-  const fields = companyFields(formData);
+  const fields = { ...companyFields(formData), custom: await customFrom(ctx, "company", formData) };
   if (!companyId || !fields.name) return { error: t.crm.required };
   const { error } = await supabase.from("companies").update(fields).eq("id", companyId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error, t.companies.exists) };
@@ -102,9 +111,10 @@ function contactFields(formData: FormData) {
 }
 
 export async function createContact(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, user, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const fields = contactFields(formData);
+  const fields = { ...contactFields(formData), custom: await customFrom(ctx, "contact", formData) };
   if (!fields.first_name) return { error: t.crm.required };
   const { data, error } = await supabase
     .from("contacts")
@@ -121,10 +131,11 @@ export async function createContact(_p: FormResult, formData: FormData): Promise
 }
 
 export async function updateContact(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, workspace } = ctx;
   const { t } = await getI18n();
   const contactId = id(formData.get("id"));
-  const fields = contactFields(formData);
+  const fields = { ...contactFields(formData), custom: await customFrom(ctx, "contact", formData) };
   if (!contactId || !fields.first_name) return { error: t.crm.required };
   const { error } = await supabase.from("contacts").update(fields).eq("id", contactId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error) };
@@ -312,9 +323,10 @@ function dealFields(formData: FormData) {
 }
 
 export async function createDeal(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, user, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const fields = dealFields(formData);
+  const fields = { ...dealFields(formData), custom: await customFrom(ctx, "deal", formData) };
   if (!fields.title || !fields.stage_id) return { error: t.crm.required };
   const { data, error } = await supabase
     .from("deals")
@@ -334,10 +346,11 @@ export async function createDeal(_p: FormResult, formData: FormData): Promise<Fo
 }
 
 export async function updateDeal(_p: FormResult, formData: FormData): Promise<FormResult> {
-  const { supabase, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, workspace } = ctx;
   const { t } = await getI18n();
   const dealId = id(formData.get("id"));
-  const fields = dealFields(formData);
+  const fields = { ...dealFields(formData), custom: await customFrom(ctx, "deal", formData) };
   if (!dealId || !fields.title || !fields.stage_id) return { error: t.crm.required };
   const { error } = await supabase
     .from("deals")

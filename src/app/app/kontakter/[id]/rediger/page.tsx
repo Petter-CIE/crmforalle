@@ -6,6 +6,8 @@ import { updateContact } from "@/app/app/crm-actions";
 import { contactName } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+import { CustomFieldInputs } from "@/components/crm/custom-fields";
+import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { ContactForm } from "../../contact-form";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,16 +19,23 @@ export default async function EditContactPage({ params }: PageProps<"/app/kontak
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: k }, { data: companies }] = await Promise.all([
+  const [{ data: k }, { data: companies }, fields] = await Promise.all([
     supabase.from("contacts").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
+    loadCustomFields(supabase, workspace.id, "contact"),
   ]);
   if (!k) notFound();
   return (
     <div className="space-y-6">
       <PageHeader title={t.contacts.edit} backHref={`/app/kontakter/${id}`} backLabel={contactName(k)} />
       <Card>
-        <ContactForm action={updateContact} initial={k} companies={companies ?? []} t={t} />
+        <ContactForm
+          action={updateContact}
+          initial={k}
+          companies={companies ?? []}
+          t={t}
+          extra={<CustomFieldInputs fields={fields} values={asCustomValues(k.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
+        />
       </Card>
     </div>
   );

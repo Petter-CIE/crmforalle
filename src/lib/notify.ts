@@ -89,7 +89,7 @@ function render(o: { lead: string; title: string; quote?: string; meta?: string;
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border-radius:12px;padding:28px" cellpadding="0" cellspacing="0">
 <tr><td style="font-weight:bold;font-size:15px;color:#1f6f54;padding-bottom:20px">AllSeats CRM</td></tr>
-<tr><td style="font-size:15px;line-height:1.5">${esc(o.lead)}</td></tr>
+<tr><td style="font-size:15px;line-height:1.5;white-space:pre-line">${esc(o.lead)}</td></tr>
 <tr><td style="padding:14px 0 4px;font-size:18px;font-weight:bold">${esc(o.title)}</td></tr>
 ${o.meta ? `<tr><td style="font-size:14px;color:#52525b">${esc(o.meta)}</td></tr>` : ""}
 ${quote ? `<tr><td style="padding-top:14px"><div style="border-left:3px solid #1f6f54;background:#f4f4f5;padding:10px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(quote)}</div></td></tr>` : ""}
@@ -240,4 +240,176 @@ export async function notifyDeletion(n: {
     }
   }
   return sent;
+}
+
+export type DigestUser = {
+  email: string;
+  name: string;
+  locale: string;
+  workspaces: {
+    workspace: string;
+    tasks: { id: string; title: string; due_at: string }[];
+    stale: { id: string; title: string; value: number }[];
+    quotes: { id: string; number: number; title: string; status: string }[];
+  }[];
+};
+
+const DIGEST = {
+  nb: {
+    subject: (n: number) => `I dag: ${n} ${n === 1 ? "oppgave" : "oppgaver"} – AllSeats CRM`,
+    subjectNoTasks: "Oppsummering – AllSeats CRM",
+    hello: (name: string) => `God morgen, ${name}!`,
+    tasks: "Oppgaver i dag og forfalte",
+    overdue: "forfalt",
+    today: "i dag",
+    stale: "Salg uten aktivitet i 14 dager",
+    quotes: "Tilbud siste døgn",
+    status: { sent: "åpnet av kunden", accepted: "akseptert", rejected: "avslått" } as Record<string, string>,
+    open: "Åpne AllSeats",
+    footer: "Du får denne oppsummeringen hverdager kl. 7. Du kan slå den av under Konto og sikkerhet.",
+    dateLocale: "nb-NO",
+  },
+  en: {
+    subject: (n: number) => `Today: ${n} ${n === 1 ? "task" : "tasks"} – AllSeats CRM`,
+    subjectNoTasks: "Summary – AllSeats CRM",
+    hello: (name: string) => `Good morning, ${name}!`,
+    tasks: "Tasks today and overdue",
+    overdue: "overdue",
+    today: "today",
+    stale: "Deals without activity for 14 days",
+    quotes: "Quotes in the last day",
+    status: { sent: "opened by the customer", accepted: "accepted", rejected: "declined" } as Record<string, string>,
+    open: "Open AllSeats",
+    footer: "You get this summary on weekdays at 7. You can turn it off under Account and security.",
+    dateLocale: "en-GB",
+  },
+};
+
+/** Sends the morning summary to each user. Returns how many were sent. Never throws. */
+export async function sendDigests(users: DigestUser[]) {
+  const mailer = transport();
+  if (!mailer) return 0;
+  const base = siteUrl();
+  const startOfToday = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Oslo" }));
+  startOfToday.setHours(0, 0, 0, 0);
+  let sent = 0;
+  for (const u of users) {
+    try {
+      const L = u.locale === "en" ? DIGEST.en : DIGEST.nb;
+      const taskCount = u.workspaces.reduce((n, w) => n + w.tasks.length, 0);
+      const multi = u.workspaces.length > 1;
+      const li = (href: string, text: string, meta?: string) =>
+        `<li style="margin:4px 0"><a href="${esc(href)}" style="color:#1f6f54;text-decoration:none">${esc(text)}</a>${meta ? ` <span style="color:#71717a;font-size:13px">· ${esc(meta)}</span>` : ""}</li>`;
+      const section = (title: string, items: string[]) =>
+        items.length ? `<p style="margin:18px 0 4px;font-weight:bold;font-size:14px">${esc(title)}</p><ul style="margin:0;padding-left:18px;font-size:14px">${items.join("")}</ul>` : "";
+      const lines: string[] = [L.hello(u.name), ""];
+      let body = "";
+      for (const w of u.workspaces) {
+        if (multi) {
+          body += `<p style="margin:22px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#71717a">${esc(w.workspace)}</p>`;
+          lines.push(`== ${w.workspace} ==`);
+        }
+        const due = (iso: string) =>
+          new Date(iso) < startOfToday ? `${L.overdue} ${new Date(iso).toLocaleDateString(L.dateLocale, { day: "numeric", month: "short", timeZone: "Europe/Oslo" })}` : L.today;
+        body += section(L.tasks, w.tasks.map((t) => li(`${base}/app/oppgaver/${t.id}`, t.title, due(t.due_at))));
+        body += section(
+          L.stale,
+          w.stale.map((d) =>
+            li(`${base}/app/salg/${d.id}`, d.title, new Intl.NumberFormat(L.dateLocale, { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(d.value))),
+          ),
+        );
+        body += section(L.quotes, w.quotes.map((q) => li(`${base}/app/tilbud/${q.id}`, `#${q.number} ${q.title}`, L.status[q.status] ?? q.status)));
+        if (w.tasks.length) lines.push(L.tasks, ...w.tasks.map((t) => `- ${t.title} (${due(t.due_at)})`), "");
+        if (w.stale.length) lines.push(L.stale, ...w.stale.map((d) => `- ${d.title}`), "");
+        if (w.quotes.length) lines.push(L.quotes, ...w.quotes.map((q) => `- #${q.number} ${q.title}: ${L.status[q.status] ?? q.status}`), "");
+      }
+      const html = `<!doctype html><html><body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
+<table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;padding:28px" cellpadding="0" cellspacing="0">
+<tr><td style="font-weight:bold;font-size:15px;color:#1f6f54;padding-bottom:16px">AllSeats CRM</td></tr>
+<tr><td style="font-size:16px">${esc(L.hello(u.name))}</td></tr>
+<tr><td>${body}</td></tr>
+<tr><td style="padding-top:24px"><a href="${esc(base)}/app" style="display:inline-block;background:#1f6f54;color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:bold;font-size:14px">${esc(L.open)}</a></td></tr>
+<tr><td style="padding-top:28px;font-size:12px;color:#71717a">${esc(L.footer)}</td></tr>
+</table></td></tr></table></body></html>`;
+      lines.push(`${L.open}: ${base}/app`, "", L.footer);
+      await mailer.sendMail({
+        from: FROM(),
+        to: u.email,
+        subject: taskCount ? L.subject(taskCount) : L.subjectNoTasks,
+        text: lines.join("\n"),
+        html,
+      });
+      sent++;
+    } catch (e) {
+      console.error("digest failed", e instanceof Error ? e.message : e);
+    }
+  }
+  return sent;
+}
+
+/** Sends a quote to the customer with the PDF attached. Throws when sending fails. */
+export async function sendQuoteEmail(o: {
+  to: string;
+  senderName: string;
+  replyTo: string;
+  subject: string;
+  message: string;
+  link: string;
+  pdf: Uint8Array;
+  filename: string;
+}) {
+  const mailer = transport();
+  if (!mailer) throw new Error("smtp_not_configured");
+  const { html, text } = render({
+    lead: o.message,
+    title: o.subject,
+    url: o.link,
+    button: "Se tilbudet og svar",
+    footer: `Sendt av ${o.senderName} med AllSeats CRM. Svar på denne e-posten for å kontakte avsenderen.`,
+  });
+  await mailer.sendMail({
+    from: `${o.senderName.replace(/["<>]/g, "")} via AllSeats <${process.env.SMTP_USER || "noreply@allseats.no"}>`,
+    replyTo: o.replyTo,
+    to: o.to,
+    subject: o.subject,
+    text,
+    html,
+    attachments: [{ filename: o.filename, content: Buffer.from(o.pdf), contentType: "application/pdf" }],
+  });
+}
+
+/** Tells the seller that the customer accepted or declined a quote. Never throws. */
+export async function notifyQuoteResponse(o: {
+  to: string[];
+  accepted: boolean;
+  number: number;
+  title: string;
+  workspace: string;
+  responder: string;
+  comment: string | null;
+  quoteId: string;
+}) {
+  try {
+    const mailer = transport();
+    if (!mailer || o.to.length === 0) return;
+    const verb = o.accepted ? "akseptert" : "avslått";
+    const { html, text } = render({
+      lead: `${o.responder} har ${verb} tilbud #${o.number} i ${o.workspace}:`,
+      title: o.title,
+      quote: o.comment ?? undefined,
+      url: `${siteUrl()}/app/tilbud/${o.quoteId}`,
+      button: "Åpne tilbudet",
+      footer: "Du får denne e-posten fordi du sendte tilbudet eller er ansvarlig for salget.",
+    });
+    await mailer.sendMail({
+      from: FROM(),
+      to: o.to,
+      subject: `${o.accepted ? "✅ Akseptert" : "Avslått"}: tilbud #${o.number} ${o.title}`,
+      text,
+      html,
+    });
+  } catch (e) {
+    console.error("notifyQuoteResponse failed", e instanceof Error ? e.message : e);
+  }
 }

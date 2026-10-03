@@ -11,7 +11,11 @@ export async function updateProfile(_p: FormResult, formData: FormData): Promise
   const fullName = String(formData.get("full_name") ?? "").trim().slice(0, 200);
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: fullName || null, notify_email: formData.get("notify_email") === "1" })
+    .update({
+      full_name: fullName || null,
+      notify_email: formData.get("notify_email") === "1",
+      digest_email: formData.get("digest_email") === "1",
+    })
     .eq("id", user.id);
   if (error) return { error: t.security.error };
   revalidatePath("/app", "layout");

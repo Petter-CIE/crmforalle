@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ui-extra";
 import { createDeal } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+import { CustomFieldInputs } from "@/components/crm/custom-fields";
+import { loadCustomFields } from "@/lib/custom-fields";
 import { DealFields } from "../deal-fields";
 import { loadDealOptions } from "../options";
 
@@ -18,7 +20,7 @@ export default async function NewDealPage({ searchParams }: PageProps<"/app/salg
   const str = (v: unknown) => (typeof v === "string" ? v : null);
   const ctx = await requireWorkspace();
   const { t } = await getI18n();
-  const options = await loadDealOptions(ctx);
+  const [options, fields] = await Promise.all([loadDealOptions(ctx), loadCustomFields(ctx.supabase, ctx.workspace.id, "deal")]);
   const companyId = str(sp.bedrift);
   const contactId = str(sp.kontakt);
   const projectId = str(sp.prosjekt);
@@ -46,6 +48,7 @@ export default async function NewDealPage({ searchParams }: PageProps<"/app/salg
               owner_id: ctx.user.id,
             }}
           />
+          <CustomFieldInputs fields={fields} values={{}} t={{ choose: t.crm.choose, title: t.crm.customFields }} />
         </ActionForm>
       </Card>
     </div>

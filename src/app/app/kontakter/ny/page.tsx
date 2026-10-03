@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ui-extra";
 import { createContact } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+import { CustomFieldInputs } from "@/components/crm/custom-fields";
+import { loadCustomFields } from "@/lib/custom-fields";
 import { ContactForm } from "../contact-form";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,7 +23,10 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
   const parts = name.split(/\s+/).filter(Boolean);
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const { data: companies } = await supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000);
+  const [{ data: companies }, fields] = await Promise.all([
+    supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
+    loadCustomFields(supabase, workspace.id, "contact"),
+  ]);
   const hidden: Record<string, string> = {};
   if (projectId) hidden.project_id = projectId;
   if (email) hidden.tilbake = "/app/e-post";
@@ -45,6 +50,7 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
           companies={companies ?? []}
           t={t}
           hidden={hidden}
+          extra={<CustomFieldInputs fields={fields} values={{}} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />
       </Card>
     </div>

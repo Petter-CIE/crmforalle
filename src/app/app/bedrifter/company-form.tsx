@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
 import { BrregSearch, type BrregTexts } from "@/components/brreg-search";
 import { Input } from "@/components/ui";
@@ -45,12 +45,15 @@ export function CompanyForm({
   t,
   brreg,
   showBrreg,
+  extra,
 }: {
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: CompanyValues;
   t: Texts;
   brreg: BrregTexts;
   showBrreg: boolean;
+  /** Extra inputs (custom fields), rendered before the notes. */
+  extra?: ReactNode;
 }) {
   const [v, setV] = useState(initial);
   const set = (k: keyof CompanyValues) => (e: { target: { value: string } }) => setV((s) => ({ ...s, [k]: e.target.value }));
@@ -106,6 +109,7 @@ export function CompanyForm({
       </div>
       <input type="hidden" name="nace_code" value={v.nace_code} />
       {field("nace_description", t.industry)}
+      {extra}
       <div>
         <label htmlFor="c_notes" className="mb-1 block text-sm font-medium">
           {t.notes}

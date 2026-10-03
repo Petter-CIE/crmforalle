@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ui-extra";
 import { updateCompany } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+import { CustomFieldInputs } from "@/components/crm/custom-fields";
+import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { CompanyForm } from "../../company-form";
 import { companyFormTexts } from "../../texts";
 
@@ -17,7 +19,10 @@ export default async function EditCompanyPage({ params }: PageProps<"/app/bedrif
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const { data: c } = await supabase.from("companies").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle();
+  const [{ data: c }, fields] = await Promise.all([
+    supabase.from("companies").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
+    loadCustomFields(supabase, workspace.id, "company"),
+  ]);
   if (!c) notFound();
   const v = (x: string | null) => x ?? "";
   return (
@@ -43,6 +48,7 @@ export default async function EditCompanyPage({ params }: PageProps<"/app/bedrif
           t={companyFormTexts(t)}
           brreg={t.brreg}
           showBrreg={false}
+          extra={<CustomFieldInputs fields={fields} values={asCustomValues(c.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />
       </Card>
     </div>

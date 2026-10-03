@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Button, Card, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
@@ -79,6 +80,28 @@ export default async function SettingsPage() {
           {s.subscription}: <strong className="text-foreground">{t.common.plans[workspace.plan]}</strong>. {s.unlimitedUsers}
         </p>
       </Card>
+
+      {manager && (
+        <Card>
+          <h2 className="mb-1 font-semibold">{t.customize.title}</h2>
+          <p className="mb-3 text-sm text-muted">{t.customize.intro}</p>
+          <ul className="space-y-1 text-sm">
+            {(
+              [
+                ["/app/innstillinger/felt", t.customize.fieldsLink],
+                ["/app/innstillinger/automatisering", t.customize.autoLink],
+                ["/app/tilbud/innstillinger", t.customize.quoteLink],
+              ] as const
+            ).map(([href, label]) => (
+              <li key={href}>
+                <Link href={href} className="text-brand hover:underline">
+                  {label} →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <Card>
         <h2 id="brukere" className="mb-1 font-semibold">

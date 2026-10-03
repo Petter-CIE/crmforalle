@@ -9,6 +9,8 @@ import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { EmptyState, InfoRow, PageHeader } from "@/components/ui-extra";
+import { CustomFieldValues } from "@/components/crm/custom-fields";
+import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { addCompanyToProject, deleteCompany, removeCompanyFromProject } from "@/app/app/crm-actions";
 import { contactName } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
@@ -24,8 +26,8 @@ export async function generateMetadata({ params }: PageProps<"/app/bedrifter/[id
 export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/[id]">) {
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
-  const { t } = await getI18n();
-  const [{ data: c }, { data: contacts }, { data: deals }, { data: allProjects }] = await Promise.all([
+  const { t, dateLocale } = await getI18n();
+  const [{ data: c }, { data: contacts }, { data: deals }, { data: allProjects }, fields] = await Promise.all([
     supabase
       .from("companies")
       .select("*, project_companies(project_id, projects(id, name, color))")
@@ -35,6 +37,7 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
     supabase.from("contacts").select("id, first_name, last_name, title, email, phone").eq("company_id", id).order("first_name"),
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("company_id", id).order("created_at", { ascending: false }),
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+    loadCustomFields(supabase, workspace.id, "company"),
   ]);
   if (!c) notFound();
   const inProjects = (c.project_companies ?? []).map((pc) => pc.projects).filter((p) => p !== null);
@@ -76,6 +79,9 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
               <InfoRow label={t.companies.industry}>{c.nace_description}</InfoRow>
               <InfoRow label={t.crm.notes}>{c.notes && <span className="whitespace-pre-wrap">{c.notes}</span>}</InfoRow>
             </dl>
+            <div className="mt-3">
+              <CustomFieldValues fields={fields} values={asCustomValues(c.custom)} dateLocale={dateLocale} yes={t.crm.yes} />
+            </div>
           </Card>
 
           <Card>

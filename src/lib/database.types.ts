@@ -80,6 +80,61 @@ export type Database = {
           },
         ];
       };
+      automations: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          stage_id: string;
+          task_title: string;
+          due_days: number;
+          active: boolean;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          stage_id: string;
+          task_title: string;
+          due_days?: number;
+          active?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          stage_id?: string;
+          task_title?: string;
+          due_days?: number;
+          active?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "automations_stage_id_workspace_id_fkey";
+            columns: ["stage_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "pipeline_stages";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "automations_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "automations_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       companies: {
         Row: {
           id: string;
@@ -95,6 +150,7 @@ export type Database = {
           email: string | null;
           phone: string | null;
           notes: string | null;
+          custom: Json;
           owner_id: string | null;
           created_by: string | null;
           created_at: string;
@@ -114,6 +170,7 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           notes?: string | null;
+          custom?: Json;
           owner_id?: string | null;
           created_by?: string | null;
           created_at?: string;
@@ -133,6 +190,7 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           notes?: string | null;
+          custom?: Json;
           owner_id?: string | null;
           created_by?: string | null;
           created_at?: string;
@@ -178,6 +236,7 @@ export type Database = {
           marketing_consent: boolean;
           marketing_consent_at: string | null;
           notes: string | null;
+          custom: Json;
           owner_id: string | null;
           created_by: string | null;
           created_at: string;
@@ -198,6 +257,7 @@ export type Database = {
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
           notes?: string | null;
+          custom?: Json;
           owner_id?: string | null;
           created_by?: string | null;
           created_at?: string;
@@ -218,6 +278,7 @@ export type Database = {
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
           notes?: string | null;
+          custom?: Json;
           owner_id?: string | null;
           created_by?: string | null;
           created_at?: string;
@@ -254,6 +315,47 @@ export type Database = {
           },
         ];
       };
+      custom_fields: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          entity: string;
+          label: string;
+          type: string;
+          options: string[];
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          entity: string;
+          label: string;
+          type: string;
+          options?: string[];
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          entity?: string;
+          label?: string;
+          type?: string;
+          options?: string[];
+          position?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deals: {
         Row: {
           id: string;
@@ -269,6 +371,7 @@ export type Database = {
           expected_close: string | null;
           closed_at: string | null;
           lost_reason: string | null;
+          custom: Json;
           position: number;
           created_by: string | null;
           created_at: string;
@@ -288,6 +391,7 @@ export type Database = {
           expected_close?: string | null;
           closed_at?: string | null;
           lost_reason?: string | null;
+          custom?: Json;
           position?: number;
           created_by?: string | null;
           created_at?: string;
@@ -307,6 +411,7 @@ export type Database = {
           expected_close?: string | null;
           closed_at?: string | null;
           lost_reason?: string | null;
+          custom?: Json;
           position?: number;
           created_by?: string | null;
           created_at?: string;
@@ -699,6 +804,56 @@ export type Database = {
           },
         ];
       };
+      products: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          description: string | null;
+          sku: string | null;
+          unit: string;
+          unit_price: number;
+          vat_rate: number;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          description?: string | null;
+          sku?: string | null;
+          unit?: string;
+          unit_price?: number;
+          vat_rate?: number;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          name?: string;
+          description?: string | null;
+          sku?: string | null;
+          unit?: string;
+          unit_price?: number;
+          vat_rate?: number;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "products_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           id: string;
@@ -707,6 +862,7 @@ export type Database = {
           locale: string;
           notify_email: boolean;
           idle_timeout_minutes: number;
+          digest_email: boolean;
           created_at: string;
         };
         Insert: {
@@ -716,6 +872,7 @@ export type Database = {
           locale?: string;
           notify_email?: boolean;
           idle_timeout_minutes?: number;
+          digest_email?: boolean;
           created_at?: string;
         };
         Update: {
@@ -725,6 +882,7 @@ export type Database = {
           locale?: string;
           notify_email?: boolean;
           idle_timeout_minutes?: number;
+          digest_email?: boolean;
           created_at?: string;
         };
         Relationships: [];
@@ -839,6 +997,190 @@ export type Database = {
           },
           {
             foreignKeyName: "projects_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quote_lines: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          quote_id: string;
+          position: number;
+          product_id: string | null;
+          description: string;
+          quantity: number;
+          unit: string;
+          unit_price: number;
+          discount_percent: number;
+          vat_rate: number;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          quote_id: string;
+          position?: number;
+          product_id?: string | null;
+          description: string;
+          quantity?: number;
+          unit?: string;
+          unit_price?: number;
+          discount_percent?: number;
+          vat_rate?: number;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          quote_id?: string;
+          position?: number;
+          product_id?: string | null;
+          description?: string;
+          quantity?: number;
+          unit?: string;
+          unit_price?: number;
+          discount_percent?: number;
+          vat_rate?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quote_lines_quote_id_workspace_id_fkey";
+            columns: ["quote_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "quotes";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "quote_lines_product_id_workspace_id_fkey";
+            columns: ["product_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "quote_lines_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quotes: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          number: number;
+          title: string;
+          status: string;
+          deal_id: string | null;
+          company_id: string | null;
+          contact_id: string | null;
+          valid_until: string | null;
+          intro: string | null;
+          terms: string | null;
+          total_ex_vat: number;
+          total_vat: number;
+          total: number;
+          public_token: string;
+          sent_at: string | null;
+          sent_to: string | null;
+          viewed_at: string | null;
+          view_count: number;
+          responded_at: string | null;
+          responder_name: string | null;
+          response_comment: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          number?: number;
+          title: string;
+          status?: string;
+          deal_id?: string | null;
+          company_id?: string | null;
+          contact_id?: string | null;
+          valid_until?: string | null;
+          intro?: string | null;
+          terms?: string | null;
+          total_ex_vat?: number;
+          total_vat?: number;
+          total?: number;
+          public_token?: string;
+          sent_at?: string | null;
+          sent_to?: string | null;
+          viewed_at?: string | null;
+          view_count?: number;
+          responded_at?: string | null;
+          responder_name?: string | null;
+          response_comment?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          number?: number;
+          title?: string;
+          status?: string;
+          deal_id?: string | null;
+          company_id?: string | null;
+          contact_id?: string | null;
+          valid_until?: string | null;
+          intro?: string | null;
+          terms?: string | null;
+          total_ex_vat?: number;
+          total_vat?: number;
+          total?: number;
+          public_token?: string;
+          sent_at?: string | null;
+          sent_to?: string | null;
+          viewed_at?: string | null;
+          view_count?: number;
+          responded_at?: string | null;
+          responder_name?: string | null;
+          response_comment?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quotes_deal_id_workspace_id_fkey";
+            columns: ["deal_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "quotes_company_id_workspace_id_fkey";
+            columns: ["company_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "quotes_contact_id_workspace_id_fkey";
+            columns: ["contact_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "quotes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quotes_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
@@ -1125,6 +1467,12 @@ export type Database = {
           terms_accepted_at: string | null;
           terms_accepted_by: string | null;
           inbound_token: string | null;
+          quote_address: string | null;
+          quote_email: string | null;
+          quote_phone: string | null;
+          quote_bank_account: string | null;
+          quote_terms: string | null;
+          quote_valid_days: number;
           created_by: string | null;
           created_at: string;
         };
@@ -1148,6 +1496,12 @@ export type Database = {
           terms_accepted_at?: string | null;
           terms_accepted_by?: string | null;
           inbound_token?: string | null;
+          quote_address?: string | null;
+          quote_email?: string | null;
+          quote_phone?: string | null;
+          quote_bank_account?: string | null;
+          quote_terms?: string | null;
+          quote_valid_days?: number;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1171,6 +1525,12 @@ export type Database = {
           terms_accepted_at?: string | null;
           terms_accepted_by?: string | null;
           inbound_token?: string | null;
+          quote_address?: string | null;
+          quote_email?: string | null;
+          quote_phone?: string | null;
+          quote_bank_account?: string | null;
+          quote_terms?: string | null;
+          quote_valid_days?: number;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1307,8 +1667,6 @@ export type Database = {
         Returns: undefined;
       };
       admin_update_packs: { Args: { p_id: string; p_packs: number }; Returns: undefined };
-      admin_wipe_workspace_data: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
-      admin_delete_workspace: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
       admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };
       accept_terms: { Args: { p_workspace: string; p_version: string }; Returns: undefined };
       rotate_inbound_token: { Args: { p_workspace: string }; Returns: string };
@@ -1329,6 +1687,14 @@ export type Database = {
         };
         Returns: string;
       };
+      admin_wipe_workspace_data: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
+      admin_delete_workspace: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
+      quote_public: { Args: { p_token: string }; Returns: Json };
+      quote_respond: {
+        Args: { p_token: string; p_accept: boolean; p_name: string; p_comment: string | null };
+        Returns: Json;
+      };
+      digest_claim: { Args: { p_ticket: string }; Returns: Json };
       my_invitations: {
         Args: never;
         Returns: {

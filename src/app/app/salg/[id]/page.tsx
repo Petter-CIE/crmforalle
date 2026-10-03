@@ -11,7 +11,12 @@ import { deleteDeal, setDealStage, updateDeal } from "@/app/app/crm-actions";
 import { contactName, formatDate, formatMoney } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+import { CustomFieldInputs } from "@/components/crm/custom-fields";
+import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { DealFields } from "../deal-fields";
+import { createQuote } from "../../tilbud/actions";
+import { StatusBadge } from "../../tilbud/status-badge";
+import type { QuoteStatus } from "@/lib/quotes";
 import { loadDealOptions } from "../options";
 
 export async function generateMetadata({ params }: PageProps<"/app/salg/[id]">): Promise<Metadata> {
@@ -26,7 +31,7 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
   const { t, dateLocale } = await getI18n();
-  const [{ data: d }, options, { data: stages }] = await Promise.all([
+  const [{ data: d }, options, { data: stages }, fields, { data: quotes }] = await Promise.all([
     supabase
       .from("deals")
       .select("*, pipeline_stages(name, is_won, is_lost), companies(id, name), contacts(id, first_name, last_name), projects(id, name)")
@@ -35,6 +40,13 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
       .maybeSingle(),
     loadDealOptions(ctx),
     supabase.from("pipeline_stages").select("id, is_won, is_lost, position").eq("workspace_id", workspace.id).order("position"),
+    loadCustomFields(supabase, workspace.id, "deal"),
+    supabase
+      .from("quotes")
+      .select("id, number, title, status, total, view_count")
+      .eq("workspace_id", workspace.id)
+      .eq("deal_id", id)
+      .order("number", { ascending: false }),
   ]);
   if (!d) notFound();
   const path = `/app/salg/${id}`;
@@ -113,6 +125,7 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
             <ActionForm action={updateDeal} submitLabel={t.crm.save} pendingLabel={t.crm.saving} successText={t.settings.saved}>
               <input type="hidden" name="id" value={id} />
               <DealFields t={t} options={options} initial={d} />
+              <CustomFieldInputs fields={fields} values={asCustomValues(d.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />
             </ActionForm>
           </Card>
           <Card>
@@ -121,6 +134,34 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
           </Card>
         </div>
         <div className="space-y-6">
+          <Card>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="font-semibold">{t.quotes.onDeal}</h2>
+              <form action={createQuote}>
+                <input type="hidden" name="deal_id" value={id} />
+                <Button type="submit" variant="secondary" className="!px-3 !py-1.5 text-xs">
+                  + {t.quotes.fromDeal}
+                </Button>
+              </form>
+            </div>
+            {(quotes ?? []).length === 0 ? (
+              <p className="text-sm text-muted">{t.quotes.noneOnDeal}</p>
+            ) : (
+              <ul className="divide-y divide-border text-sm">
+                {(quotes ?? []).map((qt) => (
+                  <li key={qt.id} className="flex items-center justify-between gap-2 py-1.5">
+                    <Link href={`/app/tilbud/${qt.id}`} className="min-w-0 truncate hover:text-brand">
+                      #{qt.number} {qt.title}
+                    </Link>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="tabular-nums text-muted">{formatMoney(Number(qt.total), dateLocale)}</span>
+                      <StatusBadge status={qt.status as QuoteStatus} label={t.quotes.statuses[qt.status as QuoteStatus]} />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
           <Card>
             <h2 className="mb-3 font-semibold">{t.tasks.title}</h2>
             <TaskPanel links={{ deal_id: id, company_id: d.company_id, contact_id: d.contact_id }} path={path} />

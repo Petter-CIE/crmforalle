@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AccountPage() {
   const { supabase, user } = await requireWorkspace();
-  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email, idle_timeout_minutes").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email, digest_email, idle_timeout_minutes").eq("id", user.id).maybeSingle();
   const { t, dateLocale } = await getI18n();
   const s = t.security;
   const idle = profile?.idle_timeout_minutes ?? 60;
@@ -42,6 +42,10 @@ export default async function AccountPage() {
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" name="notify_email" value="1" defaultChecked={profile?.notify_email ?? true} className="mt-0.5" />
             <span>{s.notifyEmail}</span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="digest_email" value="1" defaultChecked={profile?.digest_email ?? true} className="mt-0.5" />
+            <span>{s.digestEmail}</span>
           </label>
         </ActionForm>
       </Card>

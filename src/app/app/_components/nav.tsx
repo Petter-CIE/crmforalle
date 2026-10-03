@@ -13,6 +13,7 @@ export type NavTexts = {
   settings: string;
   email: string;
   reports: string;
+  quotes: string;
   help: string;
   mainMenu: string;
 };
@@ -22,6 +23,7 @@ export function Nav({ t }: { t: NavTexts }) {
   const items = [
     { href: "/app", label: t.today },
     { href: "/app/salg", label: t.sales },
+    { href: "/app/tilbud", label: t.quotes },
     { href: "/app/bedrifter", label: t.companies },
     { href: "/app/kontakter", label: t.contacts },
     { href: "/app/prosjekter", label: t.projects },
