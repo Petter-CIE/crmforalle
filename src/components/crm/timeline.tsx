@@ -42,7 +42,7 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
         {links.company_id && <input type="hidden" name="company_id" value={links.company_id} />}
         {links.contact_id && <input type="hidden" name="contact_id" value={links.contact_id} />}
         {links.deal_id && <input type="hidden" name="deal_id" value={links.deal_id} />}
-        <Textarea name="body" rows={3} placeholder={t.crm.notePlaceholder} aria-label={t.crm.addNote} required />
+        <Textarea id="notat" name="body" rows={3} placeholder={t.crm.notePlaceholder} aria-label={t.crm.addNote} required />
         <Select name="type" defaultValue="note" aria-label={t.crm.timeline}>
           {Object.entries(t.crm.noteTypes).map(([k, v]) => (
             <option key={k} value={k}>

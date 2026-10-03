@@ -7,6 +7,7 @@ import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-l
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
+import { QuickActions } from "@/components/crm/quick-actions";
 import { InfoRow, PageHeader } from "@/components/ui-extra";
 import { CustomFieldValues } from "@/components/crm/custom-fields";
 import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
@@ -76,6 +77,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
           </>
         }
       />
+      <QuickActions phone={k.phone} email={k.email} address={[k.address, [k.postal_code, k.city].filter(Boolean).join(" ")].filter(Boolean).join(", ") || null} website={null} t={{ call: t.mobile.call, sms: t.mobile.sms, email: t.mobile.email, map: t.mobile.map, web: t.mobile.web, note: t.mobile.note }} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">

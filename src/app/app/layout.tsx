@@ -7,6 +7,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace, trialDaysLeft } from "@/lib/session";
 import { switchWorkspace } from "./actions";
 import { AccountingAutoSync } from "./_components/accounting-auto-sync";
+import { BottomNav } from "./_components/bottom-nav";
 import { GlobalSearch } from "./_components/global-search";
 import { Nav } from "./_components/nav";
 
@@ -112,8 +113,10 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             {daysLeft > 0 ? t.trial.daysLeft(daysLeft) : t.trial.over}
           </div>
         )}
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-8">{children}</main>
-        <div className="flex flex-col items-center gap-2 border-t border-border p-4 md:hidden">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8 md:py-8">
+          {children}
+        </main>
+        <div className="flex flex-col items-center gap-2 border-t border-border p-4 pb-24 md:hidden">
           {userCard}
           <Suspense>
             <LanguageSwitcher locale={locale} label={t.common.language} />
@@ -125,6 +128,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           </form>
         </div>
       </div>
+      <BottomNav
+        t={{ today: t.nav.today, sales: t.nav.sales, contacts: t.nav.contacts, tasks: t.nav.tasks, search: t.mobile.search, mainMenu: t.nav.mainMenu }}
+      />
     </div>
   );
 }

@@ -90,7 +90,10 @@ const nb: Faq = {
         },
         {
           q: "Kan vi bruke CRM-et på mobilen?",
-          a: ["Ja, det fungerer i nettleseren på mobil, nettbrett og PC. Det er ingen app å installere."],
+          a: [
+            "Ja. Den fungerer på mobil, nettbrett og PC, og dere kan legge AllSeats på hjemskjermen som en app – med egen ikon, ringe- og SMS-knapper på kundene og varsler når du får en oppgave eller en kunde svarer på et tilbud. Ingen App Store nødvendig.",
+            "Android: åpne allseats.no i Chrome og velg «Installer appen». iPhone: åpne i Safari, trykk Del og «Legg til på Hjem-skjerm». Varsler slår du på under Konto og sikkerhet.",
+          ],
         },
         {
           q: "Hvilke språk finnes?",
@@ -348,7 +351,10 @@ const en: Faq = {
         },
         {
           q: "Can we use the CRM on our phones?",
-          a: ["Yes, it works in the browser on phones, tablets and computers. There is no app to install."],
+          a: [
+            "Yes. It works on phones, tablets and computers, and you can put AllSeats on your home screen as an app – with its own icon, call and SMS buttons on customers and notifications when you get a task or a customer replies to a quote. No App Store needed.",
+            "Android: open allseats.no in Chrome and choose “Install app”. iPhone: open it in Safari, tap Share and “Add to Home Screen”. Turn notifications on under Account and security.",
+          ],
         },
         {
           q: "Which languages are available?",

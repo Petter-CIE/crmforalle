@@ -17,6 +17,9 @@ const PUBLIC_PATHS = [
   "/api/inbound",
   "/api/cron",
   "/tilbud",
+  "/manifest.webmanifest",
+  "/sw.js",
+  "/offline",
 ];
 
 function isPublic(pathname: string) {

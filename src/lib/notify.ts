@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer from "nodemailer";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
+import { queuePush } from "@/lib/push";
 import { siteUrl } from "@/lib/session";
 
 /**
@@ -126,6 +127,12 @@ export type AssignmentNotice = {
 export async function notifyAssignment(supabase: SupabaseClient<Database>, n: AssignmentNotice) {
   try {
     if (!n.recipientId || n.recipientId === n.actorId) return;
+    await queuePush(supabase, [n.recipientId], {
+      title: n.kind === "task" ? "Ny oppgave" : n.kind === "collab" ? "Lagt til på oppgave" : "Nytt prosjekt",
+      body: n.title,
+      url: n.path,
+      tag: n.path,
+    });
     const mailer = transport();
     if (!mailer) return;
     const list = await people(supabase, [n.recipientId, n.actorId]);
@@ -156,7 +163,6 @@ export async function notifyComment(
 ) {
   try {
     const mailer = transport();
-    if (!mailer) return;
     const [{ data: task }, { data: earlier }, { data: collaborators }] = await Promise.all([
       supabase.from("tasks").select("title, assignee_id, created_by").eq("id", n.taskId).maybeSingle(),
       supabase.from("task_comments").select("author_id").eq("task_id", n.taskId),
@@ -173,6 +179,13 @@ export async function notifyComment(
       if (id) ids.add(id);
     ids.delete(n.authorId);
     if (ids.size === 0) return;
+    await queuePush(supabase, [...ids], {
+      title: `Notat: ${task.title}`,
+      body: n.body.slice(0, 200),
+      url: `/app/oppgaver/${n.taskId}`,
+      tag: `task-${n.taskId}`,
+    });
+    if (!mailer) return;
     const list = await people(supabase, [...ids, n.authorId]);
     const author = display(list.find((p) => p.id === n.authorId));
     const url = `${siteUrl()}/app/oppgaver/${n.taskId}`;

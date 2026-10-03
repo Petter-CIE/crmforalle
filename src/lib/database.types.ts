@@ -1004,6 +1004,39 @@ export type Database = {
           },
         ];
       };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent: string | null;
+          disabled_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent?: string | null;
+          disabled_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          user_agent?: string | null;
+          disabled_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       quote_lines: {
         Row: {
           id: string;
@@ -1695,6 +1728,17 @@ export type Database = {
         Returns: Json;
       };
       digest_claim: { Args: { p_ticket: string }; Returns: Json };
+      push_subscribe: {
+        Args: { p_endpoint: string; p_p256dh: string; p_auth: string; p_user_agent: string | null };
+        Returns: undefined;
+      };
+      queue_push: {
+        Args: { p_users: string[]; p_title: string; p_body: string; p_url: string; p_tag: string | null };
+        Returns: number;
+      };
+      queue_test_push: { Args: { p_title: string; p_body: string }; Returns: number };
+      push_claim: { Args: { p_ticket: string }; Returns: Json };
+      push_gone: { Args: { p_ticket: string; p_endpoints: string[] }; Returns: undefined };
       my_invitations: {
         Args: never;
         Returns: {

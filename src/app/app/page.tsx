@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TASK_SELECT, TaskRows, type TaskRow } from "@/components/crm/task-list";
+import { InstallApp } from "@/components/install-app";
 import { ButtonLink, Card } from "@/components/ui";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { formatMoney, involvedFilter } from "@/lib/crm";
@@ -54,6 +55,18 @@ export default async function TodayPage() {
 
   return (
     <div className="space-y-8">
+      <InstallApp
+        banner
+        t={{
+          title: t.mobile.installTitle,
+          intro: t.mobile.installIntro,
+          install: t.mobile.install,
+          installed: t.mobile.installed,
+          iosSteps: t.mobile.iosSteps,
+          otherBrowsers: t.mobile.otherBrowsers,
+          dismiss: t.mobile.dismiss,
+        }}
+      />
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{t.today.hello(firstName)}</h1>
         <p className="text-sm text-muted">{t.today.intro}</p>
