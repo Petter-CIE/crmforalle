@@ -5,6 +5,7 @@ import { Logo, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace, trialDaysLeft } from "@/lib/session";
 import { switchWorkspace } from "./actions";
+import { AccountingAutoSync } from "./_components/accounting-auto-sync";
 import { Nav } from "./_components/nav";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
@@ -73,6 +74,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           </p>
         )}
         <Nav t={t.nav} />
+        <AccountingAutoSync />
         <div className="mt-6 hidden space-y-2 border-t border-border pt-4 text-xs text-muted md:block">
           {userCard}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-2">

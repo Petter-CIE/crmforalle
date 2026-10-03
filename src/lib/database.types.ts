@@ -364,6 +364,79 @@ export type Database = {
           },
         ];
       };
+      external_invoices: {
+        Row: {
+          workspace_id: string;
+          provider: string;
+          external_id: string;
+          company_id: string | null;
+          invoice_number: string | null;
+          invoice_date: string | null;
+          due_date: string | null;
+          amount: number;
+          amount_ex_vat: number;
+          outstanding: number;
+          currency: string;
+          is_credit_note: boolean;
+          overdue_task_id: string | null;
+          synced_at: string;
+        };
+        Insert: {
+          workspace_id: string;
+          provider: string;
+          external_id: string;
+          company_id?: string | null;
+          invoice_number?: string | null;
+          invoice_date?: string | null;
+          due_date?: string | null;
+          amount?: number;
+          amount_ex_vat?: number;
+          outstanding?: number;
+          currency?: string;
+          is_credit_note?: boolean;
+          overdue_task_id?: string | null;
+          synced_at?: string;
+        };
+        Update: {
+          workspace_id?: string;
+          provider?: string;
+          external_id?: string;
+          company_id?: string | null;
+          invoice_number?: string | null;
+          invoice_date?: string | null;
+          due_date?: string | null;
+          amount?: number;
+          amount_ex_vat?: number;
+          outstanding?: number;
+          currency?: string;
+          is_credit_note?: boolean;
+          overdue_task_id?: string | null;
+          synced_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "external_invoices_company_id_workspace_id_fkey";
+            columns: ["company_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
+            foreignKeyName: "external_invoices_overdue_task_id_fkey";
+            columns: ["overdue_task_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "external_invoices_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       inbound_emails: {
         Row: {
           id: string;
@@ -426,6 +499,71 @@ export type Database = {
           },
           {
             foreignKeyName: "inbound_emails_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      integration_links: {
+        Row: { workspace_id: string; provider: string; entity: string; external_id: string; local_id: string };
+        Insert: { workspace_id: string; provider: string; entity: string; external_id: string; local_id: string };
+        Update: { workspace_id?: string; provider?: string; entity?: string; external_id?: string; local_id?: string };
+        Relationships: [
+          {
+            foreignKeyName: "integration_links_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      integrations: {
+        Row: {
+          workspace_id: string;
+          provider: string;
+          credentials: string;
+          external_company: string | null;
+          last_sync_at: string | null;
+          last_error: string | null;
+          sync_started_at: string | null;
+          connected_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          workspace_id: string;
+          provider: string;
+          credentials: string;
+          external_company?: string | null;
+          last_sync_at?: string | null;
+          last_error?: string | null;
+          sync_started_at?: string | null;
+          connected_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          workspace_id?: string;
+          provider?: string;
+          credentials?: string;
+          external_company?: string | null;
+          last_sync_at?: string | null;
+          last_error?: string | null;
+          sync_started_at?: string | null;
+          connected_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "integrations_connected_by_fkey";
+            columns: ["connected_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "integrations_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
@@ -1155,6 +1293,15 @@ export type Database = {
           accounting_addon: boolean;
           extra_contact_packs: number;
         }[];
+      };
+      save_integration: {
+        Args: { p_workspace: string; p_provider: string; p_credentials: string; p_company: string | null };
+        Returns: undefined;
+      };
+      integration_claim_sync: { Args: { p_workspace: string; p_provider: string }; Returns: boolean };
+      integration_synced: {
+        Args: { p_workspace: string; p_provider: string; p_error: string | null };
+        Returns: undefined;
       };
       admin_update_packs: { Args: { p_id: string; p_packs: number }; Returns: undefined };
       admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
+import { EconomyCard } from "@/components/crm/economy-card";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
@@ -83,6 +84,8 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
         </div>
 
         <div className="space-y-6">
+          <EconomyCard companyId={id} />
+
           <Card>
             <h2 className="mb-3 font-semibold">{t.companies.projects}</h2>
             {inProjects.length === 0 ? (

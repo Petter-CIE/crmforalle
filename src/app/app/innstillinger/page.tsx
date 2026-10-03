@@ -3,6 +3,9 @@ import { Button, Card, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { changeRole, removeMember, revokeInvitation } from "./actions";
+import { hasAccountingAccess } from "@/lib/accounting/access";
+import { formatDateTime } from "@/lib/crm";
+import { AccountingCard } from "./accounting-card";
 import { InviteForm, WorkspaceForm, type SettingsTexts } from "./forms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,7 +37,7 @@ export default async function SettingsPage() {
     inviteLink: s.inviteLink,
   };
 
-  const [{ data: members }, { data: invitations }] = await Promise.all([
+  const [{ data: members }, { data: invitations }, { data: billing }, { data: integration }] = await Promise.all([
     supabase
       .from("members")
       .select("user_id, role, created_at, profiles(full_name, email)")
@@ -48,7 +51,15 @@ export default async function SettingsPage() {
           .is("accepted_at", null)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [] as { id: string; email: string; role: "admin" | "user" | "owner"; expires_at: string }[] }),
+    supabase.from("workspaces").select("plan, accounting_addon").eq("id", workspace.id).single(),
+    supabase
+      .from("integrations")
+      .select("external_company, last_sync_at, last_error")
+      .eq("workspace_id", workspace.id)
+      .eq("provider", "tripletex")
+      .maybeSingle(),
   ]);
+  const ac = t.accounting;
 
   return (
     <div className="space-y-8">
@@ -143,6 +154,44 @@ export default async function SettingsPage() {
             )}
           </div>
         )}
+      </Card>
+
+      <Card>
+        <h2 className="mb-3 font-semibold">{ac.title}</h2>
+        <AccountingCard
+          t={{
+            intro: ac.intro,
+            tripletex: ac.tripletex,
+            soon: ac.soon,
+            tokenLabel: ac.tokenLabel,
+            tokenHelp: ac.tokenHelp,
+            connect: ac.connect,
+            connecting: ac.connecting,
+            connectedTo: ac.connectedTo,
+            lastSync: ac.lastSync,
+            neverSynced: ac.neverSynced,
+            syncError: ac.syncError,
+            syncNow: ac.syncNow,
+            syncing: ac.syncing,
+            autoSync: ac.autoSync,
+            disconnect: ac.disconnect,
+            confirmDisconnect: ac.confirmDisconnect,
+            overdueNote: ac.overdueNote,
+            notIncluded: ac.notIncluded,
+            onlyAdmins: ac.onlyAdmins,
+          }}
+          connected={
+            integration
+              ? {
+                  company: integration.external_company,
+                  lastSync: integration.last_sync_at ? formatDateTime(integration.last_sync_at, dateLocale) : null,
+                  error: !!integration.last_error,
+                }
+              : null
+          }
+          manager={manager}
+          allowed={!!billing && hasAccountingAccess(billing)}
+        />
       </Card>
 
       {manager && (
