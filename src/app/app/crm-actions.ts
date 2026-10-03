@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import { parseProjectColor } from "@/lib/colors";
 import { dbErrorKey, opt } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { notifyAssignment } from "@/lib/notify";
@@ -15,7 +16,6 @@ function id(v: FormDataEntryValue | null) {
   const s = typeof v === "string" ? v : "";
   return uuid.test(s) ? s : null;
 }
-const PROJECT_COLORS = ["green", "blue", "amber", "red", "purple", "gray"];
 const NOTE_TYPES = ["note", "call", "meeting", "email"];
 
 async function errorText(error: { code?: string; message?: string } | null, duplicate?: string) {
@@ -153,7 +153,7 @@ export async function createProject(_p: FormResult, formData: FormData): Promise
       workspace_id: workspace.id,
       name,
       description: opt(formData.get("description"), 2000),
-      color: PROJECT_COLORS.includes(color) ? color : "green",
+      color: parseProjectColor(color, String(formData.get("custom_color") ?? "")) ?? "green",
       owner_id: id(formData.get("owner_id")) ?? user.id,
       created_by: user.id,
     })
@@ -193,7 +193,7 @@ export async function updateProject(_p: FormResult, formData: FormData): Promise
     .update({
       name,
       description: opt(formData.get("description"), 2000),
-      color: PROJECT_COLORS.includes(color) ? color : "green",
+      color: parseProjectColor(color, String(formData.get("custom_color") ?? "")) ?? "green",
       ...(ownerId !== undefined ? { owner_id: ownerId } : {}),
     })
     .eq("id", projectId)

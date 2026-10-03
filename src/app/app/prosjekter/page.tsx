@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { Card } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui-extra";
 import { createProject } from "@/app/app/crm-actions";
-import { listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { ProjectFields } from "./project-fields";
@@ -77,7 +78,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/app/pro
                 <Link key={p.id} href={`/app/prosjekter/${p.id}`} className="block">
                   <Card className="!p-4 transition-colors hover:border-brand">
                     <div className="flex items-center gap-2">
-                      <span className={`h-3 w-3 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+                      <ProjectDot color={p.color} className="h-3 w-3" />
                       <h2 className="font-semibold">{p.name}</h2>
                     </div>
                     {p.description && <p className="mt-1 line-clamp-2 text-sm text-muted">{p.description}</p>}

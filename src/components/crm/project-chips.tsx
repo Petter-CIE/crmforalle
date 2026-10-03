@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { ProjectDot } from "@/components/crm/project-dot";
+import { } from "@/lib/crm";
 
 type Project = { id: string; name: string; color: string };
 
@@ -15,7 +16,7 @@ export function ProjectChips({ projects, hrefBase }: { projects: (Project | unde
           href={`${hrefBase}?prosjekt=${p.id}`}
           className="row-above inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5 text-xs hover:underline"
         >
-          <span className={`h-2 w-2 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+          <ProjectDot color={p.color} className="h-2 w-2" />
           {p.name}
         </Link>
       ))}

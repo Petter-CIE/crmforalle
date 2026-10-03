@@ -43,7 +43,7 @@ export function opt(v: FormDataEntryValue | null, max = 500) {
   return s ? s.slice(0, max) : null;
 }
 
-export { PROJECT_COLORS, type ProjectColor } from "@/lib/colors";
+export { PROJECT_PALETTE, projectColorHex, type ProjectColor } from "@/lib/colors";
 
 /**
  * PostgREST `or` filter for tasks a person works on: assigned to them or added as a collaborator.

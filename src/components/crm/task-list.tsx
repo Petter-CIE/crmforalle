@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { ProjectDot } from "@/components/crm/project-dot";
 import { ActionForm } from "@/components/action-form";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { Input, Select } from "@/components/ui";
 import { EmptyState } from "@/components/ui-extra";
 import { createTask, deleteTask, reassignTask, toggleTask } from "@/app/app/crm-actions";
-import { contactName, formatDate, listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, formatDate, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { nowMs } from "@/lib/time";
 import { requireWorkspace } from "@/lib/session";
@@ -100,7 +101,7 @@ export async function TaskRows({
                 {task.due_at && <span className={overdue ? "font-medium text-danger" : ""}>{formatDate(task.due_at, dateLocale)}</span>}
                 {showLinks && task.projects && (
                   <Link href={`/app/prosjekter/${task.projects.id}`} className="row-above inline-flex items-center gap-1 hover:underline">
-                    <span className={`h-2 w-2 rounded-full ${PROJECT_COLORS[task.projects.color as ProjectColor] ?? "bg-zinc-400"}`} />
+                    <ProjectDot color={task.projects.color} className="h-2 w-2" />
                     {task.projects.name}
                   </Link>
                 )}

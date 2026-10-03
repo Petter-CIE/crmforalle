@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
@@ -16,7 +17,7 @@ import {
   setProjectArchived,
   updateProject,
 } from "@/app/app/crm-actions";
-import { contactName, listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { ProjectFields } from "../project-fields";
@@ -67,7 +68,7 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
       <PageHeader
         title={
           <span className="inline-flex items-center gap-2">
-            <span className={`h-3.5 w-3.5 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+            <ProjectDot color={p.color} className="h-3.5 w-3.5" />
             {p.name}
             {p.archived && <span className="text-sm font-normal text-muted">({t.projects.archived})</span>}
           </span>

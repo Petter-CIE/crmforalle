@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
@@ -6,7 +7,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { EmptyState, Field, PageHeader, Textarea } from "@/components/ui-extra";
 import { deleteTask } from "@/app/app/crm-actions";
-import { contactName, formatDateTime, listMembers, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, formatDateTime, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import {
@@ -331,9 +332,7 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
                 {task.projects && (
                   <li>
                     <Link href={`/app/prosjekter/${task.projects.id}`} className="inline-flex items-center gap-2 hover:text-brand">
-                      <span
-                        className={`h-2.5 w-2.5 rounded-full ${PROJECT_COLORS[task.projects.color as ProjectColor] ?? "bg-zinc-400"}`}
-                      />
+                      <ProjectDot color={task.projects.color} className="h-2.5 w-2.5" />
                       {task.projects.name}
                     </Link>
                   </li>

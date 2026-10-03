@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { moveDeal } from "@/app/app/crm-actions";
-import { PROJECT_COLORS, type ProjectColor } from "@/lib/colors";
+import { projectColorHex } from "@/lib/colors";
 import { nowMs } from "@/lib/time";
 
 export type BoardStage = { id: string; name: string; is_won: boolean; is_lost: boolean };
@@ -112,7 +112,8 @@ export function Board({
                         {d.projectColor && (
                           <span
                             title={d.projectName ?? ""}
-                            className={`h-2 w-2 rounded-full ${PROJECT_COLORS[d.projectColor as ProjectColor] ?? "bg-zinc-400"}`}
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: projectColorHex(d.projectColor) }}
                           />
                         )}
                       </span>

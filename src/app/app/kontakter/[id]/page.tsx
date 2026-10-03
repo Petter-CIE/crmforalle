@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmButton } from "@/components/confirm-button";
@@ -8,7 +9,7 @@ import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
 import { InfoRow, PageHeader } from "@/components/ui-extra";
 import { addContactToProject, deleteContact, removeContactFromProject } from "@/app/app/crm-actions";
-import { contactName, formatDateTime, PROJECT_COLORS, type ProjectColor } from "@/lib/crm";
+import { contactName, formatDateTime } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 
@@ -113,7 +114,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
               <ul className="mb-3 space-y-1.5">
                 {inProjects.map((p) => (
                   <li key={p.id} className="flex items-center gap-2 text-sm">
-                    <span className={`h-2.5 w-2.5 rounded-full ${PROJECT_COLORS[p.color as ProjectColor] ?? "bg-zinc-400"}`} />
+                    <ProjectDot color={p.color} className="h-2.5 w-2.5" />
                     <Link href={`/app/prosjekter/${p.id}`} className="flex-1 hover:text-brand">
                       {p.name}
                     </Link>
