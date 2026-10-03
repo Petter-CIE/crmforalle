@@ -1304,6 +1304,8 @@ export type Database = {
         Returns: undefined;
       };
       admin_update_packs: { Args: { p_id: string; p_packs: number }; Returns: undefined };
+      admin_wipe_workspace_data: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
+      admin_delete_workspace: { Args: { p_id: string; p_confirm_name: string }; Returns: string[] };
       admin_update_billing: { Args: { p_id: string; p_interval: string; p_addon: boolean }; Returns: undefined };
       accept_terms: { Args: { p_workspace: string; p_version: string }; Returns: undefined };
       rotate_inbound_token: { Args: { p_workspace: string }; Returns: string };

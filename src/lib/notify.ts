@@ -193,3 +193,51 @@ export async function notifyComment(
     console.error("notifyComment failed", e instanceof Error ? e.message : e);
   }
 }
+
+/**
+ * Service notice to a company's owners and admins after a platform admin deleted its data or the whole company.
+ * Bilingual (we can't read the recipients' language settings once the company is gone). Returns how many were sent.
+ */
+export async function notifyDeletion(n: {
+  kind: "data" | "workspace";
+  workspaceName: string;
+  orgNumber: string | null;
+  recipients: { email: string; name: string | null }[];
+}) {
+  const mailer = transport();
+  if (!mailer) return 0;
+  const date = new Date().toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Oslo" });
+  const company = n.orgNumber ? `${n.workspaceName} (org.nr. ${n.orgNumber})` : n.workspaceName;
+  const nb =
+    n.kind === "workspace"
+      ? `Som avtalt er ${company} og alle tilhørende data – kontakter, bedrifter, salg, oppgaver, prosjekter, notater, e-poster, filer og integrasjoner – slettet permanent fra AllSeats CRM ${date}. Brukerkontoen din er ikke slettet.`
+      : `Som avtalt er alle data i ${company} – kontakter, bedrifter, salg, oppgaver, prosjekter, notater, e-poster, filer og integrasjoner – slettet permanent fra AllSeats CRM ${date}. Bedriften og brukerne er beholdt, så dere kan fortsatt logge inn og starte på nytt.`;
+  const en =
+    n.kind === "workspace"
+      ? `As agreed, ${company} and all of its data – contacts, companies, deals, tasks, projects, notes, e-mails, files and integrations – was permanently deleted from AllSeats CRM on ${date}. Your user account has not been deleted.`
+      : `As agreed, all data in ${company} – contacts, companies, deals, tasks, projects, notes, e-mails, files and integrations – was permanently deleted from AllSeats CRM on ${date}. The company and its users are kept, so you can still log in and start over.`;
+  const title = n.kind === "workspace" ? "Bedriften er slettet / The company was deleted" : "Dataene er slettet / The data was deleted";
+  const { html, text } = render({
+    lead: title,
+    title: n.workspaceName,
+    quote: `${nb}\n\n${en}`,
+    url: n.kind === "workspace" ? "mailto:post@allseats.no" : `${siteUrl()}/logg-inn`,
+    button: n.kind === "workspace" ? "Kontakt oss / Contact us" : "Logg inn / Log in",
+    footer:
+      "Spørsmål? Svar på denne e-posten eller skriv til post@allseats.no. / Questions? Reply to this e-mail or write to post@allseats.no. – AllSeats CRM, CIE AS",
+  });
+  const subject =
+    n.kind === "workspace"
+      ? `${n.workspaceName} er slettet fra AllSeats CRM / was deleted`
+      : `Dataene i ${n.workspaceName} er slettet / Your data was deleted`;
+  let sent = 0;
+  for (const r of n.recipients) {
+    try {
+      await mailer.sendMail({ from: FROM(), replyTo: "post@allseats.no", to: r.email, subject, text, html });
+      sent++;
+    } catch (e) {
+      console.error("notifyDeletion failed", e instanceof Error ? e.message : e);
+    }
+  }
+  return sent;
+}

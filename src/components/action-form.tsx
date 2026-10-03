@@ -39,7 +39,7 @@ export function ActionForm({
     <form ref={ref} action={action} className={className}>
       {children}
       {state.error && <Notice tone="error">{state.error}</Notice>}
-      {state.ok && successText && <Notice tone="success">{successText}</Notice>}
+      {state.ok && (state.message ?? successText) && <Notice tone="success">{state.message ?? successText}</Notice>}
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" disabled={pending} className={submitClassName}>
           {pending ? pendingLabel : submitLabel}

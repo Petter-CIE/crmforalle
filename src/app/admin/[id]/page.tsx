@@ -7,7 +7,7 @@ import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
 import { CONTACT_PACK, effectiveContactLimit, monthlyPrice, PLAN_PRICE } from "@/lib/pricing";
 import { nowMs } from "@/lib/time";
-import { deleteWorkspaceAdmin, updateWorkspaceAdmin } from "../actions";
+import { deleteWorkspaceAdmin, updateWorkspaceAdmin, wipeWorkspaceDataAdmin } from "../actions";
 import { adminStatus } from "../guard";
 import { TrialInput } from "./trial-input";
 
@@ -35,6 +35,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
   const w = (all ?? []).find((x) => x.id === id);
   if (!w) notFound();
   const today = new Date(nowMs()).toISOString().slice(0, 10);
+  const notifyCount = (members ?? []).filter((m) => (m.role === "owner" || m.role === "admin") && m.email).length;
 
   return (
     <div className="space-y-6">
@@ -176,20 +177,45 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
       </div>
 
       <Card className="border-red-200">
-        <h2 className="font-semibold text-red-900">{a.deleteTitle}</h2>
-        <p className="mb-3 mt-1 text-sm text-muted">{a.deleteHelp}</p>
-        <ActionForm
-          action={deleteWorkspaceAdmin}
-          submitLabel={a.deleteButton}
-          pendingLabel={a.deleting}
-          className="space-y-3"
-          submitClassName="!bg-red-700 hover:!bg-red-800"
-        >
-          <input type="hidden" name="id" value={w.id} />
-          <Field label={a.deleteConfirm(w.name)} htmlFor="a_del">
-            <Input id="a_del" name="confirm_name" autoComplete="off" required className="w-full max-w-sm" />
-          </Field>
-        </ActionForm>
+        <h2 className="font-semibold text-red-900">{a.dangerTitle}</h2>
+        <p className="mb-4 mt-1 text-sm text-muted">{a.dangerHelp}</p>
+        <div className="grid gap-6 md:grid-cols-2">
+          {(
+            [
+              ["data", a.wipeTitle, a.wipeHelp, a.wipeButton, wipeWorkspaceDataAdmin],
+              ["workspace", a.deleteTitle, a.deleteHelp, a.deleteButton, deleteWorkspaceAdmin],
+            ] as const
+          ).map(([kind, title, help, button, action]) => (
+            <div key={kind} className="rounded-lg border border-red-200 p-4">
+              <h3 className="text-sm font-semibold">{title}</h3>
+              <p className="mb-3 mt-1 text-xs text-muted">{help}</p>
+              <ActionForm
+                action={action}
+                submitLabel={button}
+                pendingLabel={a.deleting}
+                resetOnSuccess
+                className="space-y-3"
+                submitClassName="!bg-red-700 hover:!bg-red-800"
+              >
+                <input type="hidden" name="id" value={w.id} />
+                <Field label={a.deleteConfirm(w.name)} htmlFor={`a_del_${kind}`}>
+                  <Input id={`a_del_${kind}`} name="confirm_name" autoComplete="off" required className="w-full" />
+                </Field>
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="notify"
+                    value="1"
+                    defaultChecked={notifyCount > 0}
+                    disabled={notifyCount === 0}
+                    className="mt-0.5"
+                  />
+                  <span>{a.notifyOwners(notifyCount)}</span>
+                </label>
+              </ActionForm>
+            </div>
+          ))}
+        </div>
       </Card>
     </div>
   );

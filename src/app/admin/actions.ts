@@ -6,6 +6,7 @@ import type { FormResult } from "@/app/app/crm-actions";
 import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
 import { CONTACT_PACK, PLAN_CONTACT_LIMIT } from "@/lib/pricing";
+import { notifyDeletion } from "@/lib/notify";
 import { adminStatus } from "./guard";
 
 const PLANS: PlanType[] = ["trial", "start", "bedrift", "free"];
@@ -59,18 +60,60 @@ export async function updateWorkspaceAdmin(_p: FormResult, formData: FormData): 
   return { ok: true };
 }
 
-/** Permanently deletes a company. The admin must type the exact company name. */
-export async function deleteWorkspaceAdmin(_p: FormResult, formData: FormData): Promise<FormResult> {
+/** Removes attachment files from storage. Best effort: the database rows are already gone. */
+async function removeFiles(supabase: Awaited<ReturnType<typeof adminStatus>>["supabase"], paths: string[] | null) {
+  const list = paths ?? [];
+  for (let i = 0; i < list.length; i += 100) {
+    const { error } = await supabase.storage.from("attachments").remove(list.slice(i, i + 100));
+    if (error) console.error("attachment cleanup failed", error.message);
+  }
+}
+
+/**
+ * Permanently deletes a company's data ("data") or the whole company ("workspace").
+ * The admin must type the exact company name. Owners and admins of the company get an e-mail.
+ */
+async function adminDelete(kind: "data" | "workspace", formData: FormData): Promise<FormResult> {
   const { supabase, isAdmin, hasAal2 } = await adminStatus();
   const { t } = await getI18n();
   if (!isAdmin || !hasAal2) return { error: t.admin.failed };
   const id = String(formData.get("id") ?? "");
   if (!UUID.test(id)) return { error: t.admin.failed };
-  const { error } = await supabase.rpc("admin_delete_workspace", {
+  const confirm = String(formData.get("confirm_name") ?? "").trim();
+
+  // Collect who to notify before the members are gone.
+  const [{ data: all }, { data: members }] = await Promise.all([
+    supabase.rpc("admin_workspaces_v3"),
+    supabase.rpc("admin_workspace_members", { p_id: id }),
+  ]);
+  const w = (all ?? []).find((x) => x.id === id);
+  if (!w) return { error: t.admin.failed };
+  if (confirm !== w.name) return { error: t.admin.deleteMismatch };
+  const recipients = (members ?? [])
+    .filter((m) => (m.role === "owner" || m.role === "admin") && m.email)
+    .map((m) => ({ email: m.email!, name: m.full_name }));
+
+  const { data: paths, error } = await supabase.rpc(kind === "workspace" ? "admin_delete_workspace" : "admin_wipe_workspace_data", {
     p_id: id,
-    p_confirm_name: String(formData.get("confirm_name") ?? "").trim(),
+    p_confirm_name: confirm,
   });
-  if (error) return { error: error.message.includes("name_mismatch") ? t.admin.deleteMismatch : t.admin.failed };
+  if (error) {
+    console.error("admin delete failed", error.message);
+    return { error: error.message.includes("name_mismatch") ? t.admin.deleteMismatch : t.admin.failed };
+  }
+  await removeFiles(supabase, paths);
+  const sent = formData.get("notify") === "1" ? await notifyDeletion({ kind, workspaceName: w.name, orgNumber: w.org_number, recipients }) : 0;
+
   revalidatePath("/admin");
-  redirect("/admin");
+  if (kind === "workspace") redirect(`/admin?slettet=${encodeURIComponent(w.name)}&varslet=${sent}`);
+  revalidatePath(`/admin/${id}`);
+  return { ok: true, message: t.admin.wiped(sent) };
+}
+
+export async function wipeWorkspaceDataAdmin(_p: FormResult, formData: FormData) {
+  return adminDelete("data", formData);
+}
+
+export async function deleteWorkspaceAdmin(_p: FormResult, formData: FormData) {
+  return adminDelete("workspace", formData);
 }

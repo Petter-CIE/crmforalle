@@ -97,6 +97,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         <h1 className="text-2xl font-semibold tracking-tight">{a.title}</h1>
         <p className="text-sm text-muted">{a.subtitle}</p>
       </header>
+      {typeof sp.slettet === "string" && (
+        <p className="rounded-lg border border-border bg-brand-soft px-4 py-3 text-sm text-brand">
+          {a.deletedNotice(sp.slettet, Number(sp.varslet) || 0)}
+        </p>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {[

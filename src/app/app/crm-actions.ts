@@ -9,7 +9,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { notifyAssignment } from "@/lib/notify";
 import { requireWorkspace } from "@/lib/session";
 
-export type FormResult = { error?: string; ok?: boolean };
+export type FormResult = { error?: string; ok?: boolean; message?: string };
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function id(v: FormDataEntryValue | null) {
