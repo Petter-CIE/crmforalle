@@ -124,7 +124,15 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
             <h2 className="mb-3 font-semibold">{t.deals.edit}</h2>
             <ActionForm action={updateDeal} submitLabel={t.crm.save} pendingLabel={t.crm.saving} successText={t.settings.saved}>
               <input type="hidden" name="id" value={id} />
-              <DealFields t={t} options={options} initial={d} />
+              <DealFields
+                t={t}
+                options={options}
+                initial={{
+                  ...d,
+                  company: d.companies ? { id: d.companies.id, label: d.companies.name } : null,
+                  contact: d.contacts ? { id: d.contacts.id, label: contactName(d.contacts) } : null,
+                }}
+              />
               <CustomFieldInputs fields={fields} values={asCustomValues(d.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />
             </ActionForm>
           </Card>

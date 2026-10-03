@@ -19,9 +19,8 @@ export default async function EditContactPage({ params }: PageProps<"/app/kontak
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: k }, { data: companies }, fields] = await Promise.all([
-    supabase.from("contacts").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
-    supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
+  const [{ data: k }, fields] = await Promise.all([
+    supabase.from("contacts").select("*, companies(id, name)").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     loadCustomFields(supabase, workspace.id, "contact"),
   ]);
   if (!k) notFound();
@@ -32,7 +31,7 @@ export default async function EditContactPage({ params }: PageProps<"/app/kontak
         <ContactForm
           action={updateContact}
           initial={k}
-          companies={companies ?? []}
+          company={k.companies ? { id: k.companies.id, label: k.companies.name } : null}
           t={t}
           extra={<CustomFieldInputs fields={fields} values={asCustomValues(k.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />

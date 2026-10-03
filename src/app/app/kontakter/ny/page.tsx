@@ -23,8 +23,10 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
   const parts = name.split(/\s+/).filter(Boolean);
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: companies }, fields] = await Promise.all([
-    supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
+  const [{ data: company }, fields] = await Promise.all([
+    companyId
+      ? supabase.from("companies").select("id, name").eq("id", companyId).eq("workspace_id", workspace.id).maybeSingle()
+      : Promise.resolve({ data: null }),
     loadCustomFields(supabase, workspace.id, "contact"),
   ]);
   const hidden: Record<string, string> = {};
@@ -47,7 +49,7 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
             first_name: parts.length > 1 ? parts.slice(0, -1).join(" ") : (parts[0] ?? ""),
             last_name: parts.length > 1 ? parts[parts.length - 1] : null,
             email, phone: null, title: null, company_id: companyId, notes: null }}
-          companies={companies ?? []}
+          company={company ? { id: company.id, label: company.name } : null}
           t={t}
           hidden={hidden}
           extra={<CustomFieldInputs fields={fields} values={{}} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}

@@ -6,7 +6,8 @@ import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
 import { TaskPanel } from "@/components/crm/task-list";
-import { Button, ButtonLink, Card, Select } from "@/components/ui";
+import { Button, ButtonLink, Card } from "@/components/ui";
+import { PickAndSubmit } from "@/components/pick-and-submit";
 import { EmptyState, PageHeader } from "@/components/ui-extra";
 import {
   addCompanyToProject,
@@ -34,7 +35,7 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
   const ctx = await requireWorkspace();
   const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
-  const [{ data: p }, { data: members }, { data: deals }, { data: allContacts }, team, { data: linked }, { data: allCompanies }] =
+  const [{ data: p }, { data: members }, { data: deals }, team, { data: linked }] =
     await Promise.all([
     supabase.from("projects").select("*").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     supabase
@@ -42,22 +43,16 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
       .select("contact_id, contacts(id, first_name, last_name, title, email, phone, companies(name))")
       .eq("project_id", id),
     supabase.from("deals").select(DEAL_ROW_SELECT).eq("project_id", id).order("created_at", { ascending: false }),
-    supabase.from("contacts").select("id, first_name, last_name").eq("workspace_id", workspace.id).order("first_name").limit(1000),
     listMembers(ctx),
     supabase.from("project_companies").select("company_id, companies(id, name, city, org_number)").eq("project_id", id),
-    supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
   ]);
   if (!p) notFound();
   const companies = (linked ?? [])
     .map((l) => l.companies)
     .filter((c) => c !== null)
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
-  const companyIds = new Set(companies.map((c) => c.id));
-  const availableCompanies = (allCompanies ?? []).filter((c) => !companyIds.has(c.id));
   const ownerName = p.owner_id ? team.find((m) => m.id === p.owner_id)?.name : null;
   const path = `/app/prosjekter/${id}`;
-  const inProject = new Set((members ?? []).map((m) => m.contact_id));
-  const available = (allContacts ?? []).filter((c) => !inProject.has(c.id));
   const contacts = (members ?? [])
     .map((m) => m.contacts)
     .filter((c) => c !== null)
@@ -139,22 +134,15 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
                 ))}
               </ul>
             )}
-            {available.length > 0 && (
-              <form action={addContactToProject} className="mt-4 flex gap-2">
-                <input type="hidden" name="project_id" value={id} />
-                <Select name="contact_id" required aria-label={t.projects.addContact} className="min-w-0 flex-1">
-                  <option value="">{t.projects.addContact}</option>
-                  {available.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {contactName(c)}
-                    </option>
-                  ))}
-                </Select>
-                <Button type="submit" variant="secondary">
-                  {t.tasks.add}
-                </Button>
-              </form>
-            )}
+            <PickAndSubmit
+              action={addContactToProject}
+              hidden={{ project_id: id }}
+              field="contact_id"
+              kind="contact"
+              exclude={contacts.map((c) => c.id)}
+              placeholder={`+ ${t.projects.addContact} – ${t.crm.searchContact.toLowerCase()}`}
+              emptyText={t.crm.noResults}
+            />
           </Card>
 
           <Card>
@@ -189,22 +177,15 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
                 ))}
               </ul>
             )}
-            {availableCompanies.length > 0 && (
-              <form action={addCompanyToProject} className="mt-4 flex gap-2">
-                <input type="hidden" name="project_id" value={id} />
-                <Select name="company_id" required aria-label={t.projects.addCompany} className="min-w-0 flex-1">
-                  <option value="">{t.projects.addCompany}</option>
-                  {availableCompanies.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
-                <Button type="submit" variant="secondary">
-                  {t.tasks.add}
-                </Button>
-              </form>
-            )}
+            <PickAndSubmit
+              action={addCompanyToProject}
+              hidden={{ project_id: id }}
+              field="company_id"
+              kind="company"
+              exclude={companies.map((c) => c.id)}
+              placeholder={`+ ${t.projects.addCompany} – ${t.crm.searchCompany.toLowerCase()}`}
+              emptyText={t.crm.noResults}
+            />
           </Card>
 
           <Card>

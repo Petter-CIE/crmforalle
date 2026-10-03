@@ -1,12 +1,10 @@
 import { Input, Select } from "@/components/ui";
 import { Field } from "@/components/ui-extra";
-import { contactName } from "@/lib/crm";
+import { SearchSelect } from "@/components/search-select";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export type DealOptions = {
   stages: { id: string; name: string }[];
-  companies: { id: string; name: string }[];
-  contacts: { id: string; first_name: string; last_name: string | null }[];
   projects: { id: string; name: string }[];
   members: { id: string; name: string }[];
 };
@@ -22,8 +20,9 @@ export function DealFields({
     title?: string;
     value?: number;
     stage_id?: string;
-    company_id?: string | null;
-    contact_id?: string | null;
+    /** Linked company and contact, shown in the search fields. */
+    company?: { id: string; label: string } | null;
+    contact?: { id: string; label: string } | null;
     project_id?: string | null;
     owner_id?: string | null;
     expected_close?: string | null;
@@ -54,24 +53,26 @@ export function DealFields({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={d.company} htmlFor="d_company">
-          <Select id="d_company" name="company_id" defaultValue={initial.company_id ?? ""} className="w-full">
-            <option value="">{t.crm.none}</option>
-            {options.companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            kind="company"
+            id="d_company"
+            name="company_id"
+            defaultValue={initial.company}
+            placeholder={t.crm.searchCompany}
+            noneLabel={t.crm.none}
+            emptyText={t.crm.noResults}
+          />
         </Field>
         <Field label={d.contact} htmlFor="d_contact">
-          <Select id="d_contact" name="contact_id" defaultValue={initial.contact_id ?? ""} className="w-full">
-            <option value="">{t.crm.none}</option>
-            {options.contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {contactName(c)}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            kind="contact"
+            id="d_contact"
+            name="contact_id"
+            defaultValue={initial.contact}
+            placeholder={t.crm.searchContact}
+            noneLabel={t.crm.none}
+            emptyText={t.crm.noResults}
+          />
         </Field>
         <Field label={d.project} htmlFor="d_project">
           <Select id="d_project" name="project_id" defaultValue={initial.project_id ?? ""} className="w-full">

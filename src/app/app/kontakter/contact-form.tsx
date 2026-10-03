@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
-import { Input, Select } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { SearchSelect } from "@/components/search-select";
 import { Field, Textarea } from "@/components/ui-extra";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -23,14 +24,15 @@ export type ContactValues = {
 export function ContactForm({
   action,
   initial,
-  companies,
+  company,
   t,
   hidden = {},
   extra,
 }: {
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: ContactValues;
-  companies: { id: string; name: string }[];
+  /** Currently linked company (shown in the search field). */
+  company: { id: string; label: string } | null;
   t: Dictionary;
   hidden?: Record<string, string>;
   /** Extra inputs (custom fields), rendered before the notes. */
@@ -60,14 +62,15 @@ export function ContactForm({
           <Input id="k_title" name="title" defaultValue={initial.title ?? ""} />
         </Field>
         <Field label={c.company} htmlFor="k_company">
-          <Select id="k_company" name="company_id" defaultValue={initial.company_id ?? ""} className="w-full">
-            <option value="">{c.noCompany}</option>
-            {companies.map((co) => (
-              <option key={co.id} value={co.id}>
-                {co.name}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            kind="company"
+            id="k_company"
+            name="company_id"
+            defaultValue={company}
+            placeholder={t.crm.searchCompany}
+            noneLabel={c.noCompany}
+            emptyText={t.crm.noResults}
+          />
         </Field>
       </div>
       <fieldset className="space-y-3">

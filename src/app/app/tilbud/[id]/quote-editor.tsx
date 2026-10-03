@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Input, Select } from "@/components/ui";
+import { SearchSelect, type SearchItem } from "@/components/search-select";
 import { saveQuote } from "../actions";
 import { lineNet, quoteTotals, VAT_RATES, type QuoteLine } from "@/lib/quotes";
 
-type Option = { id: string; name: string };
-export type ProductOption = { id: string; name: string; description: string | null; unit: string; unit_price: number; vat_rate: number };
+type Picked = { id: string; label: string } | null;
 
 export type EditorTexts = {
   quoteTitle: string;
@@ -36,6 +36,11 @@ export type EditorTexts = {
   saving: string;
   saved: string;
   none: string;
+  searchCompany: string;
+  searchContact: string;
+  searchDeal: string;
+  searchProduct: string;
+  noResults: string;
 };
 
 type Row = { key: number; description: string; quantity: string; unit: string; unit_price: string; discount_percent: string; vat_rate: number; product_id: string | null };
@@ -49,10 +54,7 @@ let nextKey = 1;
 export function QuoteEditor({
   quote,
   initialLines,
-  products,
-  companies,
-  contacts,
-  deals,
+  linked,
   locale,
   readOnly,
   t,
@@ -68,10 +70,8 @@ export function QuoteEditor({
     deal_id: string | null;
   };
   initialLines: QuoteLine[];
-  products: ProductOption[];
-  companies: Option[];
-  contacts: Option[];
-  deals: Option[];
+  /** Currently linked company, contact and deal (shown in the search fields). */
+  linked: { company: Picked; contact: Picked; deal: Picked };
   locale: string;
   readOnly: boolean;
   t: EditorTexts;
@@ -105,20 +105,22 @@ export function QuoteEditor({
   const money = (v: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "NOK" }).format(v);
 
   const update = (key: number, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
-  const add = (p?: ProductOption) =>
+  const add = (p?: SearchItem) => {
+    const d = (p?.data ?? {}) as { description?: string | null; unit?: string; unit_price?: number; vat_rate?: number };
     setRows((rs) => [
       ...rs,
       {
         key: nextKey++,
-        description: p ? [p.name, p.description].filter(Boolean).join(" – ") : "",
+        description: p ? [p.label, d.description].filter(Boolean).join(" – ") : "",
         quantity: "1",
-        unit: p?.unit ?? "stk",
-        unit_price: p ? String(p.unit_price) : "",
+        unit: d.unit ?? "stk",
+        unit_price: d.unit_price !== undefined ? String(d.unit_price) : "",
         discount_percent: "",
-        vat_rate: p?.vat_rate ?? 25,
+        vat_rate: d.vat_rate ?? 25,
         product_id: p?.id ?? null,
       },
     ]);
+  };
 
   const cell = "w-full !px-2 !py-1.5";
 
@@ -144,23 +146,24 @@ export function QuoteEditor({
         <div className="grid gap-4 sm:grid-cols-3">
           {(
             [
-              ["company_id", t.company, companies, quote.company_id],
-              ["contact_id", t.contact, contacts, quote.contact_id],
-              ["deal_id", t.deal, deals, quote.deal_id],
+              ["company_id", "company", t.company, t.searchCompany, linked.company],
+              ["contact_id", "contact", t.contact, t.searchContact, linked.contact],
+              ["deal_id", "deal", t.deal, t.searchDeal, linked.deal],
             ] as const
-          ).map(([name, label, options, value]) => (
+          ).map(([name, kind, label, placeholder, value]) => (
             <div key={name}>
               <label htmlFor={`q_${name}`} className="mb-1 block text-sm font-medium">
                 {label}
               </label>
-              <Select id={`q_${name}`} name={name} defaultValue={value ?? ""} className="w-full">
-                <option value="">{t.none}</option>
-                {options.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}
-                  </option>
-                ))}
-              </Select>
+              <SearchSelect
+                kind={kind}
+                id={`q_${name}`}
+                name={name}
+                defaultValue={value}
+                placeholder={placeholder}
+                noneLabel={t.none}
+                emptyText={t.noResults}
+              />
             </div>
           ))}
         </div>
@@ -253,24 +256,14 @@ export function QuoteEditor({
           </div>
           {!readOnly && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              {products.length > 0 && (
-                <Select
-                  aria-label={t.chooseProduct}
-                  value=""
-                  onChange={(e) => {
-                    const p = products.find((x) => x.id === e.target.value);
-                    if (p) add(p);
-                  }}
-                  className="!py-1.5 text-sm"
-                >
-                  <option value="">{t.chooseProduct}</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} – {money(p.unit_price)}
-                    </option>
-                  ))}
-                </Select>
-              )}
+              <SearchSelect
+                kind="product"
+                placeholder={t.searchProduct}
+                emptyText={t.noResults}
+                clearOnPick
+                onPick={(p) => add(p)}
+                className="w-full max-w-sm"
+              />
               <button type="button" onClick={() => add()} className="rounded-lg px-3 py-1.5 text-sm text-brand hover:bg-brand-soft">
                 {t.addLine}
               </button>

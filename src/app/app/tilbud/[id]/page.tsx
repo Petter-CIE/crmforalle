@@ -26,7 +26,6 @@ export default async function QuotePage({ params }: PageProps<"/app/tilbud/[id]"
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const ctx = await requireWorkspace();
-  const { supabase, workspace } = ctx;
   const { t, dateLocale } = await getI18n();
   const q = t.quotes;
   const data = await loadQuote(ctx, id);
@@ -34,15 +33,6 @@ export default async function QuotePage({ params }: PageProps<"/app/tilbud/[id]"
   const { quote, doc } = data;
   const status = quote.status as QuoteStatus;
   const locked = status === "accepted" || status === "rejected";
-
-  const [{ data: products }, { data: companies }, { data: contacts }, { data: deals }] = locked
-    ? [{ data: [] }, { data: [] }, { data: [] }, { data: [] }]
-    : await Promise.all([
-        supabase.from("products").select("id, name, description, unit, unit_price, vat_rate").eq("workspace_id", workspace.id).eq("active", true).order("name").limit(500),
-        supabase.from("companies").select("id, name").eq("workspace_id", workspace.id).order("name").limit(1000),
-        supabase.from("contacts").select("id, first_name, last_name, email").eq("workspace_id", workspace.id).order("first_name").limit(1000),
-        supabase.from("deals").select("id, title").eq("workspace_id", workspace.id).order("created_at", { ascending: false }).limit(500),
-      ]);
 
   const texts: EditorTexts = {
     quoteTitle: q.quoteTitle,
@@ -71,6 +61,11 @@ export default async function QuotePage({ params }: PageProps<"/app/tilbud/[id]"
     saving: t.crm.saving,
     saved: q.saved,
     none: t.crm.none,
+    searchCompany: t.crm.searchCompany,
+    searchContact: t.crm.searchContact,
+    searchDeal: t.crm.searchDeal,
+    searchProduct: t.crm.searchProduct,
+    noResults: t.crm.noResults,
   };
   const publicLink = `${siteUrl()}/tilbud/${quote.public_token}`;
   const defaultTo = quote.sent_to ?? quote.contacts?.email ?? "";
@@ -143,10 +138,11 @@ export default async function QuotePage({ params }: PageProps<"/app/tilbud/[id]"
             <QuoteEditor
               quote={quote}
               initialLines={doc.lines}
-              products={(products ?? []).map((p) => ({ ...p, unit_price: Number(p.unit_price), vat_rate: Number(p.vat_rate) }))}
-              companies={companies ?? []}
-              contacts={(contacts ?? []).map((c) => ({ id: c.id, name: contactName(c) }))}
-              deals={(deals ?? []).map((d) => ({ id: d.id, name: d.title }))}
+              linked={{
+                company: quote.companies ? { id: quote.companies.id, label: quote.companies.name } : null,
+                contact: quote.contacts ? { id: quote.contacts.id, label: contactName(quote.contacts) } : null,
+                deal: quote.deals ? { id: quote.deals.id, label: quote.deals.title } : null,
+              }}
               locale={dateLocale}
               readOnly={false}
               t={texts}
