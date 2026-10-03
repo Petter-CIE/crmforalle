@@ -29,6 +29,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted">
+            <Link href="/admin/integrasjoner" className="hover:text-foreground hover:underline">
+              Integrasjoner
+            </Link>
             <span className="hidden sm:inline">{user.email}</span>
             <Link href="/app" className="hover:text-foreground hover:underline">
               {t.admin.backToApp}
