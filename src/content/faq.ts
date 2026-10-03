@@ -156,7 +156,7 @@ const nb: Faq = {
         {
           q: "Kan jeg lagre e-poster i CRM-et?",
           a: [
-            "Ja. Under E-post får bedriften en egen CRM-adresse. Legg den i blindkopi (Bcc) når du skriver til en kunde, eller videresend e-poster du har fått. Det virker fra Outlook, Gmail og mobilen.",
+            "Ja. Hver bedrift får automatisk en egen CRM-adresse – du finner den under E-post. Legg den i blindkopi (Bcc) når du skriver til en kunde, eller videresend e-poster du har fått. Det virker fra Outlook, Gmail og mobilen, og under E-post finner du en steg-for-steg-veiledning.",
             "E-posten lagres på kontakten med samme e-postadresse eller på bedriften med samme domene. Finner vi ingen, venter den i en liste til du har opprettet kontakten.",
           ],
         },
@@ -362,7 +362,7 @@ const en: Faq = {
         {
           q: "Can I save e-mails in the CRM?",
           a: [
-            "Yes. Under E-mail your company gets its own CRM address. Put it in Bcc when you write to a customer, or forward e-mails you've received. It works from Outlook, Gmail and your phone.",
+            "Yes. Every company automatically gets its own CRM address – you'll find it under E-mail. Put it in Bcc when you write to a customer, or forward e-mails you've received. It works from Outlook, Gmail and your phone, and there's a step-by-step guide under E-mail.",
             "The e-mail is saved on the contact with the same e-mail address or on the company with the same domain. If we find none, it waits in a list until you've created the contact.",
           ],
         },

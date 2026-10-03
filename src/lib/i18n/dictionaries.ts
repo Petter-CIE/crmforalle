@@ -562,7 +562,7 @@ const nb = {
     copied: "Kopiert ✓",
     howBcc: "Sender du en e-post til en kunde: legg adressen i Blindkopi (Bcc).",
     howForward: "Har du fått en e-post fra en kunde: videresend den til adressen.",
-    howRule: "I Outlook kan du lage en regel som legger adressen i blindkopi automatisk.",
+    howRule: "Lagre adressen som en kontakt med navnet «CRM», så holder det å skrive CRM i Bcc-feltet.",
     howMatch: "E-posten lagres på kontakten med samme e-postadresse – eller på bedriften med samme domene. Finner vi ingen, havner den i listen under.",
     secret: "Adressen er hemmelig: alle som kjenner den, kan legge e-post inn i CRM-et deres. Del den bare med kolleger.",
     rotate: "Lag ny adresse",
@@ -578,6 +578,46 @@ const nb = {
     recentTitle: "Sist lagret",
     linkedTo: "lagt på {n}",
     recentHint: "E-postene ligger i aktivitetsloggen på kontakten eller bedriften.",
+    guideTitle: "Slik gjør du det i e-postprogrammet ditt",
+    guide: [
+      {
+        title: "Outlook på PC",
+        steps: [
+          "Klikk Ny e-post.",
+          "Ser du ikke feltet Bcc, går du til fanen Alternativer og klikker Bcc.",
+          "Lim inn CRM-adressen i Bcc (eller skriv CRM hvis du har lagret den som kontakt).",
+          "Skriv og send som vanlig.",
+        ],
+      },
+      {
+        title: "Outlook på nett og nye Outlook",
+        steps: ["Klikk Ny e-post.", "Klikk Bcc til høyre i Til-linjen.", "Lim inn CRM-adressen og send."],
+      },
+      {
+        title: "Gmail",
+        steps: ["Klikk Skriv.", "Klikk Bcc til høyre i Til-feltet.", "Lim inn CRM-adressen og send."],
+      },
+      {
+        title: "iPhone og Android",
+        steps: [
+          "iPhone (Mail): trykk på Kopi/Blindkopi, Fra for å få fram Bcc-feltet.",
+          "Outlook-appen: trykk på pilen ved Til for å vise Kopi og Bcc.",
+          "Gmail-appen: trykk på pilen ved Til for å vise Kopi og Bcc.",
+        ],
+      },
+      {
+        title: "En e-post du har fått fra en kunde",
+        steps: ["Klikk Videresend.", "Lim inn CRM-adressen i Til-feltet og send.", "CRM-et finner den opprinnelige avsenderen og lagrer e-posten der."],
+      },
+      {
+        title: "Lagre adressen som kontakt (anbefalt)",
+        steps: [
+          "Opprett en ny kontakt i e-postprogrammet med navnet «CRM» og CRM-adressen som e-post.",
+          "Deretter skriver du bare CRM i Bcc-feltet, så fylles adressen ut automatisk.",
+        ],
+      },
+    ],
+    guideNote: "Bruk alltid Bcc, ikke Kopi: da ser ikke kunden CRM-adressen.",
   },
   help: {
     nav: "Hjelp og spørsmål",
@@ -1280,7 +1320,7 @@ const en: Dictionary = {
     copied: "Copied ✓",
     howBcc: "Sending an e-mail to a customer: put the address in Bcc.",
     howForward: "Got an e-mail from a customer: forward it to the address.",
-    howRule: "In Outlook you can create a rule that adds the address as Bcc automatically.",
+    howRule: "Save the address as a contact called «CRM» – then you only need to type CRM in the Bcc field.",
     howMatch: "The e-mail is saved on the contact with the same e-mail address – or on the company with the same domain. If we find none, it goes to the list below.",
     secret: "The address is secret: anyone who knows it can add e-mail to your CRM. Only share it with colleagues.",
     rotate: "Create new address",
@@ -1296,6 +1336,46 @@ const en: Dictionary = {
     recentTitle: "Recently saved",
     linkedTo: "added to {n}",
     recentHint: "The e-mails are in the activity log of the contact or company.",
+    guideTitle: "How to do it in your e-mail program",
+    guide: [
+      {
+        title: "Outlook on PC",
+        steps: [
+          "Click New Email.",
+          "If you don't see the Bcc field, go to the Options tab and click Bcc.",
+          "Paste the CRM address into Bcc (or type CRM if you've saved it as a contact).",
+          "Write and send as usual.",
+        ],
+      },
+      {
+        title: "Outlook on the web and new Outlook",
+        steps: ["Click New mail.", "Click Bcc on the right of the To line.", "Paste the CRM address and send."],
+      },
+      {
+        title: "Gmail",
+        steps: ["Click Compose.", "Click Bcc on the right of the To field.", "Paste the CRM address and send."],
+      },
+      {
+        title: "iPhone and Android",
+        steps: [
+          "iPhone (Mail): tap Cc/Bcc, From to show the Bcc field.",
+          "Outlook app: tap the arrow by To to show Cc and Bcc.",
+          "Gmail app: tap the arrow by To to show Cc and Bcc.",
+        ],
+      },
+      {
+        title: "An e-mail you received from a customer",
+        steps: ["Click Forward.", "Paste the CRM address into To and send.", "The CRM finds the original sender and saves the e-mail there."],
+      },
+      {
+        title: "Save the address as a contact (recommended)",
+        steps: [
+          "Create a new contact in your e-mail program called «CRM» with the CRM address as its e-mail.",
+          "Then you just type CRM in the Bcc field and the address fills in automatically.",
+        ],
+      },
+    ],
+    guideNote: "Always use Bcc, not Cc: then the customer doesn't see the CRM address.",
   },
   help: {
     nav: "Help and questions",

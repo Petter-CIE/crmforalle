@@ -59,6 +59,27 @@ export default async function InboundPage() {
               <li>{i.howRule}</li>
               <li>{i.howMatch}</li>
             </ul>
+            <details className="group mt-4 rounded-lg border border-border">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium">
+                {i.guideTitle}
+                <span aria-hidden className="text-brand transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <div className="grid gap-4 border-t border-border px-4 py-4 sm:grid-cols-2">
+                {i.guide.map((g) => (
+                  <div key={g.title}>
+                    <h3 className="text-sm font-semibold">{g.title}</h3>
+                    <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm text-muted">
+                      {g.steps.map((st) => (
+                        <li key={st}>{st}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+              <p className="border-t border-border px-4 py-3 text-sm font-medium text-brand">{i.guideNote}</p>
+            </details>
             <p className="mt-3 text-xs text-muted">{i.secret}</p>
             {manager && (
               <div className="mt-4 flex flex-wrap gap-2">
