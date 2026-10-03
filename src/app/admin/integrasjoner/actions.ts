@@ -39,7 +39,19 @@ export async function seedTripletexTestData(): Promise<SeedState> {
   try {
     const session = await createSession(auth);
 
-    // invoicing needs a bank account on 1920
+    // invoicing needs the company's own org. no. …
+    const who = await tripletexGet<{ value: { companyId: number } }>(session, "/token/session/>whoAmI", { fields: "companyId" });
+    const company = await tripletexGet<{ value: { id: number; version: number; organizationNumber?: string } }>(
+      session,
+      `/company/${who.value.companyId}`,
+      { fields: "id,version,organizationNumber" },
+    );
+    if (!company.value.organizationNumber) {
+      await tripletexSend(session, "PUT", "/company", { id: company.value.id, version: company.value.version, organizationNumber: fakeOrgNo() });
+      steps.push("org.nr. satt");
+    }
+
+    // … and a bank account on 1920
     const acc = await tripletexGet<{ values: { id: number; version: number; bankAccountNumber?: string }[] }>(session, "/ledger/account", {
       number: "1920",
       fields: "id,version,bankAccountNumber",
@@ -53,6 +65,12 @@ export async function seedTripletexTestData(): Promise<SeedState> {
     const names = ["Fjordbygg Test AS", "Vestland Rør Test AS", "Bergen Regnskap Test AS"];
     const customers: number[] = [];
     for (const name of names) {
+      // reuse customers from an earlier run
+      const existing = await tripletexGet<{ values: { id: number }[] }>(session, "/customer", { customerName: name, fields: "id" });
+      if (existing.values[0]) {
+        customers.push(existing.values[0].id);
+        continue;
+      }
       const c = await tripletexSend<{ value: { id: number } }>(session, "POST", "/customer", {
         name,
         organizationNumber: fakeOrgNo(),
@@ -64,13 +82,16 @@ export async function seedTripletexTestData(): Promise<SeedState> {
     }
     steps.push(`${customers.length} kunder`);
 
-    await tripletexSend(session, "POST", "/contact", {
-      firstName: "Kari",
-      lastName: "Testesen",
-      email: "kari@fjordbygg-test.no",
-      customer: { id: customers[0] },
-    });
-    steps.push("1 kontaktperson");
+    const kari = await tripletexGet<{ values: unknown[] }>(session, "/contact", { email: "kari@fjordbygg-test.no", fields: "id" });
+    if (!kari.values.length) {
+      await tripletexSend(session, "POST", "/contact", {
+        firstName: "Kari",
+        lastName: "Testesen",
+        email: "kari@fjordbygg-test.no",
+        customer: { id: customers[0] },
+      });
+      steps.push("1 kontaktperson");
+    }
 
     const invoices: [number, number, number, number][] = [
       // customer index, invoice date offset, due date offset, amount ex. VAT
