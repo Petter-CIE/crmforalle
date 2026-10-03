@@ -1,15 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { toCsv } from "@/lib/csv";
 import { canManage, requireWorkspace } from "@/lib/session";
 
 const PAGE = 1000;
-
-/** CSV cell: quote when needed, and neutralise formulas so the file is safe to open in Excel. */
-function cell(v: unknown) {
-  let s = v === null || v === undefined ? "" : String(v);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-const toCsv = (rows: unknown[][]) => "﻿" + rows.map((r) => r.map(cell).join(";")).join("\r\n") + "\r\n";
 
 /** Exports all companies or contacts of the current company as CSV (owner/admin only). */
 export async function GET(req: NextRequest) {
