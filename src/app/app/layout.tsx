@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { IdleLogout } from "@/components/idle-logout";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
@@ -13,7 +14,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const { locale, t } = await getI18n();
   const daysLeft = trialDaysLeft(workspace.trial_ends_at);
   const [{ data: profile }, { data: adminRows }] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("full_name, idle_timeout_minutes").eq("id", user.id).maybeSingle(),
     supabase.rpc("platform_admin_status"),
   ]);
   const isPlatformAdmin = !!adminRows?.[0]?.is_admin;
@@ -75,6 +76,10 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         )}
         <Nav t={t.nav} />
         <AccountingAutoSync />
+        <IdleLogout
+          minutes={profile?.idle_timeout_minutes ?? 60}
+          t={{ title: t.security.idleWarnTitle, body: t.security.idleWarnBody, stay: t.security.idleStay, logout: t.security.idleLogoutNow }}
+        />
         <div className="mt-6 hidden space-y-2 border-t border-border pt-4 text-xs text-muted md:block">
           {userCard}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-2">

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
-import { Card, Input } from "@/components/ui";
+import { Card, Input, Select } from "@/components/ui";
 import { Field } from "@/components/ui-extra";
 import { PasswordForm } from "@/components/password-form";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { changePassword } from "@/app/nytt-passord/actions";
-import { updateProfile } from "./actions";
+import { updateIdleTimeout, updateProfile } from "./actions";
 import { PasskeySection, TotpSection, type SecurityTexts } from "./security-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,10 +17,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AccountPage() {
   const { supabase, user } = await requireWorkspace();
-  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email, idle_timeout_minutes").eq("id", user.id).maybeSingle();
   const { t, dateLocale } = await getI18n();
   const s = t.security;
-  const texts: SecurityTexts = { ...s, invalidCode: t.mfa.invalid };
+  const idle = profile?.idle_timeout_minutes ?? 60;
+  // Only plain strings can be passed to client components.
+  const strings = Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v === "string")) as SecurityTexts;
+  const texts: SecurityTexts = { ...strings, invalidCode: t.mfa.invalid };
 
   return (
     <div className="space-y-8">
@@ -56,6 +59,24 @@ export default async function AccountPage() {
         <h2 className="mb-1 font-semibold">{s.twoFactor}</h2>
         <p className="mb-4 text-sm text-muted">{s.twoFactorIntro}</p>
         <TotpSection t={texts} />
+      </Card>
+
+      <Card>
+        <h2 className="mb-1 font-semibold">{s.idleTitle}</h2>
+        <p className="mb-4 text-sm text-muted">{s.idleIntro}</p>
+        <ActionForm action={updateIdleTimeout} submitLabel={s.idleSave} pendingLabel={t.crm.saving} successText={s.idleSaved}>
+          <Field label={s.idleLabel} htmlFor="idle_timeout_minutes">
+            <Select id="idle_timeout_minutes" name="idle_timeout_minutes" defaultValue={String(idle)} className="w-full max-w-xs">
+              {[15, 30, 60, 120, 240, 480].map((n) => (
+                <option key={n} value={n}>
+                  {s.idleMinutes(n)}
+                </option>
+              ))}
+              <option value="0">{s.idleOff}</option>
+            </Select>
+          </Field>
+          {idle === 0 && <p className="text-xs text-amber-700">{s.idleOffWarning}</p>}
+        </ActionForm>
       </Card>
 
       <Card>

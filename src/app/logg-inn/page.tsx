@@ -18,6 +18,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
   const params = await searchParams;
   const next = safeNext(params.neste);
   const failed = params.feil === "lenke";
+  const idle = params.utlogget === "1";
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
@@ -41,6 +42,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
           {failed && (
             <div className="mb-4">
               <Notice tone="error">{t.login.badLink}</Notice>
+            </div>
+          )}
+          {idle && (
+            <div className="mb-4">
+              <Notice>{t.security.loggedOutIdle}</Notice>
             </div>
           )}
           <LoginForm next={next} t={loginTexts} />

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IdleLogout } from "@/components/idle-logout";
 import { ButtonLink, Card, Logo } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { adminStatus } from "./guard";
@@ -18,6 +19,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
   return (
     <div className="flex flex-1 flex-col">
+      {/* The admin area sees every customer's data, so the sign-out is fixed at 30 minutes. */}
+      <IdleLogout
+        minutes={30}
+        t={{ title: t.security.idleWarnTitle, body: t.security.idleWarnBody, stay: t.security.idleStay, logout: t.security.idleLogoutNow }}
+      />
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-8">
           <div className="flex items-center gap-3">

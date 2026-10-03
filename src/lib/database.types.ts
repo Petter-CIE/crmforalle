@@ -706,6 +706,7 @@ export type Database = {
           full_name: string | null;
           locale: string;
           notify_email: boolean;
+          idle_timeout_minutes: number;
           created_at: string;
         };
         Insert: {
@@ -714,6 +715,7 @@ export type Database = {
           full_name?: string | null;
           locale?: string;
           notify_email?: boolean;
+          idle_timeout_minutes?: number;
           created_at?: string;
         };
         Update: {
@@ -722,6 +724,7 @@ export type Database = {
           full_name?: string | null;
           locale?: string;
           notify_email?: boolean;
+          idle_timeout_minutes?: number;
           created_at?: string;
         };
         Relationships: [];

@@ -17,3 +17,16 @@ export async function updateProfile(_p: FormResult, formData: FormData): Promise
   revalidatePath("/app", "layout");
   return { ok: true };
 }
+
+const IDLE_OPTIONS = [0, 15, 30, 60, 120, 240, 480];
+
+export async function updateIdleTimeout(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { supabase, user } = await requireWorkspace();
+  const { t } = await getI18n();
+  const minutes = Number(formData.get("idle_timeout_minutes"));
+  if (!IDLE_OPTIONS.includes(minutes)) return { error: t.security.error };
+  const { error } = await supabase.from("profiles").update({ idle_timeout_minutes: minutes }).eq("id", user.id);
+  if (error) return { error: t.security.error };
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}
