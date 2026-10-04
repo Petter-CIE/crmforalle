@@ -35,12 +35,12 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
   const [{ data: d }, options, { data: stages }, fields, { data: quotes }] = await Promise.all([
     supabase
       .from("deals")
-      .select("*, pipeline_stages(name, is_won, is_lost), companies(id, name), contacts(id, first_name, last_name), projects(id, name)")
+      .select("*, pipeline_stages(name, is_won, is_lost, pipeline_id), companies(id, name), contacts(id, first_name, last_name), projects(id, name)")
       .eq("id", id)
       .eq("workspace_id", workspace.id)
       .maybeSingle(),
     loadDealOptions(ctx),
-    supabase.from("pipeline_stages").select("id, is_won, is_lost, position").eq("workspace_id", workspace.id).order("position"),
+    supabase.from("pipeline_stages").select("id, is_won, is_lost, position, pipeline_id").eq("workspace_id", workspace.id).order("position"),
     loadCustomFields(supabase, workspace.id, "deal"),
     supabase
       .from("quotes")
@@ -51,9 +51,11 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
   ]);
   if (!d) notFound();
   const path = `/app/salg/${id}`;
-  const wonStage = stages?.find((s) => s.is_won);
-  const lostStage = stages?.find((s) => s.is_lost);
-  const firstOpen = stages?.find((s) => !s.is_won && !s.is_lost);
+  // Won / lost / reopen stay inside the deal's own pipeline.
+  const own = (stages ?? []).filter((s) => s.pipeline_id === d.pipeline_stages?.pipeline_id);
+  const wonStage = own.find((s) => s.is_won);
+  const lostStage = own.find((s) => s.is_lost);
+  const firstOpen = own.find((s) => !s.is_won && !s.is_lost);
   const closed = d.pipeline_stages?.is_won || d.pipeline_stages?.is_lost;
 
   return (

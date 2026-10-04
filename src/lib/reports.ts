@@ -4,6 +4,7 @@ import type { requireWorkspace } from "@/lib/session";
 import { nowMs } from "@/lib/time";
 import { getI18n } from "@/lib/i18n/server";
 import { stageName } from "@/lib/stages";
+import { loadPipelines, orderStages, stageLabel } from "@/lib/pipelines";
 
 type Ctx = Awaited<ReturnType<typeof requireWorkspace>>;
 
@@ -102,9 +103,9 @@ export async function buildReport(ctx: Ctx, period: Period, requestedOwner: stri
   const months = last12Months();
   const nowIso = new Date(nowMs()).toISOString();
 
-  const [members, { data: stagesData }, deals, activities, tasksDone, overdue] = await Promise.all([
+  const [members, { data: stagesData }, deals, activities, tasksDone, overdue, pipelines] = await Promise.all([
     listMembers(ctx),
-    supabase.from("pipeline_stages").select("id, name, position, probability, is_won, is_lost").eq("workspace_id", ws).order("position"),
+    supabase.from("pipeline_stages").select("id, name, position, probability, is_won, is_lost, pipeline_id").eq("workspace_id", ws),
     fetchAll((a, b) =>
       supabase
         .from("deals")
@@ -144,10 +145,11 @@ export async function buildReport(ctx: Ctx, period: Period, requestedOwner: stri
         .order("due_at")
         .range(a, b),
     ),
+    loadPipelines(supabase, ws),
   ]);
 
   const ownerId = members.some((m) => m.id === requestedOwner) ? requestedOwner : null;
-  const stages = stagesData ?? [];
+  const stages = orderStages(stagesData ?? [], pipelines);
   const stageById = new Map(stages.map((s) => [s.id, s]));
   const isWon = (d: { stage_id: string }) => !!stageById.get(d.stage_id)?.is_won;
   const isLost = (d: { stage_id: string }) => !!stageById.get(d.stage_id)?.is_lost;
@@ -168,7 +170,7 @@ export async function buildReport(ctx: Ctx, period: Period, requestedOwner: stri
     .map((s) => {
       const rows = open.filter((d) => d.stage_id === s.id);
       const total = sum(rows, value);
-      return { id: s.id, name: stageName(s.name, locale), probability: s.probability, count: rows.length, value: total, weighted: (total * s.probability) / 100 };
+      return { id: s.id, name: stageLabel(stageName(s.name, locale), s.pipeline_id, pipelines), probability: s.probability, count: rows.length, value: total, weighted: (total * s.probability) / 100 };
     });
 
   const trend = months.map((m) => {

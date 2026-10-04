@@ -42,7 +42,9 @@ export default async function NewDealPage({ searchParams }: PageProps<"/app/salg
       ? `/app/bedrifter/${companyId}`
       : projectId
         ? `/app/prosjekter/${projectId}`
-        : "/app/salg";
+        : str(sp.pipeline)
+          ? `/app/salg?pipeline=${str(sp.pipeline)}`
+          : "/app/salg";
 
   return (
     <div className="space-y-6">
@@ -53,7 +55,8 @@ export default async function NewDealPage({ searchParams }: PageProps<"/app/salg
             t={t}
             options={options}
             initial={{
-              stage_id: options.stages[0]?.id,
+              // First open stage of the pipeline the user came from (or of the first pipeline).
+              stage_id: (options.stages.find((s) => s.open && s.pipeline_id === str(sp.pipeline)) ?? options.stages.find((s) => s.open))?.id,
               company: linkedCompany ? { id: linkedCompany.id, label: linkedCompany.name } : null,
               contact: contact ? { id: contact.id, label: contactName(contact) } : null,
               project_id: projectId,

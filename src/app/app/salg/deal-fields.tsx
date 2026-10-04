@@ -4,7 +4,8 @@ import { SearchSelect } from "@/components/search-select";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export type DealOptions = {
-  stages: { id: string; name: string }[];
+  stages: { id: string; name: string; pipeline_id: string; open: boolean }[];
+  pipelines: { id: string; name: string }[];
   projects: { id: string; name: string }[];
   members: { id: string; name: string }[];
 };
@@ -40,11 +41,23 @@ export function DealFields({
         </Field>
         <Field label={`${d.stage} *`} htmlFor="d_stage">
           <Select id="d_stage" name="stage_id" required defaultValue={initial.stage_id} className="w-full">
-            {options.stages.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+            {options.pipelines.length > 1
+              ? options.pipelines.map((p) => (
+                  <optgroup key={p.id} label={p.name}>
+                    {options.stages
+                      .filter((s) => s.pipeline_id === p.id)
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))
+              : options.stages.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
           </Select>
         </Field>
         <Field label={d.expectedClose} htmlFor="d_close">

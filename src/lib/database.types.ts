@@ -972,6 +972,7 @@ export type Database = {
         Row: {
           id: string;
           workspace_id: string;
+          pipeline_id: string;
           name: string;
           position: number;
           probability: number;
@@ -982,6 +983,7 @@ export type Database = {
         Insert: {
           id?: string;
           workspace_id: string;
+          pipeline_id?: string;
           name: string;
           position?: number;
           probability?: number;
@@ -992,6 +994,7 @@ export type Database = {
         Update: {
           id?: string;
           workspace_id?: string;
+          pipeline_id?: string;
           name?: string;
           position?: number;
           probability?: number;
@@ -1001,7 +1004,28 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "pipeline_stages_pipeline_fkey";
+            columns: ["pipeline_id", "workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "pipelines";
+            referencedColumns: ["id", "workspace_id"];
+          },
+          {
             foreignKeyName: "pipeline_stages_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pipelines: {
+        Row: { id: string; workspace_id: string; name: string; position: number; created_at: string };
+        Insert: { id?: string; workspace_id: string; name: string; position?: number; created_at?: string };
+        Update: { id?: string; workspace_id?: string; name?: string; position?: number; created_at?: string };
+        Relationships: [
+          {
+            foreignKeyName: "pipelines_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";

@@ -39,7 +39,7 @@ type Texts = {
 };
 
 /** Edit the pipeline: rename, probability, drag to reorder, add and delete open stages. */
-export function StageEditor({ initial, t }: { initial: EditorStage[]; t: Texts }) {
+export function StageEditor({ pipelineId, initial, t }: { pipelineId: string; initial: EditorStage[]; t: Texts }) {
   const router = useRouter();
   const toasts = useToast();
   const [stages, setStages] = useState(initial);
@@ -96,6 +96,7 @@ export function StageEditor({ initial, t }: { initial: EditorStage[]; t: Texts }
       });
     start(async () => {
       const res = await saveStages(
+        pipelineId,
         kept.map((s) => ({ id: s.id, name: s.name, probability: s.probability, kind: s.kind })),
         removals,
       );

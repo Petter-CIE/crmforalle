@@ -15,6 +15,7 @@ import { daysAgoIso, nowMs } from "@/lib/time";
 import { StatusBadge } from "./tilbud/status-badge";
 import { DashboardGrid } from "./_components/dashboard-grid";
 import { stageName } from "@/lib/stages";
+import { loadPipelines, orderStages, stageLabel } from "@/lib/pipelines";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -56,13 +57,15 @@ export default async function TodayPage() {
   const monthStart = osloMidnight(year, month, 1);
   const lastMonthStart = osloMidnight(year, month - 1, 1);
 
-  const [{ data: profile }, { count: memberCount }, { count: companyCount }, { data: stages }, { data: deals }] = await Promise.all([
+  const [{ data: profile }, { count: memberCount }, { count: companyCount }, { data: stagesRaw }, { data: deals }, pipelines] = await Promise.all([
     supabase.from("profiles").select("full_name, dashboard").eq("id", user.id).single(),
     supabase.from("members").select("*", { count: "exact", head: true }).eq("workspace_id", workspace.id),
     supabase.from("companies").select("*", { count: "exact", head: true }).eq("workspace_id", workspace.id),
-    supabase.from("pipeline_stages").select("id, name, position, probability, is_won, is_lost").eq("workspace_id", workspace.id).order("position"),
+    supabase.from("pipeline_stages").select("id, name, position, probability, is_won, is_lost, pipeline_id").eq("workspace_id", workspace.id),
     supabase.from("deals").select("id, title, value, stage_id, updated_at, closed_at, companies(name)").eq("workspace_id", workspace.id).limit(5000),
+    loadPipelines(supabase, workspace.id),
   ]);
+  const stages = orderStages(stagesRaw ?? [], pipelines);
 
   const steps = [
     { done: true, label: t.today.stepCreate, href: null },
@@ -210,7 +213,7 @@ export default async function TodayPage() {
             <div key={r.s.id}>
               <div className="mb-1 flex justify-between gap-2 text-xs">
                 <span className="truncate">
-                  {stageName(r.s.name, locale)} <span className="text-muted">· {r.n}</span>
+                  {stageLabel(stageName(r.s.name, locale), r.s.pipeline_id, pipelines)} <span className="text-muted">· {r.n}</span>
                 </span>
                 <span className="tabular-nums text-muted">{money(r.sum)}</span>
               </div>

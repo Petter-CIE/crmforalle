@@ -146,14 +146,15 @@ export type StageRemoval = { id: string; moveTo: number | null };
  * Saves the whole pipeline at once: names, probabilities and order (open stages first, then won and lost),
  * new stages and deleted ones. Deals in a deleted stage are moved to the chosen stage first.
  */
-export async function saveStages(stages: StageInput[], removals: StageRemoval[]): Promise<FormResult> {
+export async function saveStages(pipelineId: string, stages: StageInput[], removals: StageRemoval[]): Promise<FormResult> {
   const { ctx, t, allowed } = await manager();
   const st = t.customize.stages;
   if (!allowed) return { error: t.customize.onlyAdmins };
   const { supabase, workspace } = ctx;
   const ws = workspace.id;
+  if (!UUID.test(pipelineId)) return { error: t.crm.error };
 
-  const { data: existing } = await supabase.from("pipeline_stages").select("id, is_won, is_lost").eq("workspace_id", ws);
+  const { data: existing } = await supabase.from("pipeline_stages").select("id, is_won, is_lost").eq("workspace_id", ws).eq("pipeline_id", pipelineId);
   const byId = new Map((existing ?? []).map((s) => [s.id, s]));
   const clean = stages.map((s) => ({ ...s, name: String(s.name ?? "").trim(), probability: Math.round(Number(s.probability)) }));
   if (clean.some((s) => !s.name || s.name.length > 60 || !Number.isFinite(s.probability) || s.probability < 0 || s.probability > 100)) return { error: st.invalid };
@@ -183,7 +184,7 @@ export async function saveStages(stages: StageInput[], removals: StageRemoval[])
     } else {
       const { data, error } = await supabase
         .from("pipeline_stages")
-        .insert({ workspace_id: ws, name: s.name, probability: s.probability, position })
+        .insert({ workspace_id: ws, pipeline_id: pipelineId, name: s.name, probability: s.probability, position })
         .select("id")
         .single();
       if (error || !data) return { error: t.crm.error };
@@ -202,6 +203,80 @@ export async function saveStages(stages: StageInput[], removals: StageRemoval[])
 
   revalidatePath("/app", "layout");
   return { ok: true, message: st.saved };
+}
+
+// ---------------------------------------------------------------- pipelines
+const MAX_PIPELINES = 10;
+
+/** New pipeline with a few starting stages plus its own "won" and "lost". */
+export async function createPipeline(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  const pl = t.pipelines;
+  if (!allowed) return { error: t.customize.onlyAdmins };
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name || name.length > 60) return { error: pl.invalidName };
+  const { supabase, workspace } = ctx;
+  const { data: list } = await supabase.from("pipelines").select("position").eq("workspace_id", workspace.id);
+  if ((list ?? []).length >= MAX_PIPELINES) return { error: pl.tooMany };
+  const position = Math.max(-1, ...(list ?? []).map((p) => p.position)) + 1;
+  const { data: created, error } = await supabase.from("pipelines").insert({ workspace_id: workspace.id, name, position }).select("id").single();
+  if (error || !created) return { error: t.crm.error };
+  const probs = [10, 40, 70];
+  const rows = [
+    ...pl.defaultStages.map((n, i) => ({ name: n, probability: probs[i] ?? 50, is_won: false, is_lost: false })),
+    { name: pl.won, probability: 100, is_won: true, is_lost: false },
+    { name: pl.lost, probability: 0, is_won: false, is_lost: true },
+  ].map((r, position) => ({ ...r, position, workspace_id: workspace.id, pipeline_id: created.id }));
+  const { error: stageErr } = await supabase.from("pipeline_stages").insert(rows);
+  if (stageErr) return { error: t.crm.error };
+  revalidatePath("/app", "layout");
+  await flash("saved");
+  redirect(`/app/innstillinger/salgsfaser?pipeline=${created.id}`);
+}
+
+export async function renamePipeline(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  const pl = t.pipelines;
+  if (!allowed) return { error: t.customize.onlyAdmins };
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!UUID.test(id)) return { error: t.crm.error };
+  if (!name || name.length > 60) return { error: pl.invalidName };
+  const { error } = await ctx.supabase.from("pipelines").update({ name }).eq("id", id).eq("workspace_id", ctx.workspace.id);
+  if (error) return { error: t.crm.error };
+  revalidatePath("/app", "layout");
+  return { ok: true, message: pl.renamed };
+}
+
+/** Deletes a pipeline after moving its deals to the first open stage of another pipeline. */
+export async function deletePipeline(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  const pl = t.pipelines;
+  if (!allowed) return { error: t.customize.onlyAdmins };
+  const id = String(formData.get("id") ?? "");
+  const target = String(formData.get("move_to") ?? "");
+  if (!UUID.test(id) || !UUID.test(target) || id === target) return { error: t.crm.error };
+  const { supabase, workspace } = ctx;
+  const ws = workspace.id;
+  const { data: list } = await supabase.from("pipelines").select("id").eq("workspace_id", ws);
+  if ((list ?? []).length < 2) return { error: pl.cannotDeleteLast };
+  if (!(list ?? []).some((p) => p.id === target) || !(list ?? []).some((p) => p.id === id)) return { error: t.crm.error };
+  const [{ data: from }, { data: to }] = await Promise.all([
+    supabase.from("pipeline_stages").select("id").eq("workspace_id", ws).eq("pipeline_id", id),
+    supabase.from("pipeline_stages").select("id").eq("workspace_id", ws).eq("pipeline_id", target).eq("is_won", false).eq("is_lost", false).order("position").limit(1),
+  ]);
+  const dest = to?.[0]?.id;
+  if (!dest) return { error: t.crm.error };
+  const ids = (from ?? []).map((s) => s.id);
+  if (ids.length) {
+    const { error: moveErr } = await supabase.from("deals").update({ stage_id: dest }).eq("workspace_id", ws).in("stage_id", ids);
+    if (moveErr) return { error: t.crm.error };
+  }
+  const { error } = await supabase.from("pipelines").delete().eq("id", id).eq("workspace_id", ws);
+  if (error) return { error: t.crm.error };
+  revalidatePath("/app", "layout");
+  await flash("saved");
+  redirect(`/app/innstillinger/salgsfaser?pipeline=${target}`);
 }
 
 // ---------------------------------------------------------------- web forms

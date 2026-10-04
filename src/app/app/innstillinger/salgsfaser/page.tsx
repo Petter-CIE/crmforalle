@@ -4,6 +4,12 @@ import { PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { stageName } from "@/lib/stages";
+import Link from "next/link";
+import { ActionForm } from "@/components/action-form";
+import { Card, Input, Select } from "@/components/ui";
+import { Field } from "@/components/ui-extra";
+import { loadPipelines, pickPipeline } from "@/lib/pipelines";
+import { createPipeline, deletePipeline, renamePipeline } from "../customize-actions";
 import { StageEditor, type EditorStage } from "./stage-editor";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -11,13 +17,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.customize.stages.title };
 }
 
-export default async function StagesPage() {
+export default async function StagesPage({ searchParams }: PageProps<"/app/innstillinger/salgsfaser">) {
+  const sp = await searchParams;
   const { supabase, workspace } = await requireWorkspace();
   if (!canManage(workspace.role)) notFound();
   const { t, locale } = await getI18n();
   const st = t.customize.stages;
+  const pl = t.pipelines;
+  const pipelines = await loadPipelines(supabase, workspace.id);
+  const pipeline = pickPipeline(pipelines, sp.pipeline);
+  if (!pipeline) notFound();
   const [{ data: stages }, { data: deals }, { data: autos }] = await Promise.all([
-    supabase.from("pipeline_stages").select("id, name, probability, position, is_won, is_lost").eq("workspace_id", workspace.id).order("position"),
+    supabase
+      .from("pipeline_stages")
+      .select("id, name, probability, position, is_won, is_lost")
+      .eq("workspace_id", workspace.id)
+      .eq("pipeline_id", pipeline.id)
+      .order("position"),
     supabase.from("deals").select("stage_id").eq("workspace_id", workspace.id).limit(20000),
     supabase.from("automations").select("stage_id").eq("workspace_id", workspace.id),
   ]);
@@ -36,9 +52,69 @@ export default async function StagesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={st.title} subtitle={st.intro} backHref="/app/innstillinger" backLabel={t.settings.title} />
+      <PageHeader title={st.title} subtitle={st.intro} backHref={`/app/salg?pipeline=${pipeline.id}`} backLabel={t.deals.title} />
+
+      <Card>
+        <h2 className="font-semibold">{pl.title}</h2>
+        <p className="mb-4 mt-1 text-sm text-muted">{pl.intro}</p>
+        <nav aria-label={pl.label} className="flex flex-wrap gap-2">
+          {pipelines.map((p) => {
+            const active = p.id === pipeline.id;
+            return (
+              <Link
+                key={p.id}
+                href={`/app/innstillinger/salgsfaser?pipeline=${p.id}`}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-full border px-4 py-1.5 text-sm ${active ? "border-brand bg-brand text-white" : "border-border bg-surface hover:border-brand hover:text-brand"}`}
+              >
+                {p.name}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="mt-5 grid gap-6 md:grid-cols-2">
+          <ActionForm action={createPipeline} submitLabel={pl.create} pendingLabel={t.crm.saving} className="space-y-3">
+            <Field label={pl.newName} htmlFor="pl_new">
+              <Input id="pl_new" name="name" required maxLength={60} placeholder={pl.newPlaceholder} className="w-full" />
+            </Field>
+          </ActionForm>
+          <ActionForm key={pipeline.id} action={renamePipeline} submitLabel={pl.renameSave} pendingLabel={t.crm.saving} className="space-y-3">
+            <input type="hidden" name="id" value={pipeline.id} />
+            <Field label={pl.rename} htmlFor="pl_name">
+              <Input id="pl_name" name="name" required maxLength={60} defaultValue={pipeline.name} className="w-full" />
+            </Field>
+          </ActionForm>
+        </div>
+        {pipelines.length > 1 && (
+          <details className="mt-5 rounded-lg border border-red-200 p-3 text-sm">
+            <summary className="cursor-pointer font-medium text-danger">
+              {pl.delete}: {pipeline.name}
+            </summary>
+            <p className="mb-3 mt-2 text-muted">{pl.deleteConfirm}</p>
+            <ActionForm key={`del-${pipeline.id}`} action={deletePipeline} submitLabel={pl.delete} pendingLabel={t.crm.saving} className="space-y-3">
+              <input type="hidden" name="id" value={pipeline.id} />
+              <Field label={pl.moveTo} htmlFor="pl_move">
+                <Select id="pl_move" name="move_to" className="w-full">
+                  {pipelines
+                    .filter((p) => p.id !== pipeline.id)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                </Select>
+              </Field>
+            </ActionForm>
+          </details>
+        )}
+      </Card>
+
+      <h2 className="font-semibold">
+        {st.title}: {pipeline.name}
+      </h2>
       <StageEditor
         key={JSON.stringify(list)}
+        pipelineId={pipeline.id}
         initial={list}
         t={{
           open: st.open,

@@ -8,6 +8,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { createAutomation, deleteAutomation, toggleAutomation } from "../customize-actions";
 import { stageName } from "@/lib/stages";
+import { loadPipelines, orderStages, stageLabel } from "@/lib/pipelines";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -19,15 +20,17 @@ export default async function AutomationsPage() {
   if (!canManage(workspace.role)) notFound();
   const { t, locale } = await getI18n();
   const c = t.customize;
-  const [{ data: stages }, { data: rules }] = await Promise.all([
-    supabase.from("pipeline_stages").select("id, name").eq("workspace_id", workspace.id).order("position"),
+  const [pipelines, { data: stagesRaw }, { data: rules }] = await Promise.all([
+    loadPipelines(supabase, workspace.id),
+    supabase.from("pipeline_stages").select("id, name, pipeline_id, position").eq("workspace_id", workspace.id),
     supabase
       .from("automations")
       .select("id, stage_id, task_title, due_days, active")
       .eq("workspace_id", workspace.id)
       .order("created_at"),
   ]);
-  const nameOf = new Map((stages ?? []).map((s) => [s.id, stageName(s.name, locale)]));
+  const stages = orderStages(stagesRaw ?? [], pipelines).map((s) => ({ id: s.id, name: stageLabel(stageName(s.name, locale), s.pipeline_id, pipelines) }));
+  const nameOf = new Map(stages.map((s) => [s.id, s.name]));
 
   return (
     <div className="space-y-6">
@@ -39,7 +42,7 @@ export default async function AutomationsPage() {
           <div className="grid gap-4 sm:grid-cols-[1fr_1.5fr_8rem]">
             <Field label={c.whenStage} htmlFor="a_stage">
               <Select id="a_stage" name="stage_id" required className="w-full">
-                {(stages ?? []).map((s) => (
+                {stages.map((s) => (
                   <option key={s.id} value={s.id}>
                     {stageName(s.name, locale)}
                   </option>
