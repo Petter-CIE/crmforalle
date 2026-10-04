@@ -43,7 +43,10 @@ const nb: Faq = {
         },
         {
           q: "Hvordan velger eller bytter vi abonnement?",
-          a: ["Skriv til post@allseats.no, så setter vi opp eller endrer abonnementet for dere. Dere kan bytte mellom Start og Bedrift og mellom månedlig og årlig betaling."],
+          a: [
+            "Under Innstillinger → Abonnement (eier og administratorer). Velg Start eller Bedrift, månedlig eller årlig, og hvor fakturaen skal sendes. Abonnementet er aktivt med en gang.",
+            "Dere kan bytte plan og betalingsintervall på samme sted. For oppsigelse, skriv til post@allseats.no.",
+          ],
         },
         {
           q: "Hvordan betaler vi?",
@@ -183,6 +186,18 @@ const nb: Faq = {
           q: "Kan vi endre salgsfasene?",
           a: [
             "Ja. Under Innstillinger → Salgsfaser (eier og administratorer) kan dere gi fasene nye navn, endre sannsynlighet, dra dem i ny rekkefølge, legge til nye og slette dem dere ikke bruker. Salg i en fase som slettes, flyttes til fasen dere velger.",
+          ],
+        },
+        {
+          q: "Kan jeg se oppgavene i kalenderen min?",
+          a: [
+            "Ja. Under Konto og sikkerhet → Kalender lager du en personlig lenke som du legger til i Google Kalender, Outlook eller på iPhone. Oppgavene dine med frist dukker da opp i kalenderen og oppdateres av seg selv.",
+          ],
+        },
+        {
+          q: "En kunde vil vite hva vi har lagret om ham. Hva gjør vi?",
+          a: [
+            "Åpne kontakten og trykk «Last ned data (GDPR)» nederst i kortet. Da får du en fil med alt CRM-et har om personen – opplysninger, historikk, salg, tilbud og oppgaver – som du kan sende videre. Ber personen om sletting, sletter du kontakten.",
           ],
         },
         {
@@ -360,7 +375,10 @@ const en: Faq = {
         },
         {
           q: "How do we choose or change our subscription?",
-          a: ["Write to post@allseats.no and we'll set up or change the subscription for you. You can switch between Start and Bedrift and between monthly and yearly payment."],
+          a: [
+            "Under Settings → Subscription (owner and admins). Choose Start or Bedrift, monthly or yearly, and where the invoice should go. The subscription is active right away.",
+            "You can change plan and billing interval in the same place. To cancel, write to post@allseats.no.",
+          ],
         },
         {
           q: "How do we pay?",
@@ -500,6 +518,18 @@ const en: Faq = {
           q: "Can we change the pipeline stages?",
           a: [
             "Yes. Under Settings → Pipeline stages (owner and admins) you can rename the stages, change the probability, drag them into a new order, add new ones and delete those you don't use. Deals in a stage you delete are moved to the stage you choose.",
+          ],
+        },
+        {
+          q: "Can I see my tasks in my calendar?",
+          a: [
+            "Yes. Under Account and security → Calendar you create a personal link to add to Google Calendar, Outlook or your iPhone. Your tasks with due dates then appear in the calendar and update by themselves.",
+          ],
+        },
+        {
+          q: "A customer wants to know what we store about them. What do we do?",
+          a: [
+            "Open the contact and press “Download data (GDPR)” at the bottom of the card. You get a file with everything the CRM has about the person – details, history, deals, quotes and tasks – that you can pass on. If the person asks to be deleted, delete the contact.",
           ],
         },
         {

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { FormResult } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
-import { requireWorkspace } from "@/lib/session";
+import { requireWorkspace, siteUrl } from "@/lib/session";
 
 export async function updateProfile(_p: FormResult, formData: FormData): Promise<FormResult> {
   const { supabase, user } = await requireWorkspace();
@@ -59,4 +59,12 @@ export async function sendTestPush() {
   const { t } = await getI18n();
   const { data, error } = await supabase.rpc("queue_test_push", { p_title: "AllSeats CRM", p_body: t.mobile.pushEnabled });
   return { ok: !error && (data ?? 0) > 0 };
+}
+
+/** The personal calendar link (created on first use; `rotate` makes a new one and disables the old). */
+export async function getCalendarLink(rotate = false) {
+  const { supabase } = await requireWorkspace();
+  const { data, error } = await supabase.rpc("calendar_link", { p_rotate: rotate });
+  if (error || !data) return null;
+  return `${siteUrl()}/api/kalender/${data}.ics`;
 }

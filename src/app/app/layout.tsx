@@ -11,7 +11,7 @@ import { ThemeSwitcher, type Theme } from "@/components/theme-switcher";
 import { ToastProvider } from "@/components/toast";
 import { Logo, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
-import { logoUrl, requireWorkspace, trialDaysLeft } from "@/lib/session";
+import { canManage, logoUrl, requireWorkspace, trialDaysLeft } from "@/lib/session";
 import { switchWorkspace } from "./actions";
 import { AccountingAutoSync } from "./_components/accounting-auto-sync";
 import { BottomNav } from "./_components/bottom-nav";
@@ -142,8 +142,17 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         </aside>
         <div className="flex flex-1 flex-col">
           {workspace.plan === "trial" && (
-            <div className="border-b border-border bg-brand-soft px-6 py-2 text-sm text-brand">
-              {daysLeft > 0 ? t.trial.daysLeft(daysLeft) : t.trial.over}
+            <div
+              className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-6 py-2 text-sm ${
+                daysLeft > 0 ? "border-border bg-brand-soft text-brand" : "border-red-200 bg-red-50 font-medium text-danger"
+              }`}
+            >
+              <span>{daysLeft > 0 ? t.trial.daysLeft(daysLeft) : t.subscription.bannerOver}</span>
+              {canManage(workspace.role) && (
+                <Link href="/app/abonnement" className="font-medium underline underline-offset-2">
+                  {t.subscription.banner}
+                </Link>
+              )}
             </div>
           )}
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>

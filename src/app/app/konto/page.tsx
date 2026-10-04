@@ -10,6 +10,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { changePassword } from "@/app/nytt-passord/actions";
 import { updateIdleTimeout, updateProfile } from "./actions";
+import { CalendarLink } from "./calendar-link";
 import { PushToggle } from "./push-toggle";
 import { InstallApp } from "@/components/install-app";
 import { vapidPublicKey } from "@/lib/push";
@@ -66,6 +67,12 @@ export default async function AccountPage() {
             pushFailed: t.mobile.pushFailed,
           }}
         />
+      </Card>
+
+      <Card>
+        <h2 className="mb-1 font-semibold">{t.calendar.title}</h2>
+        <p className="mb-4 text-sm text-muted">{t.calendar.intro}</p>
+        <CalendarLink t={t.calendar} />
       </Card>
 
       <Card>

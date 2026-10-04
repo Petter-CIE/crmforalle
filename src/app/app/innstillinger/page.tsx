@@ -84,7 +84,12 @@ export default async function SettingsPage() {
           </div>
         )}
         <p className="mt-4 text-sm text-muted">
-          {s.subscription}: <strong className="text-foreground">{t.common.plans[workspace.plan]}</strong>. {s.unlimitedUsers}
+          {s.subscription}: <strong className="text-foreground">{t.common.plans[workspace.plan]}</strong>. {s.unlimitedUsers}{" "}
+          {manager && (
+            <Link href="/app/abonnement" className="text-brand hover:underline">
+              {t.subscription.link} →
+            </Link>
+          )}
         </p>
       </Card>
 

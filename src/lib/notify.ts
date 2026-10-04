@@ -487,3 +487,101 @@ export async function sendCrmEmail(o: { to: string; fromName: string; replyTo: s
     html,
   });
 }
+
+/** Tells CIE AS that a customer ordered a subscription (so the invoice can be sent). Never throws. */
+export async function notifyOrder(o: {
+  workspace: string;
+  orgNumber: string | null;
+  plan: string;
+  interval: string;
+  addon: boolean;
+  invoiceEmail: string;
+  reference: string | null;
+  orderedBy: string;
+  monthly: number;
+}) {
+  const mailer = transport();
+  if (!mailer) return false;
+  const lines = [
+    `Plan: ${o.plan} (${o.interval === "year" ? "årlig" : "månedlig"})${o.addon ? " + regnskapstillegg" : ""}`,
+    `Pris: ${o.monthly} kr/mnd eks. mva.${o.interval === "year" ? ` (${o.monthly * 12} kr/år)` : ""}`,
+    `Faktura til: ${o.invoiceEmail}`,
+    o.reference ? `Referanse: ${o.reference}` : null,
+    o.orgNumber ? `Org.nr.: ${o.orgNumber}` : null,
+    `Bestilt av: ${o.orderedBy}`,
+  ].filter(Boolean);
+  const { html, text } = render({
+    lead: "Ny bestilling av abonnement:",
+    title: o.workspace,
+    quote: lines.join("\n"),
+    url: `${siteUrl()}/admin`,
+    button: "Åpne admin",
+    footer: "Send faktura fra regnskapssystemet. – AllSeats CRM",
+  });
+  try {
+    await mailer.sendMail({
+      from: FROM(),
+      to: process.env.ORDER_EMAIL || "post@allseats.no",
+      replyTo: o.invoiceEmail,
+      subject: `Ny bestilling: ${o.workspace} – ${o.plan}`,
+      text,
+      html,
+    });
+    return true;
+  } catch (e) {
+    console.error("order notification failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** Reminder before / after the free trial ends. Returns the number sent. */
+export async function sendTrialMails(
+  items: { kind: "ending" | "ended"; workspace: string; ends_at: string; recipients: { email: string; name: string; locale: string }[] }[],
+) {
+  const mailer = transport();
+  if (!mailer) return 0;
+  let sent = 0;
+  for (const it of items) {
+    for (const r of it.recipients) {
+      const en = r.locale === "en";
+      const date = new Date(it.ends_at).toLocaleDateString(en ? "en-GB" : "nb-NO", { day: "numeric", month: "long", timeZone: "Europe/Oslo" });
+      const ending = it.kind === "ending";
+      const { html, text } = render({
+        lead: en
+          ? ending
+            ? `The free trial of AllSeats CRM for ${it.workspace} ends on ${date}.`
+            : `The free trial of AllSeats CRM for ${it.workspace} has ended.`
+          : ending
+            ? `Prøveperioden av AllSeats CRM for ${it.workspace} slutter ${date}.`
+            : `Prøveperioden av AllSeats CRM for ${it.workspace} er over.`,
+        title: en ? "Choose a subscription to continue" : "Velg abonnement for å fortsette",
+        quote: en
+          ? "Start (NOK 249/month) or Bedrift (NOK 590/month), excl. VAT – all users included, paid by invoice, no card needed. Choose under Settings → Subscription; it takes a minute and all your data stays as it is."
+          : "Start (249 kr/mnd) eller Bedrift (590 kr/mnd) eks. mva. – alle brukere inkludert, betaling med faktura, ingen kort. Velg under Innstillinger → Abonnement; det tar ett minutt, og alle dataene beholdes.",
+        url: `${siteUrl()}/app/abonnement`,
+        button: en ? "Choose subscription" : "Velg abonnement",
+        footer: en ? "Questions? Reply to this e-mail. – AllSeats CRM, CIE AS" : "Spørsmål? Svar på denne e-posten. – AllSeats CRM, CIE AS",
+      });
+      try {
+        await mailer.sendMail({
+          from: FROM(),
+          replyTo: "post@allseats.no",
+          to: r.email,
+          subject: en
+            ? ending
+              ? `Your AllSeats trial ends ${date}`
+              : "Your AllSeats trial has ended"
+            : ending
+              ? `Prøveperioden i AllSeats slutter ${date}`
+              : "Prøveperioden i AllSeats er over",
+          text,
+          html,
+        });
+        sent++;
+      } catch (e) {
+        console.error("trial mail failed", e instanceof Error ? e.message : e);
+      }
+    }
+  }
+  return sent;
+}

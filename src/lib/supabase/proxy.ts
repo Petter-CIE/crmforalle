@@ -22,6 +22,7 @@ const PUBLIC_PATHS = [
   "/offline",
   "/skjema",
   "/api/lead",
+  "/api/kalender",
 ];
 
 function isPublic(pathname: string) {

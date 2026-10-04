@@ -110,6 +110,12 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
             <div className="mt-3">
               <CustomFieldValues fields={fields} values={asCustomValues(k.custom)} dateLocale={dateLocale} yes={t.crm.yes} />
             </div>
+            <p className="mt-4 border-t border-border pt-3 text-xs text-muted">
+              <a href={`${path}/gdpr`} download className="text-brand hover:underline">
+                ⬇ {t.gdpr.export}
+              </a>{" "}
+              · {t.gdpr.exportHint}
+            </p>
           </Card>
           <Card>
             <h2 className="mb-3 font-semibold">{t.crm.timeline}</h2>
