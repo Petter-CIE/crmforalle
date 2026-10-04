@@ -19,8 +19,8 @@ const GoogleIcon = () => (
 );
 
 /** "Continue with Microsoft / Google" – renders nothing when no provider is switched on. */
-export function OAuthButtons({ next, t }: { next: string; t: { microsoft: string; google: string; or: string } }) {
-  const providers = enabledOAuthProviders();
+export async function OAuthButtons({ next, t }: { next: string; t: { microsoft: string; google: string; or: string } }) {
+  const providers = await enabledOAuthProviders();
   if (providers.length === 0) return null;
   return (
     <div className="space-y-2">

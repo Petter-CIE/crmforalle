@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function signInWithProvider(formData: FormData) {
   const provider = String(formData.get("provider") ?? "") as OAuthProvider;
   const next = safeNext(formData.get("neste"));
-  if (!enabledOAuthProviders().includes(provider)) redirect("/logg-inn");
+  if (!(await enabledOAuthProviders()).includes(provider)) redirect("/logg-inn");
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
