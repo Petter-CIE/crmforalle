@@ -69,20 +69,31 @@ export async function getCalendarLink(rotate = false) {
   return `${siteUrl()}/api/kalender/${data}.ics`;
 }
 
-/** Turns mail logging / calendar use on or off for the user's Outlook connection. */
+/** Options for one connected mailbox: mail logging, calendar use and its project. */
 export async function saveOutlookOptions(formData: FormData) {
   const { supabase, user, workspace } = await requireWorkspace();
+  const id = String(formData.get("id") ?? "");
+  const project = String(formData.get("project_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+  let projectId: string | null = null;
+  if (/^[0-9a-f-]{36}$/i.test(project)) {
+    const { data } = await supabase.from("projects").select("id").eq("id", project).eq("workspace_id", workspace.id).maybeSingle();
+    projectId = data?.id ?? null;
+  }
   await supabase
     .from("mail_connections")
-    .update({ mail_enabled: formData.get("mail") === "1", calendar_enabled: formData.get("calendar") === "1" })
+    .update({ mail_enabled: formData.get("mail") === "1", calendar_enabled: formData.get("calendar") === "1", project_id: projectId })
+    .eq("id", id)
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id);
   revalidatePath("/app/konto");
 }
 
-/** Removes the Outlook connection (and the stored token). Microsoft access can also be revoked at myapps.microsoft.com. */
-export async function disconnectOutlook() {
+/** Removes one mailbox connection (and its stored token). Access can also be revoked at myapps.microsoft.com. */
+export async function disconnectOutlook(formData: FormData) {
   const { supabase, user, workspace } = await requireWorkspace();
-  await supabase.from("mail_connections").delete().eq("workspace_id", workspace.id).eq("user_id", user.id);
+  const id = String(formData.get("id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+  await supabase.from("mail_connections").delete().eq("id", id).eq("workspace_id", workspace.id).eq("user_id", user.id);
   revalidatePath("/app/konto");
 }

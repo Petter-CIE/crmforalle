@@ -20,7 +20,7 @@ T = {
  "task_members": [("task_id",S,0,0),("workspace_id",S,0,0),("user_id",S,0,0),("added_by",S,1,1),("created_at",S,0,1)],
  "task_comments": [("id",S,0,1),("workspace_id",S,0,0),("task_id",S,0,0),("author_id",S,1,1),("body",S,0,0),("created_at",S,0,1)],
  "task_attachments": [("id",S,0,1),("workspace_id",S,0,0),("task_id",S,0,0),("path",S,0,0),("name",S,0,0),("size",N,0,1),("mime",S,1,1),("uploaded_by",S,1,1),("created_at",S,0,1)],
- "inbound_emails": [("id",S,0,1),("workspace_id",S,0,0),("message_id",S,1,1),("from_email",S,0,0),("from_name",S,1,1),("to_emails","string[]",0,1),("cc_emails","string[]",0,1),("external_emails","string[]",0,1),("subject",S,1,1),("body",S,1,1),("sent_at",S,0,1),("author_id",S,1,1),("status",S,0,1),("linked_count",N,0,1),("created_at",S,0,1)],
+ "inbound_emails": [("id",S,0,1),("workspace_id",S,0,0),("message_id",S,1,1),("from_email",S,0,0),("from_name",S,1,1),("to_emails","string[]",0,1),("cc_emails","string[]",0,1),("external_emails","string[]",0,1),("subject",S,1,1),("body",S,1,1),("sent_at",S,0,1),("author_id",S,1,1),("status",S,0,1),("linked_count",N,0,1),("project_id",S,1,1),("created_at",S,0,1)],
  "integrations": [("workspace_id",S,0,0),("provider",S,0,0),("credentials",S,0,0),("external_company",S,1,1),("last_sync_at",S,1,1),("last_error",S,1,1),("sync_started_at",S,1,1),("connected_by",S,1,1),("created_at",S,0,1)],
  "integration_links": [("workspace_id",S,0,0),("provider",S,0,0),("entity",S,0,0),("external_id",S,0,0),("local_id",S,0,0)],
  "external_invoices": [("workspace_id",S,0,0),("provider",S,0,0),("external_id",S,0,0),("company_id",S,1,1),("invoice_number",S,1,1),("invoice_date",S,1,1),("due_date",S,1,1),("amount",N,0,1),("amount_ex_vat",N,0,1),("outstanding",N,0,1),("currency",S,0,1),("is_credit_note",B,0,1),("overdue_task_id",S,1,1),("synced_at",S,0,1)],
@@ -34,10 +34,10 @@ T = {
  "email_templates": [("id",S,0,1),("workspace_id",S,0,0),("name",S,0,0),("subject",S,0,0),("body",S,0,0),("created_by",S,1,1),("created_at",S,0,1),("updated_at",S,0,1)],
  "booking_pages": [("id",S,0,1),("workspace_id",S,0,0),("user_id",S,0,0),("slug",S,0,0),("title",S,0,1),("intro",S,1,1),("location",S,1,1),("duration_min",N,0,1),("weekdays","number[]",0,1),("day_start",S,0,1),("day_end",S,0,1),("buffer_min",N,0,1),("notice_hours",N,0,1),("days_ahead",N,0,1),("active",B,0,1),("created_at",S,0,1)],
  "bookings": [("id",S,0,1),("workspace_id",S,0,0),("page_id",S,1,1),("user_id",S,0,0),("starts_at",S,0,0),("ends_at",S,0,0),("name",S,0,0),("email",S,0,0),("phone",S,1,1),("company",S,1,1),("message",S,1,1),("contact_id",S,1,1),("task_id",S,1,1),("cancel_token",S,0,1),("cancelled_at",S,1,1),("created_at",S,0,1)],
- "mail_connections": [("id",S,0,1),("workspace_id",S,0,0),("user_id",S,0,0),("provider",S,0,1),("account_email",S,1,1),("refresh_token",S,0,0),("mail_enabled",B,0,1),("calendar_enabled",B,0,1),("synced_until",S,0,1),("last_sync_at",S,1,1),("last_error",S,1,1),("created_at",S,0,1)],
+ "mail_connections": [("id",S,0,1),("workspace_id",S,0,0),("user_id",S,0,0),("provider",S,0,1),("account_email",S,1,1),("refresh_token",S,0,0),("mail_enabled",B,0,1),("calendar_enabled",B,0,1),("synced_until",S,0,1),("last_sync_at",S,1,1),("last_error",S,1,1),("project_id",S,1,1),("created_at",S,0,1)],
  "feedback": [("id",S,0,1),("workspace_id",S,0,0),("user_id",S,1,1),("kind",S,0,1),("page",S,1,1),("message",S,0,0),("handled_at",S,1,1),("created_at",S,0,1)],
  "saved_views": [("id",S,0,1),("workspace_id",S,0,0),("user_id",S,0,0),("entity",S,0,0),("name",S,0,0),("query",S,0,0),("shared",B,0,1),("created_at",S,0,1)],
- "activities": [("id",S,0,1),("workspace_id",S,0,0),("type",S,0,0),("body",S,1,1),("company_id",S,1,1),("contact_id",S,1,1),("deal_id",S,1,1),("author_id",S,1,1),("occurred_at",S,0,1),("created_at",S,0,1)],
+ "activities": [("id",S,0,1),("workspace_id",S,0,0),("type",S,0,0),("body",S,1,1),("company_id",S,1,1),("contact_id",S,1,1),("deal_id",S,1,1),("author_id",S,1,1),("occurred_at",S,0,1),("project_id",S,1,1),("created_at",S,0,1)],
 }
 # relationships: table -> [(fk_name, [cols], ref_table, [ref_cols])]
 def ws(t, col, ref): return (f"{t}_{col}_workspace_id_fkey", [col, "workspace_id"], ref, ["id", "workspace_id"])
@@ -74,10 +74,10 @@ R = {
  "email_templates": [p("email_templates","created_by"), w("email_templates")],
  "saved_views": [p("saved_views","user_id"), w("saved_views")],
  "feedback": [w("feedback")],
- "mail_connections": [w("mail_connections")],
+ "mail_connections": [("mail_connections_project_id_fkey", ["project_id"], "projects", ["id"]), w("mail_connections")],
  "booking_pages": [w("booking_pages")],
  "bookings": [w("bookings")],
- "activities": [p("activities","author_id"), ws("activities","company_id","companies"), ws("activities","contact_id","contacts"), ws("activities","deal_id","deals"), w("activities")],
+ "activities": [("activities_project_id_fkey", ["project_id"], "projects", ["id"]), p("activities","author_id"), ws("activities","company_id","companies"), ws("activities","contact_id","contacts"), ws("activities","deal_id","deals"), w("activities")],
 }
 o = ["// Generated by scripts/gen-types.py – mirrors `supabase gen types`. Do not edit by hand.",
      "export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];", "",

@@ -27,12 +27,15 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AccountPage({ searchParams }: PageProps<"/app/konto">) {
   const sp = await searchParams;
   const { supabase, user, workspace } = await requireWorkspace();
-  const { data: ms } = await supabase
-    .from("mail_connections")
-    .select("account_email, mail_enabled, calendar_enabled, last_sync_at, last_error")
-    .eq("workspace_id", workspace.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: mailboxes }, { data: projects }] = await Promise.all([
+    supabase
+      .from("mail_connections")
+      .select("id, account_email, mail_enabled, calendar_enabled, last_sync_at, last_error, project_id")
+      .eq("workspace_id", workspace.id)
+      .eq("user_id", user.id)
+      .order("created_at"),
+    supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+  ]);
   const { data: profile } = await supabase.from("profiles").select("full_name, notify_email, digest_email, idle_timeout_minutes").eq("id", user.id).maybeSingle();
   const { t, dateLocale } = await getI18n();
   const s = t.security;
@@ -87,47 +90,68 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
         {sp.ms === "ok" && <Notice>{t.outlook.ok}</Notice>}
         {sp.ms === "feil" && <Notice tone="error">{t.outlook.failed}</Notice>}
         {sp.ms === "avbrutt" && <Notice>{t.outlook.cancelled}</Notice>}
-        {!ms ? (
-          microsoftEnabled() ? (
-            <a
-              href="/app/konto/microsoft/start"
-              className="mt-2 inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background"
-            >
-              <svg aria-hidden viewBox="0 0 21 21" width="16" height="16">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
-              </svg>
-              {t.outlook.connect}
-            </a>
-          ) : (
-            <p className="text-sm text-muted">{t.outlook.notAvailable}</p>
-          )
+        {!microsoftEnabled() ? (
+          <p className="text-sm text-muted">{t.outlook.notAvailable}</p>
         ) : (
-          <div className="mt-2 space-y-3 text-sm">
-            <p className="font-medium">✓ {t.outlook.connected(ms.account_email ?? "Microsoft")}</p>
-            <p className="text-xs text-muted">{ms.last_sync_at ? t.outlook.lastSync(formatDateTime(ms.last_sync_at, dateLocale)) : t.outlook.waiting}</p>
-            {ms.last_error && <Notice tone="error">{t.outlook.error(ms.last_error)}</Notice>}
-            <form action={saveOutlookOptions} className="space-y-2">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" name="mail" value="1" defaultChecked={ms.mail_enabled} />
-                {t.outlook.mail}
+          <div className="mt-2 space-y-4 text-sm">
+            {(mailboxes ?? []).map((ms) => (
+              <form key={ms.id} action={saveOutlookOptions} className="space-y-2 rounded-lg border border-border p-4">
+                <input type="hidden" name="id" value={ms.id} />
+                <p className="font-medium">✓ {ms.account_email ?? "Microsoft"}</p>
+                <p className="text-xs text-muted">{ms.last_sync_at ? t.outlook.lastSync(formatDateTime(ms.last_sync_at, dateLocale)) : t.outlook.waiting}</p>
+                {ms.last_error && <Notice tone="error">{t.outlook.error(ms.last_error)}</Notice>}
+                <label className="block">
+                  <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
+                  <Select name="project_id" defaultValue={ms.project_id ?? ""} className="w-full max-w-sm">
+                    <option value="">{t.outlook.noProject}</option>
+                    {(projects ?? []).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" name="mail" value="1" defaultChecked={ms.mail_enabled} />
+                  {t.outlook.mail}
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" name="calendar" value="1" defaultChecked={ms.calendar_enabled} />
+                  {t.outlook.calendar}
+                </label>
+                <div className="flex gap-2 pt-1">
+                  <button type="submit" className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">
+                    {t.outlook.save}
+                  </button>
+                  <button formAction={disconnectOutlook} type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm text-danger hover:bg-background">
+                    {t.outlook.disconnect}
+                  </button>
+                </div>
+              </form>
+            ))}
+            <form action="/app/konto/microsoft/start" method="get" className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-4">
+              <label className="min-w-48 flex-1">
+                <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
+                <Select name="prosjekt" defaultValue="" className="w-full">
+                  <option value="">{t.outlook.noProject}</option>
+                  {(projects ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
               </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" name="calendar" value="1" defaultChecked={ms.calendar_enabled} />
-                {t.outlook.calendar}
-              </label>
-              <p className="text-xs text-muted">{t.outlook.onlyKnown}</p>
-              <div className="flex gap-2 pt-1">
-                <button type="submit" className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">
-                  {t.outlook.save}
-                </button>
-                <button formAction={disconnectOutlook} type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm text-danger hover:bg-background">
-                  {t.outlook.disconnect}
-                </button>
-              </div>
+              <button type="submit" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background">
+                <svg aria-hidden viewBox="0 0 21 21" width="16" height="16">
+                  <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                  <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+                  <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+                  <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+                </svg>
+                {(mailboxes ?? []).length ? t.outlook.connectAnother : t.outlook.connect}
+              </button>
             </form>
+            <p className="text-xs text-muted">{t.outlook.onlyKnown} {t.outlook.projectHelp}</p>
           </div>
         )}
       </Card>

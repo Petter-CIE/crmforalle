@@ -1342,6 +1342,10 @@ const nb = {
     error: (msg: string) => `Siste synkronisering feilet: ${msg}. Prøv å koble til på nytt.`,
     notAvailable: "Kommer snart.",
     onlyKnown: "Bare e-post med adresser som finnes som kontakter blir lagret. Annen e-post leses ikke inn.",
+    project: "Prosjekt for denne e-postkontoen",
+    noProject: "Ingen prosjekt (hele bedriften)",
+    connectAnother: "Koble til en e-postkonto til",
+    projectHelp: "E-post fra en konto med prosjekt merkes med prosjektet i historikken, og kontaktene legges til i prosjektet.",
   },
   booking: {
     nav: "Bookinglenke",
@@ -3009,6 +3013,10 @@ const en: Dictionary = {
     error: (msg: string) => `The last synchronisation failed: ${msg}. Try connecting again.`,
     notAvailable: "Coming soon.",
     onlyKnown: "Only e-mail with addresses that exist as contacts is saved. Other e-mail is not read in.",
+    project: "Project for this mailbox",
+    noProject: "No project (whole company)",
+    connectAnother: "Connect another mailbox",
+    projectHelp: "E-mail from a mailbox with a project is tagged with the project on the timeline, and the contacts are added to the project.",
   },
   booking: {
     nav: "Booking link",

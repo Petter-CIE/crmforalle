@@ -16,6 +16,7 @@ export type Database = {
           deal_id: string | null;
           author_id: string | null;
           occurred_at: string;
+          project_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -28,6 +29,7 @@ export type Database = {
           deal_id?: string | null;
           author_id?: string | null;
           occurred_at?: string;
+          project_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -40,9 +42,17 @@ export type Database = {
           deal_id?: string | null;
           author_id?: string | null;
           occurred_at?: string;
+          project_id?: string | null;
           created_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "activities_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "activities_author_id_fkey";
             columns: ["author_id"];
@@ -795,6 +805,7 @@ export type Database = {
           author_id: string | null;
           status: string;
           linked_count: number;
+          project_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -812,6 +823,7 @@ export type Database = {
           author_id?: string | null;
           status?: string;
           linked_count?: number;
+          project_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -829,6 +841,7 @@ export type Database = {
           author_id?: string | null;
           status?: string;
           linked_count?: number;
+          project_id?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -1075,6 +1088,7 @@ export type Database = {
           synced_until: string;
           last_sync_at: string | null;
           last_error: string | null;
+          project_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -1089,6 +1103,7 @@ export type Database = {
           synced_until?: string;
           last_sync_at?: string | null;
           last_error?: string | null;
+          project_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -1103,9 +1118,17 @@ export type Database = {
           synced_until?: string;
           last_sync_at?: string | null;
           last_error?: string | null;
+          project_id?: string | null;
           created_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "mail_connections_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "mail_connections_workspace_id_fkey";
             columns: ["workspace_id"];

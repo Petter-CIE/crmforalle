@@ -20,7 +20,7 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
 
   let q = supabase
     .from("activities")
-    .select("id, type, body, occurred_at, author_id, profiles(full_name, email)")
+    .select("id, type, body, occurred_at, author_id, profiles(full_name, email), projects(name, color)")
     .eq("workspace_id", workspace.id)
     .order("occurred_at", { ascending: false })
     .limit(100);
@@ -78,6 +78,12 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
                 <span className="font-medium text-foreground">{label(a.type)}</span>
                 {(a.type === "created" || a.type === "stage_change") && a.body && <span className="text-foreground">{a.body}</span>}
                 <span>{formatDateTime(a.occurred_at, dateLocale)}</span>
+                {a.projects && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border px-1.5 py-px text-[11px] text-foreground">
+                    <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: a.projects.color }} />
+                    {a.projects.name}
+                  </span>
+                )}
                 {a.profiles && (
                   <span className="inline-flex items-center gap-1">
                     {t.crm.by}
