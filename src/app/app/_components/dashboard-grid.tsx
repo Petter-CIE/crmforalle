@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import { saveDashboard } from "@/app/app/actions";
 import { WIDGETS, type WidgetId, type WidgetItem } from "@/lib/dashboard";
 
@@ -16,6 +16,7 @@ export type DashTexts = {
   drag: string;
   wide: string;
   narrow: string;
+  resize: string;
   add: string;
   allShown: string;
   reset: string;
@@ -26,7 +27,7 @@ export type DashTexts = {
 
 /**
  * The widgets on the "Today" page. In edit mode they can be dragged (mouse and touch) or moved
- * with the arrows, made wide/narrow, hidden and added. Saved per user.
+ * with the arrows, made wide/narrow by dragging their right edge, hidden and added. Saved per user.
  */
 export function DashboardGrid({
   layout,
@@ -47,6 +48,9 @@ export function DashboardGrid({
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState(layout);
   const [dragging, setDragging] = useState<WidgetId | null>(null);
+  // Width while the user drags the right edge of a widget (px), snapped to narrow/wide on release.
+  const [resize, setResize] = useState<{ id: WidgetId; width: number } | null>(null);
+  const resizeStart = useRef<{ x: number; width: number; col: number; w: 1 | 2 } | null>(null);
   const [saving, start] = useTransition();
   // Take over a new layout from the server (after saving/reset) unless the user is editing.
   const layoutKey = JSON.stringify(layout);
@@ -72,6 +76,9 @@ export function DashboardGrid({
     const next = [...items];
     [next[i], next[j]] = [next[j], next[i]];
     update(next);
+  }
+  function setWidth(id: WidgetId, w: 1 | 2) {
+    setItems((cur) => cur.map((x) => (x.id === id ? { ...x, w } : x)));
   }
   function moveTo(id: WidgetId, target: WidgetId) {
     if (id === target) return;
@@ -148,10 +155,10 @@ export function DashboardGrid({
               key={it.id}
               data-widget={it.id}
               aria-label={t.names[it.id]}
-              className={`fade-up flex min-w-0 flex-col rounded-xl border bg-surface transition-shadow ${it.w === 2 ? "lg:col-span-2" : ""} ${
+              className={`fade-up relative flex min-w-0 flex-col rounded-xl border bg-surface transition-shadow ${it.w === 2 ? "lg:col-span-2" : ""} ${
                 editing ? "border-dashed border-brand/50" : "border-border"
-              } ${dragging === it.id ? "opacity-60 shadow-xl ring-2 ring-brand" : ""}`}
-              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
+              } ${dragging === it.id ? "opacity-60 shadow-xl ring-2 ring-brand" : ""} ${resize?.id === it.id ? "z-20 shadow-xl ring-2 ring-brand" : ""}`}
+              style={{ animationDelay: `${Math.min(i, 8) * 30}ms`, ...(resize?.id === it.id ? { width: resize.width, maxWidth: "none" } : {}) }}
             >
               <header className="flex items-center gap-2 px-5 pt-4">
                 {editing && (
@@ -194,13 +201,6 @@ export function DashboardGrid({
                     </button>
                     <button
                       type="button"
-                      onClick={() => update(items.map((x) => (x.id === it.id ? { ...x, w: x.w === 2 ? 1 : 2 } : x)))}
-                      className="hidden rounded px-2 py-1 hover:bg-background lg:inline"
-                    >
-                      {it.w === 2 ? t.narrow : t.wide}
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => update(items.filter((x) => x.id !== it.id))}
                       className="rounded px-2 py-1 text-danger hover:bg-background"
                     >
@@ -218,6 +218,56 @@ export function DashboardGrid({
               <div className={`min-w-0 flex-1 px-5 pb-5 pt-3 ${editing ? "pointer-events-none select-none opacity-80" : ""}`}>
                 {body ?? <div className="h-24 animate-pulse rounded-lg bg-background" />}
               </div>
+              {editing && (
+                <button
+                  type="button"
+                  aria-label={`${t.resize}: ${t.names[it.id]} (${it.w === 2 ? t.wide : t.narrow})`}
+                  title={t.resize}
+                  className="group absolute -right-2 top-0 bottom-0 hidden w-4 cursor-ew-resize touch-none items-center justify-center lg:flex"
+                  onKeyDown={(e) => {
+                    // Keyboard: arrows or Enter switch between narrow and wide.
+                    const w = e.key === "ArrowRight" ? 2 : e.key === "ArrowLeft" ? 1 : e.key === "Enter" || e.key === " " ? (it.w === 2 ? 1 : 2) : null;
+                    if (!w) return;
+                    e.preventDefault();
+                    setWidth(it.id, w);
+                  }}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    const card = e.currentTarget.closest<HTMLElement>("[data-widget]");
+                    const grid = card?.parentElement;
+                    if (!card || !grid) return;
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    const width = card.getBoundingClientRect().width;
+                    const col = (grid.getBoundingClientRect().width - 16) / 2;
+                    resizeStart.current = { x: e.clientX, width, col, w: it.w };
+                    setResize({ id: it.id, width });
+                  }}
+                  onPointerMove={(e) => {
+                    const r = resizeStart.current;
+                    if (!r || resize?.id !== it.id) return;
+                    const width = Math.max(r.col * 0.6, Math.min(r.width + (e.clientX - r.x), r.col * 2 + 16 + 40));
+                    setResize({ id: it.id, width });
+                  }}
+                  onPointerUp={(e) => {
+                    const r = resizeStart.current;
+                    resizeStart.current = null;
+                    setResize(null);
+                    if (!r) return;
+                    // Snap: past the middle between one and two columns = wide.
+                    const width = r.width + (e.clientX - r.x);
+                    setWidth(it.id, width > r.col * 1.5 + 8 ? 2 : 1);
+                  }}
+                  onPointerCancel={() => {
+                    resizeStart.current = null;
+                    setResize(null);
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    className={`h-12 w-1.5 rounded-full transition-colors ${resize?.id === it.id ? "bg-brand" : "bg-brand/40 group-hover:bg-brand group-focus-visible:bg-brand"}`}
+                  />
+                </button>
+              )}
             </section>
           );
         })}

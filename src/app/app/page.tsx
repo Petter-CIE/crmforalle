@@ -408,6 +408,7 @@ export default async function TodayPage() {
           drag: d.drag,
           wide: d.wide,
           narrow: d.narrow,
+          resize: d.resize,
           add: d.add,
           allShown: d.allShown,
           reset: d.reset,
