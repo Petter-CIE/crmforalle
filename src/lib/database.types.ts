@@ -1996,16 +1996,18 @@ export type Database = {
         };
         Returns: undefined;
       };
-      set_stripe_customer: { Args: { p_workspace: string; p_customer: string }; Returns: undefined };
-      activate_card_subscription: {
+      card_checkout_verify: { Args: { p_workspace: string; p_session: string }; Returns: undefined };
+      stripe_activate_claim: { Args: { p_ticket: string }; Returns: Json };
+      stripe_activate_apply: {
         Args: {
-          p_workspace: string;
+          p_ticket: string;
           p_plan: Database["public"]["Enums"]["plan_type"];
           p_interval: string;
           p_addon: boolean;
           p_email: string;
           p_subscription: string;
-          p_period_end: string | null;
+          p_customer: string;
+          p_period_end: string;
         };
         Returns: undefined;
       };

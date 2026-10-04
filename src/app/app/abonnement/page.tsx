@@ -71,6 +71,16 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
         )}
       </Card>
       {sp.betalt === "feil" && <Notice tone="error">{s.payFailed}</Notice>}
+      {sp.betalt === "venter" && (
+        <Notice>
+          {s.payPending}{" "}
+          {typeof sp.session_id === "string" && /^cs_[A-Za-z0-9_]+$/.test(sp.session_id) && (
+            <a href={`/app/abonnement/stripe-retur?session_id=${encodeURIComponent(sp.session_id)}`} className="font-medium underline">
+              {s.payCheckAgain}
+            </a>
+          )}
+        </Notice>
+      )}
       {sp.portal === "feil" && <Notice tone="error">{s.portalFailed}</Notice>}
       {cardTrouble && <Notice tone="error">{s.cardIssue}</Notice>}
       {w?.stripe_customer_id && canManage(workspace.role) && (

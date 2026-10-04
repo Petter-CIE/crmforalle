@@ -76,23 +76,13 @@ async function startCardCheckout(formData: FormData): Promise<FormResult> {
   let url: string | null = null;
   try {
     const { data: w } = await supabase.from("workspaces").select("stripe_customer_id, extra_contact_packs, org_number").eq("id", workspace.id).single();
-    let customer = w?.stripe_customer_id ?? null;
-    if (!customer) {
-      const c = await stripe.customers.create({
-        name: workspace.name,
-        email,
-        preferred_locales: [locale === "en" ? "en" : "nb"],
-        metadata: { workspace_id: workspace.id, org_number: workspace.org_number ?? "" },
-      });
-      customer = c.id;
-      const { error } = await supabase.rpc("set_stripe_customer", { p_workspace: workspace.id, p_customer: customer });
-      if (error) throw new Error(error.message);
-    }
+    // A returning customer keeps their Stripe customer; a new one is created by Checkout and stored
+    // only after the server has verified the payment (see /api/cron/stripe-activate).
+    const customer = w?.stripe_customer_id ?? null;
     const meta = { workspace_id: workspace.id, plan, interval, addon: addon ? "1" : "0", email };
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer,
-      customer_update: { name: "auto", address: "auto" },
+      ...(customer ? { customer, customer_update: { name: "auto", address: "auto" } as const } : { customer_email: email || undefined }),
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
       line_items: await lineItems(stripe, { plan, interval, addon, packs: w?.extra_contact_packs ?? 0 }),
