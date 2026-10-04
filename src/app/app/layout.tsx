@@ -129,7 +129,28 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         </div>
       </div>
       <BottomNav
-        t={{ today: t.nav.today, sales: t.nav.sales, contacts: t.nav.contacts, tasks: t.nav.tasks, search: t.mobile.search, mainMenu: t.nav.mainMenu }}
+        t={{
+          today: t.nav.today,
+          sales: t.nav.sales,
+          contacts: t.nav.contacts,
+          tasks: t.nav.tasks,
+          more: t.mobile.more,
+          mainMenu: t.nav.mainMenu,
+          account: t.nav.account,
+          logout: t.common.logout,
+          close: t.mobile.dismiss,
+        }}
+        user={{ name: displayName, initials, email: user.email ?? "", workspace: workspace.name }}
+        more={[
+          { href: "/app/tilbud", label: t.nav.quotes },
+          { href: "/app/bedrifter", label: t.nav.companies },
+          { href: "/app/prosjekter", label: t.nav.projects },
+          { href: "/app/rapporter", label: t.nav.reports },
+          { href: "/app/e-post", label: t.nav.email },
+          { href: "/app/innstillinger", label: t.nav.settings },
+          { href: "/faq", label: t.nav.help },
+          ...(isPlatformAdmin ? [{ href: "/admin", label: t.admin.nav }] : []),
+        ]}
       />
     </div>
   );

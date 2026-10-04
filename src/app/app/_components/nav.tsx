@@ -34,7 +34,7 @@ export function Nav({ t }: { t: NavTexts }) {
     { href: "/faq", label: t.help },
   ];
   return (
-    <nav aria-label={t.mainMenu} className="flex gap-1 overflow-x-auto md:flex-col">
+    <nav aria-label={t.mainMenu} className="hidden gap-1 md:flex md:flex-col">
       {items.map((item) => {
         const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
         return (

@@ -914,6 +914,7 @@ const nb = {
   },
   mobile: {
     search: "Søk",
+    more: "Mer",
     call: "Ring",
     sms: "SMS",
     email: "E-post",
@@ -2005,6 +2006,7 @@ const en: Dictionary = {
   },
   mobile: {
     search: "Search",
+    more: "More",
     call: "Call",
     sms: "SMS",
     email: "E-mail",

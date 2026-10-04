@@ -36,6 +36,36 @@ export default async function AccountPage() {
       </header>
 
       <Card>
+        <h2 className="mb-1 font-semibold">{t.mobile.installTitle}</h2>
+        <InstallApp
+          t={{
+            title: t.mobile.installTitle,
+            intro: t.mobile.installIntro,
+            install: t.mobile.install,
+            installed: t.mobile.installed,
+            iosSteps: t.mobile.iosSteps,
+            otherBrowsers: t.mobile.otherBrowsers,
+            dismiss: t.mobile.dismiss,
+          }}
+        />
+        <h3 className="mb-1 mt-6 text-sm font-semibold">{t.mobile.pushTitle}</h3>
+        <p className="mb-3 text-sm text-muted">{t.mobile.pushIntro}</p>
+        <PushToggle
+          publicKey={vapidPublicKey()}
+          t={{
+            pushOn: t.mobile.pushOn,
+            pushOff: t.mobile.pushOff,
+            pushEnabled: t.mobile.pushEnabled,
+            pushDenied: t.mobile.pushDenied,
+            pushUnsupported: t.mobile.pushUnsupported,
+            pushTest: t.mobile.pushTest,
+            pushTestSent: t.mobile.pushTestSent,
+            pushFailed: t.mobile.pushFailed,
+          }}
+        />
+      </Card>
+
+      <Card>
         <h2 className="mb-1 font-semibold">{s.profile}</h2>
         <p className="mb-4 text-sm text-muted">{s.profileIntro}</p>
         <ActionForm action={updateProfile} submitLabel={s.saveProfile} pendingLabel={t.crm.saving} successText={s.profileSaved}>
@@ -66,36 +96,6 @@ export default async function AccountPage() {
         <h2 className="mb-1 font-semibold">{s.twoFactor}</h2>
         <p className="mb-4 text-sm text-muted">{s.twoFactorIntro}</p>
         <TotpSection t={texts} />
-      </Card>
-
-      <Card>
-        <h2 className="mb-1 font-semibold">{t.mobile.installTitle}</h2>
-        <InstallApp
-          t={{
-            title: t.mobile.installTitle,
-            intro: t.mobile.installIntro,
-            install: t.mobile.install,
-            installed: t.mobile.installed,
-            iosSteps: t.mobile.iosSteps,
-            otherBrowsers: t.mobile.otherBrowsers,
-            dismiss: t.mobile.dismiss,
-          }}
-        />
-        <h3 className="mb-1 mt-6 text-sm font-semibold">{t.mobile.pushTitle}</h3>
-        <p className="mb-3 text-sm text-muted">{t.mobile.pushIntro}</p>
-        <PushToggle
-          publicKey={vapidPublicKey()}
-          t={{
-            pushOn: t.mobile.pushOn,
-            pushOff: t.mobile.pushOff,
-            pushEnabled: t.mobile.pushEnabled,
-            pushDenied: t.mobile.pushDenied,
-            pushUnsupported: t.mobile.pushUnsupported,
-            pushTest: t.mobile.pushTest,
-            pushTestSent: t.mobile.pushTestSent,
-            pushFailed: t.mobile.pushFailed,
-          }}
-        />
       </Card>
 
       <Card>
