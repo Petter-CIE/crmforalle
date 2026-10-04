@@ -487,3 +487,29 @@ export async function addNote(_p: FormResult, formData: FormData): Promise<FormR
   return { ok: true };
 }
 
+
+/** Adds a person from the company's roles in Brønnøysund (e.g. CEO, chair) as a contact. */
+export async function addRoleAsContact(formData: FormData) {
+  const { supabase, user, workspace } = await requireWorkspace();
+  const companyId = id(formData.get("company_id"));
+  const first = String(formData.get("first_name") ?? "").trim().slice(0, 100);
+  const last = String(formData.get("last_name") ?? "").trim().slice(0, 100) || null;
+  const title = String(formData.get("title") ?? "").trim().slice(0, 100) || null;
+  if (!companyId || !first) return;
+  const { data: exists } = await supabase
+    .from("contacts")
+    .select("id")
+    .eq("workspace_id", workspace.id)
+    .eq("company_id", companyId)
+    .ilike("first_name", first)
+    .ilike("last_name", last ?? "")
+    .limit(1);
+  if (!exists?.length) {
+    const { error } = await supabase
+      .from("contacts")
+      .insert({ workspace_id: workspace.id, company_id: companyId, first_name: first, last_name: last, title, owner_id: user.id, created_by: user.id });
+    if (error) return;
+  }
+  revalidatePath(`/app/bedrifter/${companyId}`);
+  await flash("created");
+}

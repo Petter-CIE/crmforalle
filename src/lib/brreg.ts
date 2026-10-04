@@ -90,3 +90,101 @@ export async function searchBrreg(query: string, size = 8): Promise<BrregCompany
   const json = (await res.json()) as { _embedded?: { enheter?: RawEnhet[] } };
   return (json._embedded?.enheter ?? []).map(map);
 }
+
+// ---------------------------------------------------------------- roles and key figures
+// Roles: https://data.brreg.no/enhetsregisteret/api/enheter/{orgnr}/roller
+// Accounts: https://data.brreg.no/regnskapsregisteret/regnskap/{orgnr} (latest filed year, free)
+
+export type BrregRole = { code: string; title: string; firstName: string; lastName: string; isCompany: boolean };
+export type BrregFigures = {
+  year: number;
+  currency: string;
+  revenue: number | null;
+  operatingResult: number | null;
+  netResult: number | null;
+  equity: number | null;
+};
+export type BrregDetails = {
+  employees: number | null;
+  founded: string | null;
+  roles: BrregRole[];
+  figures: BrregFigures | null;
+};
+
+/** Roles shown on a company, in this order. Birth dates from the register are never kept. */
+const ROLE_ORDER = ["DAGL", "LEDE", "NEST", "KONT", "INNH", "DTPR", "DTSO", "MEDL", "REVI", "REGN"];
+
+type RawRole = {
+  avregistrert?: boolean;
+  person?: { erDoed?: boolean; navn?: { fornavn?: string; mellomnavn?: string; etternavn?: string } };
+  enhet?: { navn?: string[] | string; organisasjonsnummer?: string };
+  type?: { kode?: string; beskrivelse?: string };
+};
+
+async function getJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 86400 } });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function brregDetails(orgNumber: string): Promise<BrregDetails | null> {
+  const org = normalizeOrgNumber(orgNumber);
+  if (!org) return null;
+  const [enhet, roller, regnskap] = await Promise.all([
+    getJson<{ antallAnsatte?: number; harRegistrertAntallAnsatte?: boolean; stiftelsesdato?: string }>(`${BASE}/enheter/${org}`),
+    getJson<{ rollegrupper?: { roller?: RawRole[] }[] }>(`${BASE}/enheter/${org}/roller`),
+    getJson<
+      {
+        regnskapsperiode?: { tilDato?: string };
+        valuta?: string;
+        egenkapitalGjeld?: { egenkapital?: { sumEgenkapital?: number } };
+        resultatregnskapResultat?: {
+          aarsresultat?: number;
+          driftsresultat?: { driftsresultat?: number; driftsinntekter?: { sumDriftsinntekter?: number } };
+        };
+      }[]
+    >(`https://data.brreg.no/regnskapsregisteret/regnskap/${org}`),
+  ]);
+  if (!enhet && !roller && !regnskap) return null;
+
+  const roles: BrregRole[] = [];
+  for (const g of roller?.rollegrupper ?? []) {
+    for (const r of g.roller ?? []) {
+      const code = r.type?.kode ?? "";
+      if (r.avregistrert || r.person?.erDoed || !ROLE_ORDER.includes(code)) continue;
+      const n = r.person?.navn;
+      const companyName = Array.isArray(r.enhet?.navn) ? r.enhet?.navn.join(" ") : r.enhet?.navn;
+      roles.push({
+        code,
+        title: r.type?.beskrivelse ?? code,
+        firstName: n ? [n.fornavn, n.mellomnavn].filter(Boolean).join(" ") : (companyName ?? ""),
+        lastName: n?.etternavn ?? "",
+        isCompany: !n,
+      });
+    }
+  }
+  roles.sort((a, b) => ROLE_ORDER.indexOf(a.code) - ROLE_ORDER.indexOf(b.code));
+
+  const latest = [...(regnskap ?? [])].sort((a, b) => (b.regnskapsperiode?.tilDato ?? "").localeCompare(a.regnskapsperiode?.tilDato ?? ""))[0];
+  const figures: BrregFigures | null = latest
+    ? {
+        year: Number((latest.regnskapsperiode?.tilDato ?? "").slice(0, 4)) || 0,
+        currency: latest.valuta || "NOK",
+        revenue: latest.resultatregnskapResultat?.driftsresultat?.driftsinntekter?.sumDriftsinntekter ?? null,
+        operatingResult: latest.resultatregnskapResultat?.driftsresultat?.driftsresultat ?? null,
+        netResult: latest.resultatregnskapResultat?.aarsresultat ?? null,
+        equity: latest.egenkapitalGjeld?.egenkapital?.sumEgenkapital ?? null,
+      }
+    : null;
+
+  return {
+    employees: enhet?.harRegistrertAntallAnsatte === false ? null : (enhet?.antallAnsatte ?? null),
+    founded: enhet?.stiftelsesdato ?? null,
+    roles: roles.slice(0, 12),
+    figures,
+  };
+}

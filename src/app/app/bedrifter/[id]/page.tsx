@@ -6,6 +6,8 @@ import { Avatar } from "@/components/avatar";
 import { DeleteButton } from "@/components/delete-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
 import { EconomyCard } from "@/components/crm/economy-card";
+import { BrregCard } from "@/components/crm/brreg-card";
+import { Suspense } from "react";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, ButtonLink, Card, Select } from "@/components/ui";
@@ -108,6 +110,12 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
 
         <div className="space-y-6">
           <EconomyCard companyId={id} />
+
+          {c.org_number && (
+            <Suspense fallback={<div className="h-40 animate-pulse rounded-xl border border-border bg-surface" />}>
+              <BrregCard companyId={id} orgNumber={c.org_number} contacts={contacts ?? []} />
+            </Suspense>
+          )}
 
           <Card>
             <h2 className="mb-3 font-semibold">{t.companies.projects}</h2>
