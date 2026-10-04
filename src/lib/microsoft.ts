@@ -3,11 +3,12 @@ import "server-only";
 // Microsoft 365 / Outlook through Microsoft Graph, per user (delegated, read only).
 // Needs an app registration in Microsoft Entra ID: MS_CLIENT_ID and MS_CLIENT_SECRET in the
 // environment, redirect URI <site>/app/konto/microsoft/callback, delegated permissions
-// offline_access, User.Read, Mail.Read and Calendars.Read.
+// offline_access, User.Read, Mail.Read, Calendars.Read, Mail.Read.Shared and Calendars.Read.Shared
+// (the last two for shared mailboxes the user has Full Access to).
 
 const AUTH = "https://login.microsoftonline.com/common/oauth2/v2.0";
 const GRAPH = "https://graph.microsoft.com/v1.0";
-export const MS_SCOPES = "offline_access openid email User.Read Mail.Read Calendars.Read";
+export const MS_SCOPES = "offline_access openid email User.Read Mail.Read Calendars.Read Mail.Read.Shared Calendars.Read.Shared";
 
 export const microsoftEnabled = () => !!process.env.MS_CLIENT_ID && !!process.env.MS_CLIENT_SECRET;
 
@@ -77,8 +78,9 @@ export type SyncedMessage = { id: string; from: string; from_name: string | null
 
 const addr = (a?: Address) => (a?.emailAddress?.address ?? "").toLowerCase();
 
-/** Messages in a folder (inbox or sentitems) since the given time, oldest first, up to `max`. */
-export async function messagesSince(accessToken: string, folder: "inbox" | "sentitems", since: string, max = 200): Promise<SyncedMessage[]> {
+/** Messages in a folder (inbox or sentitems) since the given time, oldest first, up to `max`.
+ *  With `mailbox`, reads that shared mailbox instead of the user's own. */
+export async function messagesSince(accessToken: string, folder: "inbox" | "sentitems", since: string, max = 200, mailbox?: string | null): Promise<SyncedMessage[]> {
   const field = folder === "inbox" ? "receivedDateTime" : "sentDateTime";
   const q = new URLSearchParams({
     $filter: `${field} ge ${new Date(since).toISOString()}`,
@@ -86,7 +88,8 @@ export async function messagesSince(accessToken: string, folder: "inbox" | "sent
     $select: "id,internetMessageId,subject,from,toRecipients,ccRecipients,receivedDateTime,sentDateTime,body,isDraft",
     $top: "50",
   });
-  let url: string | undefined = `/me/mailFolders/${folder}/messages?${q}`;
+  const owner = mailbox ? `/users/${encodeURIComponent(mailbox)}` : "/me";
+  let url: string | undefined = `${owner}/mailFolders/${folder}/messages?${q}`;
   const out: SyncedMessage[] = [];
   while (url && out.length < max) {
     const page: { value: GraphMessage[]; "@odata.nextLink"?: string } = await graph(accessToken, url, { prefer: 'outlook.body-content-type="text"' });

@@ -9,7 +9,7 @@ import { PasswordForm } from "@/components/password-form";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { changePassword } from "@/app/nytt-passord/actions";
-import { disconnectOutlook, saveOutlookOptions, updateIdleTimeout, updateProfile } from "./actions";
+import { addSharedMailbox, disconnectOutlook, saveOutlookOptions, updateIdleTimeout, updateProfile } from "./actions";
 import { microsoftEnabled } from "@/lib/microsoft";
 import { formatDateTime } from "@/lib/crm";
 import { Notice } from "@/components/ui";
@@ -30,13 +30,25 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
   const [{ data: mailboxes }, { data: projects }] = await Promise.all([
     supabase
       .from("mail_connections")
-      .select("id, account_email, mail_enabled, calendar_enabled, last_sync_at, last_error, project_id")
+      .select("id, account_email, mail_enabled, calendar_enabled, last_sync_at, last_error, project_id, parent_id")
       .eq("workspace_id", workspace.id)
       .eq("user_id", user.id)
       .order("created_at"),
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
   ]);
-  const { data: profile } = await supabase.from("profiles").select("full_name, notify_email, digest_email, idle_timeout_minutes").eq("id", user.id).maybeSingle();
+  // Each main account followed by its shared mailboxes; the "add shared" form closes the group.
+  const all = mailboxes ?? [];
+  const ordered = all
+    .filter((m) => !m.parent_id)
+    .flatMap((p) => {
+      const group = [p, ...all.filter((c) => c.parent_id === p.id)];
+      return group.map((ms, i) => ({ ms, groupId: p.id, last: i === group.length - 1 }));
+    });
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, notify_email, digest_email, idle_timeout_minutes")
+    .eq("id", user.id)
+    .maybeSingle();
   const { t, dateLocale } = await getI18n();
   const s = t.security;
   const idle = profile?.idle_timeout_minutes ?? 60;
@@ -94,42 +106,86 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
           <p className="text-sm text-muted">{t.outlook.notAvailable}</p>
         ) : (
           <div className="mt-2 space-y-4 text-sm">
-            {(mailboxes ?? []).map((ms) => (
-              <form key={ms.id} action={saveOutlookOptions} className="space-y-2 rounded-lg border border-border p-4">
-                <input type="hidden" name="id" value={ms.id} />
-                <p className="font-medium">✓ {ms.account_email ?? "Microsoft"}</p>
-                <p className="text-xs text-muted">{ms.last_sync_at ? t.outlook.lastSync(formatDateTime(ms.last_sync_at, dateLocale)) : t.outlook.waiting}</p>
-                {ms.last_error && <Notice tone="error">{t.outlook.error(ms.last_error)}</Notice>}
-                <label className="block">
-                  <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
-                  <Select name="project_id" defaultValue={ms.project_id ?? ""} className="w-full max-w-sm">
-                    <option value="">{t.outlook.noProject}</option>
-                    {(projects ?? []).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" name="mail" value="1" defaultChecked={ms.mail_enabled} />
-                  {t.outlook.mail}
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" name="calendar" value="1" defaultChecked={ms.calendar_enabled} />
-                  {t.outlook.calendar}
-                </label>
-                <div className="flex gap-2 pt-1">
-                  <button type="submit" className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">
-                    {t.outlook.save}
-                  </button>
-                  <button formAction={disconnectOutlook} type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm text-danger hover:bg-background">
-                    {t.outlook.disconnect}
-                  </button>
-                </div>
-              </form>
+            {ordered.map(({ ms, groupId, last }) => (
+              <div key={ms.id} className={ms.parent_id ? "ml-6 border-l-2 border-brand/30 pl-4" : ""}>
+                <form action={saveOutlookOptions} className="space-y-2 rounded-lg border border-border p-4">
+                  <input type="hidden" name="id" value={ms.id} />
+                  <p className="font-medium">✓ {ms.account_email ?? "Microsoft"}</p>
+                  <p className="text-xs text-muted">
+                    {ms.last_sync_at ? t.outlook.lastSync(formatDateTime(ms.last_sync_at, dateLocale)) : t.outlook.waiting}
+                  </p>
+                  {ms.parent_id && <p className="text-xs text-muted">{t.outlook.sharedLabel}</p>}
+                  {ms.last_error && (
+                    <Notice tone="error">{ms.parent_id ? t.outlook.sharedError(ms.last_error) : t.outlook.error(ms.last_error)}</Notice>
+                  )}
+                  <label className="block">
+                    <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
+                    <Select name="project_id" defaultValue={ms.project_id ?? ""} className="w-full max-w-sm">
+                      <option value="">{t.outlook.noProject}</option>
+                      {(projects ?? []).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" name="mail" value="1" defaultChecked={ms.mail_enabled} />
+                    {t.outlook.mail}
+                  </label>
+                  {!ms.parent_id && (
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" name="calendar" value="1" defaultChecked={ms.calendar_enabled} />
+                      {t.outlook.calendar}
+                    </label>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <button type="submit" className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">
+                      {t.outlook.save}
+                    </button>
+                    <button
+                      formAction={disconnectOutlook}
+                      type="submit"
+                      className="rounded-lg border border-border px-3 py-1.5 text-sm text-danger hover:bg-background"
+                    >
+                      {t.outlook.disconnect}
+                    </button>
+                  </div>
+                </form>
+                {last && (
+                  <details className={ms.parent_id ? "mt-2 text-sm" : "ml-6 mt-2 text-sm"}>
+                    <summary className="cursor-pointer text-brand">+ {t.outlook.addShared}</summary>
+                    <form action={addSharedMailbox} className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-3">
+                      <input type="hidden" name="parent_id" value={groupId} />
+                      <label className="min-w-52 flex-1">
+                        <span className="mb-1 block text-xs text-muted">{t.outlook.sharedAddress}</span>
+                        <Input name="address" type="email" required placeholder="post@firma.no" className="w-full" />
+                      </label>
+                      <label className="min-w-44">
+                        <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
+                        <Select name="project_id" defaultValue="" className="w-full">
+                          <option value="">{t.outlook.noProject}</option>
+                          {(projects ?? []).map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </label>
+                      <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-hover">
+                        {t.outlook.addSharedButton}
+                      </button>
+                      <p className="w-full text-xs text-muted">{t.outlook.sharedHelp}</p>
+                    </form>
+                  </details>
+                )}
+              </div>
             ))}
-            <form action="/app/konto/microsoft/start" method="get" className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-4">
+            <form
+              action="/app/konto/microsoft/start"
+              method="get"
+              className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-4"
+            >
               <label className="min-w-48 flex-1">
                 <span className="mb-1 block text-xs text-muted">{t.outlook.project}</span>
                 <Select name="prosjekt" defaultValue="" className="w-full">
@@ -141,7 +197,10 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
                   ))}
                 </Select>
               </label>
-              <button type="submit" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background"
+              >
                 <svg aria-hidden viewBox="0 0 21 21" width="16" height="16">
                   <rect x="1" y="1" width="9" height="9" fill="#f25022" />
                   <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
@@ -151,7 +210,9 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
                 {(mailboxes ?? []).length ? t.outlook.connectAnother : t.outlook.connect}
               </button>
             </form>
-            <p className="text-xs text-muted">{t.outlook.onlyKnown} {t.outlook.projectHelp}</p>
+            <p className="text-xs text-muted">
+              {t.outlook.onlyKnown} {t.outlook.projectHelp}
+            </p>
           </div>
         )}
       </Card>
@@ -200,10 +261,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
       <Card>
         <h2 className="mb-1 font-semibold">{s.password}</h2>
         <p className="mb-4 text-sm text-muted">{s.passwordIntro}</p>
-        <PasswordForm
-          action={changePassword}
-          t={{ ...t.newPassword, submit: s.changePassword, passwordHelp: t.register.passwordHelp }}
-        />
+        <PasswordForm action={changePassword} t={{ ...t.newPassword, submit: s.changePassword, passwordHelp: t.register.passwordHelp }} />
       </Card>
 
       <Card>

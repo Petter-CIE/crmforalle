@@ -97,3 +97,38 @@ export async function disconnectOutlook(formData: FormData) {
   await supabase.from("mail_connections").delete().eq("id", id).eq("workspace_id", workspace.id).eq("user_id", user.id);
   revalidatePath("/app/konto");
 }
+
+/** Adds a shared mailbox (read through the user's own Microsoft connection) with an optional project. */
+export async function addSharedMailbox(formData: FormData) {
+  const { supabase, user, workspace } = await requireWorkspace();
+  const parent = String(formData.get("parent_id") ?? "");
+  const address = String(formData.get("address") ?? "").trim().toLowerCase();
+  const project = String(formData.get("project_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(parent) || !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/.test(address)) return;
+  const { data: own } = await supabase
+    .from("mail_connections")
+    .select("id")
+    .eq("id", parent)
+    .eq("workspace_id", workspace.id)
+    .eq("user_id", user.id)
+    .is("parent_id", null)
+    .maybeSingle();
+  if (!own) return;
+  let projectId: string | null = null;
+  if (/^[0-9a-f-]{36}$/i.test(project)) {
+    const { data } = await supabase.from("projects").select("id").eq("id", project).eq("workspace_id", workspace.id).maybeSingle();
+    projectId = data?.id ?? null;
+  }
+  await supabase.from("mail_connections").insert({
+    workspace_id: workspace.id,
+    user_id: user.id,
+    provider: "microsoft",
+    parent_id: own.id,
+    mailbox: address,
+    account_email: address,
+    refresh_token: "",
+    project_id: projectId,
+    calendar_enabled: false,
+  });
+  revalidatePath("/app/konto");
+}

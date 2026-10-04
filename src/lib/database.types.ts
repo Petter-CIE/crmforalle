@@ -1089,6 +1089,8 @@ export type Database = {
           last_sync_at: string | null;
           last_error: string | null;
           project_id: string | null;
+          parent_id: string | null;
+          mailbox: string | null;
           created_at: string;
         };
         Insert: {
@@ -1104,6 +1106,8 @@ export type Database = {
           last_sync_at?: string | null;
           last_error?: string | null;
           project_id?: string | null;
+          parent_id?: string | null;
+          mailbox?: string | null;
           created_at?: string;
         };
         Update: {
@@ -1119,6 +1123,8 @@ export type Database = {
           last_sync_at?: string | null;
           last_error?: string | null;
           project_id?: string | null;
+          parent_id?: string | null;
+          mailbox?: string | null;
           created_at?: string;
         };
         Relationships: [

@@ -8,7 +8,7 @@ import { open, seal } from "@/lib/secret-box";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type Conn = { id: string; refresh_token: string; mail: boolean; calendar: boolean; synced_until: string; user_email: string | null };
+type Conn = { id: string; parent_id: string | null; mailbox: string | null; refresh_token: string; mail: boolean; calendar: boolean; synced_until: string; user_email: string | null };
 
 export async function GET(request: Request) {
   const ticket = new URL(request.url).searchParams.get("ticket") ?? "";
@@ -22,24 +22,34 @@ export async function GET(request: Request) {
   const conns = (Array.isArray(data) ? data : []) as unknown as Conn[];
   const started = Date.now();
   let linked = 0;
+  // Access tokens of the users' own connections, reused for their shared mailboxes (listed after them).
+  const access = new Map<string, string>();
 
   for (const c of conns) {
     if (Date.now() - started > 45_000) break; // the rest waits for the next run
     const result: { refresh_token?: string; synced_until?: string; account_email?: string; error?: string; busy?: [string, string][]; messages?: SyncedMessage[] } = {};
     try {
-      const tokens = await refreshAccess(open(c.refresh_token));
-      if (tokens.refresh_token) result.refresh_token = seal(tokens.refresh_token);
-      const at = tokens.access_token;
+      let at: string;
+      if (c.parent_id) {
+        const parent = access.get(c.parent_id);
+        if (!parent) throw new Error("the main mailbox could not be synchronised");
+        at = parent;
+      } else {
+        const tokens = await refreshAccess(open(c.refresh_token));
+        if (tokens.refresh_token) result.refresh_token = seal(tokens.refresh_token);
+        at = tokens.access_token;
+        access.set(c.id, at);
+      }
       if (c.mail) {
         // Overlap a little so nothing at the edge is missed; duplicates are skipped by message id.
         const since = new Date(new Date(c.synced_until).getTime() - 10 * 60_000).toISOString();
         const now = new Date().toISOString();
-        const [inbox, sent] = await Promise.all([messagesSince(at, "inbox", since), messagesSince(at, "sentitems", since)]);
+        const [inbox, sent] = await Promise.all([messagesSince(at, "inbox", since, 200, c.mailbox), messagesSince(at, "sentitems", since, 200, c.mailbox)]);
         result.messages = [...inbox, ...sent];
         result.synced_until = now;
-        if (!c.user_email) result.account_email = await me(at).catch(() => "");
+        if (!c.user_email && !c.parent_id) result.account_email = await me(at).catch(() => "");
       }
-      if (c.calendar) result.busy = await busyTimes(at);
+      if (c.calendar && !c.parent_id) result.busy = await busyTimes(at);
     } catch (e) {
       result.error = e instanceof Error ? e.message : String(e);
       console.error("mail sync failed", c.id, result.error);
