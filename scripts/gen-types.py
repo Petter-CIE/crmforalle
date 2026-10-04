@@ -4,7 +4,7 @@ S, N = "string", "number"
 B = "boolean"
 # column: (name, ts_type, nullable, has_default)
 T = {
- "workspaces": [("id",S,0,1),("name",S,0,0),("org_number",S,1,1),("plan",'Database["public"]["Enums"]["plan_type"]',0,1),("contact_limit",N,0,1),("stripe_customer_id",S,1,1),("trial_ends_at",S,0,1),("discount_percent",N,0,1),("discount_until",S,1,1),("discount_note",S,1,1),("admin_note",S,1,1),("suspended_at",S,1,1),("billing_interval",S,0,1),("accounting_addon",B,0,1),("extra_contact_packs",N,0,1),("terms_version",S,1,1),("terms_accepted_at",S,1,1),("terms_accepted_by",S,1,1),("inbound_token",S,1,1),("quote_address",S,1,1),("quote_email",S,1,1),("quote_phone",S,1,1),("quote_bank_account",S,1,1),("quote_terms",S,1,1),("quote_valid_days",N,0,1),("logo_path",S,1,1),("invoice_email",S,1,1),("invoice_reference",S,1,1),("ordered_at",S,1,1),("ordered_by",S,1,1),("created_by",S,1,1),("created_at",S,0,1)],
+ "workspaces": [("id",S,0,1),("name",S,0,0),("org_number",S,1,1),("plan",'Database["public"]["Enums"]["plan_type"]',0,1),("contact_limit",N,0,1),("stripe_customer_id",S,1,1),("trial_ends_at",S,0,1),("discount_percent",N,0,1),("discount_until",S,1,1),("discount_note",S,1,1),("admin_note",S,1,1),("suspended_at",S,1,1),("billing_interval",S,0,1),("accounting_addon",B,0,1),("extra_contact_packs",N,0,1),("terms_version",S,1,1),("terms_accepted_at",S,1,1),("terms_accepted_by",S,1,1),("inbound_token",S,1,1),("quote_address",S,1,1),("quote_email",S,1,1),("quote_phone",S,1,1),("quote_bank_account",S,1,1),("quote_terms",S,1,1),("quote_valid_days",N,0,1),("logo_path",S,1,1),("invoice_email",S,1,1),("invoice_reference",S,1,1),("ordered_at",S,1,1),("ordered_by",S,1,1),("payment_method",S,1,1),("stripe_subscription_id",S,1,1),("card_status",S,1,1),("card_period_end",S,1,1),("created_by",S,1,1),("created_at",S,0,1)],
  "profiles": [("id",S,0,0),("email",S,0,0),("full_name",S,1,1),("locale",S,0,1),("notify_email",B,0,1),("idle_timeout_minutes",N,0,1),("digest_email",B,0,1),("dashboard","Json",1,1),("created_at",S,0,1)],
  "members": [("workspace_id",S,0,0),("user_id",S,0,0),("role",'Database["public"]["Enums"]["member_role"]',0,1),("created_at",S,0,1)],
  "invitations": [("id",S,0,1),("workspace_id",S,0,0),("email",S,0,0),("role",'Database["public"]["Enums"]["member_role"]',0,1),("token",S,0,1),("invited_by",S,1,1),("created_at",S,0,1),("expires_at",S,0,1),("accepted_at",S,1,1)],
@@ -111,6 +111,11 @@ o += ["    };", "    Views: { [_ in never]: never };", "    Functions: {",
       '      brreg_claim: { Args: { p_ticket: string }; Returns: Json };',
       '      order_subscription: { Args: { p_workspace: string; p_plan: Database["public"]["Enums"]["plan_type"]; p_interval: string; p_addon: boolean; p_invoice_email: string; p_reference: string | null }; Returns: undefined };',
       '      trial_claim: { Args: { p_ticket: string }; Returns: Json };',
+      '      order_subscription_invoice: { Args: { p_workspace: string; p_plan: Database["public"]["Enums"]["plan_type"]; p_interval: string; p_addon: boolean; p_invoice_email: string; p_reference: string | null }; Returns: undefined };',
+      '      set_stripe_customer: { Args: { p_workspace: string; p_customer: string }; Returns: undefined };',
+      '      activate_card_subscription: { Args: { p_workspace: string; p_plan: Database["public"]["Enums"]["plan_type"]; p_interval: string; p_addon: boolean; p_email: string; p_subscription: string; p_period_end: string | null }; Returns: undefined };',
+      '      stripe_claim: { Args: { p_ticket: string }; Returns: Json };',
+      '      stripe_apply: { Args: { p_ticket: string; p_items: Json }; Returns: number };',
       '      calendar_link: { Args: { p_rotate?: boolean }; Returns: string };',
       '      calendar_feed: { Args: { p_token: string }; Returns: Json };',
       '      brreg_snapshots: { Args: { p_ticket: string; p_orgs: string[] }; Returns: Json };',

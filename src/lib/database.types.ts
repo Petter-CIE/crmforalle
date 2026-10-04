@@ -1726,6 +1726,10 @@ export type Database = {
           invoice_reference: string | null;
           ordered_at: string | null;
           ordered_by: string | null;
+          payment_method: string | null;
+          stripe_subscription_id: string | null;
+          card_status: string | null;
+          card_period_end: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -1760,6 +1764,10 @@ export type Database = {
           invoice_reference?: string | null;
           ordered_at?: string | null;
           ordered_by?: string | null;
+          payment_method?: string | null;
+          stripe_subscription_id?: string | null;
+          card_status?: string | null;
+          card_period_end?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1794,6 +1802,10 @@ export type Database = {
           invoice_reference?: string | null;
           ordered_at?: string | null;
           ordered_by?: string | null;
+          payment_method?: string | null;
+          stripe_subscription_id?: string | null;
+          card_status?: string | null;
+          card_period_end?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1973,6 +1985,32 @@ export type Database = {
         Returns: undefined;
       };
       trial_claim: { Args: { p_ticket: string }; Returns: Json };
+      order_subscription_invoice: {
+        Args: {
+          p_workspace: string;
+          p_plan: Database["public"]["Enums"]["plan_type"];
+          p_interval: string;
+          p_addon: boolean;
+          p_invoice_email: string;
+          p_reference: string | null;
+        };
+        Returns: undefined;
+      };
+      set_stripe_customer: { Args: { p_workspace: string; p_customer: string }; Returns: undefined };
+      activate_card_subscription: {
+        Args: {
+          p_workspace: string;
+          p_plan: Database["public"]["Enums"]["plan_type"];
+          p_interval: string;
+          p_addon: boolean;
+          p_email: string;
+          p_subscription: string;
+          p_period_end: string | null;
+        };
+        Returns: undefined;
+      };
+      stripe_claim: { Args: { p_ticket: string }; Returns: Json };
+      stripe_apply: { Args: { p_ticket: string; p_items: Json }; Returns: number };
       calendar_link: { Args: { p_rotate?: boolean }; Returns: string };
       calendar_feed: { Args: { p_token: string }; Returns: Json };
       brreg_snapshots: { Args: { p_ticket: string; p_orgs: string[] }; Returns: Json };

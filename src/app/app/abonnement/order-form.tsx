@@ -21,6 +21,11 @@ type Texts = {
   terms: string;
   order: string;
   ordering: string;
+  method: string;
+  methodInvoice: string;
+  methodCard: string;
+  goToPayment: string;
+  receiptTo: string;
 };
 type Plan = { key: "start" | "bedrift"; name: string; text: string; items: string[] };
 
@@ -29,8 +34,10 @@ export function OrderForm({
   plans,
   initial,
   locale,
+  cardEnabled,
   t,
 }: {
+  cardEnabled: boolean;
   plans: Plan[];
   initial: { plan: "start" | "bedrift"; interval: "month" | "year"; addon: boolean; invoiceEmail: string; reference: string };
   locale: string;
@@ -39,13 +46,15 @@ export function OrderForm({
   const [plan, setPlan] = useState(initial.plan);
   const [interval, setInterval] = useState(initial.interval);
   const [addon, setAddon] = useState(initial.addon);
+  const [method, setMethod] = useState<"invoice" | "card">("invoice");
   const nok = (n: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(n);
   const monthly = PLAN_PRICE[plan] + (plan === "start" && addon ? ACCOUNTING_ADDON_PRICE : 0);
   const total = interval === "year" ? monthly * MONTHS_PAID_PER_YEAR : monthly;
 
   return (
-    <ActionForm action={orderSubscription} submitLabel={t.order} pendingLabel={t.ordering}>
+    <ActionForm action={orderSubscription} submitLabel={method === "card" ? `${t.goToPayment} →` : t.order} pendingLabel={t.ordering}>
       <input type="hidden" name="plan" value={plan} />
+      <input type="hidden" name="method" value={method} />
       <input type="hidden" name="interval" value={interval} />
       <div className="inline-flex rounded-full border border-border bg-background p-1 text-sm" role="radiogroup" aria-label={t.interval}>
         {(["month", "year"] as const).map((v) => (
@@ -97,15 +106,33 @@ export function OrderForm({
           {t.addon}
         </label>
       )}
+      {cardEnabled && (
+        <fieldset className="space-y-2">
+          <legend className="mb-1 text-sm font-medium">{t.method}</legend>
+          <div className="flex flex-wrap gap-2">
+            {(["invoice", "card"] as const).map((m) => (
+              <label
+                key={m}
+                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${method === m ? "border-brand bg-brand-soft/50" : "border-border bg-surface"}`}
+              >
+                <input type="radio" name="method_choice" checked={method === m} onChange={() => setMethod(m)} className="accent-[var(--brand)]" />
+                {m === "invoice" ? `🧾 ${t.methodInvoice}` : `💳 ${t.methodCard}`}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="mb-1 block font-medium">{t.invoiceEmail}</span>
+          <span className="mb-1 block font-medium">{method === "card" ? t.receiptTo : t.invoiceEmail}</span>
           <Input name="invoice_email" type="email" required maxLength={200} defaultValue={initial.invoiceEmail} />
         </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">{t.reference}</span>
-          <Input name="reference" maxLength={100} defaultValue={initial.reference} />
-        </label>
+        {method === "invoice" && (
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">{t.reference}</span>
+            <Input name="reference" maxLength={100} defaultValue={initial.reference} />
+          </label>
+        )}
       </div>
       <p className="text-lg">
         {t.total}: <strong className="tabular-nums">{nok(total)} {interval === "year" ? t.perYear : t.perMonth}</strong>{" "}

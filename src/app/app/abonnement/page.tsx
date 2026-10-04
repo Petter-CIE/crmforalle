@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/ui-extra";
 import { formatDate } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace, trialDaysLeft } from "@/lib/session";
+import { cardPaymentsEnabled } from "@/lib/stripe";
+import { openBillingPortal } from "./actions";
 import { OrderForm } from "./order-form";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,18 +15,21 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.subscription.title };
 }
 
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({ searchParams }: PageProps<"/app/abonnement">) {
+  const sp = await searchParams;
   const { supabase, user, workspace } = await requireWorkspace();
   const { t, dateLocale } = await getI18n();
   const s = t.subscription;
   const { data: w } = await supabase
     .from("workspaces")
-    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at")
+    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id")
     .eq("id", workspace.id)
     .single();
   const plan = w?.plan ?? workspace.plan;
   const daysLeft = trialDaysLeft(w?.trial_ends_at ?? workspace.trial_ends_at);
   const paid = plan === "start" || plan === "bedrift";
+  const byCard = paid && w?.payment_method === "card";
+  const cardTrouble = byCard && !!w?.card_status && !["active", "trialing"].includes(w.card_status);
   const planName = (k: string) => t.landing.plans.find((p) => p.name.toLowerCase() === k)?.name ?? k;
 
   return (
@@ -39,17 +44,34 @@ export default async function SubscriptionPage() {
         ) : (
           <div className="space-y-0.5">
             <p className="font-medium">{s.active(planName(plan), w?.billing_interval === "year" ? s.yearly : s.monthly)}</p>
-            {w?.invoice_email && <p className="text-sm text-muted">{s.invoiceTo(w.invoice_email)}</p>}
+            {byCard ? (
+              <p className="text-sm text-muted">{s.paidByCard(w?.card_period_end ? formatDate(w.card_period_end, dateLocale) : null)}</p>
+            ) : (
+              w?.invoice_email && <p className="text-sm text-muted">{s.invoiceTo(w.invoice_email)}</p>
+            )}
             {w?.ordered_at && <p className="text-sm text-muted">{s.orderedAt(formatDate(w.ordered_at, dateLocale))}</p>}
           </div>
         )}
       </Card>
+      {sp.betalt === "feil" && <Notice tone="error">{s.payFailed}</Notice>}
+      {sp.portal === "feil" && <Notice tone="error">{s.portalFailed}</Notice>}
+      {cardTrouble && <Notice tone="error">{s.cardIssue}</Notice>}
+      {w?.stripe_customer_id && canManage(workspace.role) && (
+        <form action={openBillingPortal}>
+          <button type="submit" className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background">
+            💳 {s.portal} ↗
+          </button>
+        </form>
+      )}
+      {byCard && canManage(workspace.role) && <p className="text-sm text-muted">{s.cardChange}</p>}
       {plan !== "free" &&
+        !byCard &&
         (canManage(workspace.role) ? (
           <Card>
             <h2 className="mb-4 font-semibold">{paid ? s.change : s.choose}</h2>
             <OrderForm
               locale={dateLocale}
+              cardEnabled={cardPaymentsEnabled()}
               plans={(["start", "bedrift"] as const).map((key) => {
                 const p = t.landing.plans.find((x) => x.name.toLowerCase() === key)!;
                 return { key, name: p.name, text: p.text, items: p.items };
@@ -76,6 +98,11 @@ export default async function SubscriptionPage() {
                 terms: s.terms,
                 order: s.order,
                 ordering: s.ordering,
+                method: s.method,
+                methodInvoice: s.methodInvoice,
+                methodCard: s.methodCard,
+                goToPayment: s.goToPayment,
+                receiptTo: s.receiptTo,
               }}
             />
             <p className="mt-4 text-xs text-muted">

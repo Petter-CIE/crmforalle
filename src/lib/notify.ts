@@ -499,13 +499,14 @@ export async function notifyOrder(o: {
   reference: string | null;
   orderedBy: string;
   monthly: number;
+  method: "invoice" | "card";
 }) {
   const mailer = transport();
   if (!mailer) return false;
   const lines = [
     `Plan: ${o.plan} (${o.interval === "year" ? "årlig" : "månedlig"})${o.addon ? " + regnskapstillegg" : ""}`,
     `Pris: ${o.monthly} kr/mnd eks. mva.${o.interval === "year" ? ` (${o.monthly * 12} kr/år)` : ""}`,
-    `Faktura til: ${o.invoiceEmail}`,
+    o.method === "card" ? `Betalt med kort (Stripe) – IKKE send faktura. Kvittering til: ${o.invoiceEmail}` : `Faktura til: ${o.invoiceEmail}`,
     o.reference ? `Referanse: ${o.reference}` : null,
     o.orgNumber ? `Org.nr.: ${o.orgNumber}` : null,
     `Bestilt av: ${o.orderedBy}`,
@@ -516,14 +517,14 @@ export async function notifyOrder(o: {
     quote: lines.join("\n"),
     url: `${siteUrl()}/admin`,
     button: "Åpne admin",
-    footer: "Send faktura fra regnskapssystemet. – AllSeats CRM",
+    footer: o.method === "card" ? "Betalingen går automatisk via Stripe. – AllSeats CRM" : "Send faktura fra regnskapssystemet. – AllSeats CRM",
   });
   try {
     await mailer.sendMail({
       from: FROM(),
       to: process.env.ORDER_EMAIL || "post@allseats.no",
       replyTo: o.invoiceEmail,
-      subject: `Ny bestilling: ${o.workspace} – ${o.plan}`,
+      subject: `Ny bestilling: ${o.workspace} – ${o.plan}${o.method === "card" ? " (kort)" : ""}`,
       text,
       html,
     });

@@ -51,7 +51,7 @@ const nb: Faq = {
         {
           q: "Hvordan betaler vi?",
           a: [
-            "Med faktura. Vi sender fakturaen på e-post forskuddsvis for en måned eller et år om gangen, med mva. i tillegg. Vi tar ikke betalt med kort.",
+            "Med faktura eller kort – dere velger under Innstillinger → Abonnement. Faktura sendes på e-post forskuddsvis for en måned eller et år om gangen, med mva. i tillegg. Med kort trekkes beløpet automatisk, og kvitteringen kommer på e-post.",
             "Fortell oss hvilken e-postadresse fakturaen skal til, og om dere trenger en referanse eller et bestillingsnummer på den.",
           ],
         },
@@ -383,7 +383,7 @@ const en: Faq = {
         {
           q: "How do we pay?",
           a: [
-            "By invoice. We send the invoice by e-mail in advance for one month or one year at a time, with VAT added. We don't take card payments.",
+            "By invoice or card – you choose under Settings → Subscription. Invoices are sent by e-mail in advance for one month or one year at a time, with VAT added. With a card the amount is charged automatically and the receipt comes by e-mail.",
             "Tell us which e-mail address the invoice should go to, and whether you need a reference or purchase order number on it.",
           ],
         },
