@@ -3,7 +3,7 @@ import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
-import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteButton } from "@/components/delete-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Button, ButtonLink, Card } from "@/components/ui";
@@ -12,7 +12,6 @@ import { EmptyState, PageHeader } from "@/components/ui-extra";
 import {
   addCompanyToProject,
   addContactToProject,
-  deleteProject,
   removeCompanyFromProject,
   removeContactFromProject,
   setProjectArchived,
@@ -90,12 +89,9 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
                 {p.archived ? t.projects.unarchive : t.projects.archive}
               </Button>
             </form>
-            <form action={deleteProject}>
-              <input type="hidden" name="id" value={id} />
-              <ConfirmButton message={t.crm.confirmDelete} variant="danger">
-                {t.crm.delete}
-              </ConfirmButton>
-            </form>
+            <DeleteButton kind="project" id={id} message={t.ui.deleted.project} redirectTo="/app/prosjekter">
+              {t.crm.delete}
+            </DeleteButton>
           </>
         }
       />
@@ -116,7 +112,7 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
             ) : (
               <ul className="divide-y divide-border">
                 {contacts.map((c) => (
-                  <li key={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
+                  <li key={c.id} data-del={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
                     <div className="min-w-0 flex-1">
                       <Link href={`/app/kontakter/${c.id}`} className="row-link font-medium hover:text-brand">
                         {contactName(c)}
@@ -159,7 +155,7 @@ export default async function ProjectPage({ params }: PageProps<"/app/prosjekter
             ) : (
               <ul className="max-h-[28rem] divide-y divide-border overflow-y-auto">
                 {companies.map((c) => (
-                  <li key={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
+                  <li key={c.id} data-del={c.id} className="relative -mx-2 flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-background">
                     <div className="min-w-0 flex-1">
                       <Link href={`/app/bedrifter/${c.id}`} className="row-link font-medium hover:text-brand">
                         {c.name}

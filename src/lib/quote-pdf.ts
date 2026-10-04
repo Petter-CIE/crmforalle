@@ -47,6 +47,19 @@ function wrap(text: string, font: PDFFont, size: number, width: number) {
   return out;
 }
 
+/** The company logo from storage, or null (missing, unsupported format or unreachable). */
+async function embedLogo(doc: PDFDocument, path: string | null | undefined) {
+  if (!path || !/\.(png|jpe?g)$/i.test(path)) return null;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${path}`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    return /\.png$/i.test(path) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+  } catch {
+    return null;
+  }
+}
+
 export async function quotePdf(q: QuoteDocument) {
   const doc = await PDFDocument.create();
   doc.setTitle(safe(`Tilbud ${q.number} - ${q.title}`));
@@ -80,10 +93,21 @@ export async function quotePdf(q: QuoteDocument) {
     }
   };
 
-  // Header: seller left, quote facts right
-  text(q.seller.name, M, y, { size: 16, f: bold, color: BRAND });
-  text("TILBUD", A4[0] - M, y, { size: 16, f: bold, align: "right" });
-  y -= 18;
+  // Header: logo (if any) and seller left, quote facts right
+  const logo = await embedLogo(doc, q.seller.logo_path);
+  if (logo) {
+    const scale = Math.min(150 / logo.width, 42 / logo.height, 1);
+    const h = logo.height * scale;
+    page.drawImage(logo, { x: M, y: y + 14 - h, width: logo.width * scale, height: h });
+    text("TILBUD", A4[0] - M, y, { size: 16, f: bold, align: "right" });
+    y -= Math.max(h, 18) + 4;
+    text(q.seller.name, M, y, { size: 11, f: bold });
+    y -= 14;
+  } else {
+    text(q.seller.name, M, y, { size: 16, f: bold, color: BRAND });
+    text("TILBUD", A4[0] - M, y, { size: 16, f: bold, align: "right" });
+    y -= 18;
+  }
   const sellerLines = [
     q.seller.address,
     q.seller.org_number ? `Org.nr. ${q.seller.org_number} MVA` : null,

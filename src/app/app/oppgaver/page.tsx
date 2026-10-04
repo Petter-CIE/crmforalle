@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { TASK_SELECT, TaskForm, TaskRows, type TaskRow } from "@/components/crm/task-list";
 import { Card } from "@/components/ui";
-import { PageHeader } from "@/components/ui-extra";
+import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { involvedFilter, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
@@ -121,6 +121,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
       {view !== "fullfort" && (
         <Card>
           <TaskForm
+            inputId="ny-oppgave"
             path={path}
             members={members}
             me={person ?? user.id}
@@ -140,7 +141,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/app/oppgav
             <TaskRows tasks={g.items} path={path} members={members} showLinks />
           </Card>
         ))}
-      {view !== "fullfort" && tasks.length === 0 && <p className="text-sm text-muted">{t.tasks.empty}</p>}
+      {view !== "fullfort" && tasks.length === 0 && <EmptyHero icon="tasks" title={t.ui.empty.tasksTitle} text={t.ui.empty.tasksText} />}
     </div>
   );
 }

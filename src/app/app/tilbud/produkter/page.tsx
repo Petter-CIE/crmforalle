@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { ActionForm } from "@/components/action-form";
-import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteButton } from "@/components/delete-button";
 import { Card, Input, Select } from "@/components/ui";
-import { EmptyState, Field, PageHeader } from "@/components/ui-extra";
+import { EmptyHero, Field, PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { nok, VAT_RATES } from "@/lib/quotes";
 import { requireWorkspace } from "@/lib/session";
-import { createProduct, deleteProduct, updateProduct } from "../actions";
+import { createProduct, updateProduct } from "../actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -76,11 +76,11 @@ export default async function ProductsPage() {
 
       <Card>
         {products.length === 0 ? (
-          <EmptyState>{q.noProducts}</EmptyState>
+          <EmptyHero icon="products" title={t.ui.empty.productsTitle} text={t.ui.empty.productsText} />
         ) : (
           <ul className="divide-y divide-border">
             {products.map((p) => (
-              <li key={p.id} className="py-2">
+              <li key={p.id} data-del={p.id} className="py-2">
                 <details>
                   <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                     <span className={`min-w-0 flex-1 font-medium ${p.active ? "" : "text-muted line-through"}`}>
@@ -104,12 +104,11 @@ export default async function ProductsPage() {
                         {q.active}
                       </label>
                     </ActionForm>
-                    <form action={deleteProduct} className="mt-3">
-                      <input type="hidden" name="id" value={p.id} />
-                      <ConfirmButton variant="danger" className="!px-2 !py-1 text-xs" message={t.crm.confirmDelete}>
+                    <div className="mt-3">
+                      <DeleteButton kind="product" id={p.id} message={t.ui.deleted.product} className="!px-2 !py-1 text-xs">
                         {t.crm.delete}
-                      </ConfirmButton>
-                    </form>
+                      </DeleteButton>
+                    </div>
                   </div>
                 </details>
               </li>

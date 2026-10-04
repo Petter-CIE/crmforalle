@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConfirmButton } from "@/components/confirm-button";
+import { Avatar } from "@/components/avatar";
+import { DeleteButton } from "@/components/delete-button";
 import { DEAL_ROW_SELECT, DealList, type DealRow } from "@/components/crm/deal-list";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
@@ -11,7 +12,7 @@ import { QuickActions } from "@/components/crm/quick-actions";
 import { InfoRow, PageHeader } from "@/components/ui-extra";
 import { CustomFieldValues } from "@/components/crm/custom-fields";
 import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
-import { addContactToProject, deleteContact, removeContactFromProject } from "@/app/app/crm-actions";
+import { addContactToProject, removeContactFromProject } from "@/app/app/crm-actions";
 import { contactName, formatDateTime } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -46,6 +47,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
   return (
     <div className="space-y-6">
       <PageHeader
+        leading={<Avatar name={contactName(k)} size="lg" />}
         title={contactName(k)}
         subtitle={
           <>
@@ -68,12 +70,9 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
             <ButtonLink href={`${path}/rediger`} variant="secondary">
               {t.crm.edit}
             </ButtonLink>
-            <form action={deleteContact}>
-              <input type="hidden" name="id" value={id} />
-              <ConfirmButton message={t.crm.confirmDelete} variant="danger">
-                {t.crm.delete}
-              </ConfirmButton>
-            </form>
+            <DeleteButton kind="contact" id={id} message={t.ui.deleted.contact} redirectTo="/app/kontakter">
+              {t.crm.delete}
+            </DeleteButton>
           </>
         }
       />

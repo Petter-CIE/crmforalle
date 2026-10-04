@@ -4,9 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteButton } from "@/components/delete-button";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { EmptyState, Field, PageHeader, Textarea } from "@/components/ui-extra";
-import { deleteTask } from "@/app/app/crm-actions";
 import { contactName, formatDateTime, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -97,14 +97,9 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
         backHref="/app/oppgaver"
         backLabel={tt.back}
         actions={
-          <form action={deleteTask}>
-            <input type="hidden" name="id" value={task.id} />
-            <input type="hidden" name="tilbake" value="/app/oppgaver" />
-            <input type="hidden" name="redirect" value="1" />
-            <ConfirmButton message={t.crm.confirmDelete} variant="danger">
-              {t.crm.delete}
-            </ConfirmButton>
-          </form>
+          <DeleteButton kind="task" id={task.id} message={t.ui.deleted.task} redirectTo="/app/oppgaver">
+            {t.crm.delete}
+          </DeleteButton>
         }
       />
 

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Avatar } from "@/components/avatar";
 import { BulkBar, RowCheckbox, SelectAll } from "@/components/crm/bulk-bar";
 import { ProjectChips } from "@/components/crm/project-chips";
 import { ButtonLink, Card, Input, Select } from "@/components/ui";
-import { EmptyState, PageHeader } from "@/components/ui-extra";
+import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { contactName, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -80,7 +81,23 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
         </button>
       </form>
       {!contacts || contacts.length === 0 ? (
-        <EmptyState>{query || projectId ? t.crm.noResults : t.contacts.empty}</EmptyState>
+        query || projectId ? (
+          <EmptyHero icon="search" title={t.ui.empty.noResults} text={t.ui.empty.noResultsText} />
+        ) : (
+          <EmptyHero
+            icon="contacts"
+            title={t.ui.empty.contactsTitle}
+            text={t.ui.empty.contactsText}
+            actions={
+              <>
+                <ButtonLink href="/app/kontakter/ny">+ {t.ui.empty.contactsAction}</ButtonLink>
+                <ButtonLink href="/app/import" variant="secondary">
+                  {t.ui.empty.importAction}
+                </ButtonLink>
+              </>
+            }
+          />
+        )
       ) : (
         <Card className="!p-0 overflow-x-auto">
           <table className="w-full text-sm">
@@ -99,16 +116,21 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
             </thead>
             <tbody className="divide-y divide-border">
               {contacts.map((k) => (
-                <tr key={k.id} className="relative hover:bg-background">
+                <tr key={k.id} data-del={k.id} className="relative hover:bg-background">
                   <td className="py-2.5 pl-4">
                     <RowCheckbox formId={FORM_ID} id={k.id} label={`${t.bulk.selectRow}: ${contactName(k)}`} />
                   </td>
                   <td className="px-3 py-2.5">
-                    <Link href={`/app/kontakter/${k.id}`} className="row-link font-medium hover:text-brand">
-                      {contactName(k)}
-                    </Link>
-                    {k.title && <p className="text-xs text-muted">{k.title}</p>}
-                    {k.companies?.name && <p className="text-xs text-muted md:hidden">{k.companies.name}</p>}
+                    <div className="flex items-center gap-3">
+                      <Avatar name={contactName(k)} size="md" />
+                      <div className="min-w-0">
+                        <Link href={`/app/kontakter/${k.id}`} className="row-link font-medium hover:text-brand">
+                          {contactName(k)}
+                        </Link>
+                        {k.title && <p className="text-xs text-muted">{k.title}</p>}
+                        {k.companies?.name && <p className="text-xs text-muted md:hidden">{k.companies.name}</p>}
+                      </div>
+                    </div>
                   </td>
                   <td className="hidden px-3 py-2.5 text-muted md:table-cell">{k.companies?.name}</td>
                   <td className="hidden px-3 py-2.5 sm:table-cell">

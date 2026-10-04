@@ -26,7 +26,15 @@ export type QuoteDocument = {
   total_ex_vat: number;
   total_vat: number;
   total: number;
-  seller: { name: string; org_number: string | null; address: string | null; email: string | null; phone: string | null; bank_account: string | null };
+  seller: {
+    name: string;
+    org_number: string | null;
+    address: string | null;
+    email: string | null;
+    phone: string | null;
+    bank_account: string | null;
+    logo_path?: string | null;
+  };
   contact_person: { name: string; email: string } | null;
   customer: { company: string | null; org_number: string | null; address: string | null; contact: string | null };
   lines: QuoteLine[];

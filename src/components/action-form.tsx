@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { useToast } from "@/components/toast";
 import { Button, Notice } from "@/components/ui";
 import type { FormResult } from "@/app/app/crm-actions";
 
@@ -31,15 +32,19 @@ export function ActionForm({
 }) {
   const [state, action, pending] = useActionState<FormResult, FormData>(serverAction, {});
   const ref = useRef<HTMLFormElement>(null);
+  const toasts = useToast();
+  const success = state.ok ? (state.message ?? successText) : undefined;
   useEffect(() => {
     if (state.ok && resetOnSuccess) ref.current?.reset();
-  }, [state, resetOnSuccess]);
+    // Inside the app the success text is shown as a toast; elsewhere it stays in the form.
+    if (success && toasts) toasts.toast(success);
+  }, [state, resetOnSuccess, success, toasts]);
 
   return (
     <form ref={ref} action={action} className={className}>
       {children}
       {state.error && <Notice tone="error">{state.error}</Notice>}
-      {state.ok && (state.message ?? successText) && <Notice tone="success">{state.message ?? successText}</Notice>}
+      {success && !toasts && <Notice tone="success">{success}</Notice>}
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" disabled={pending} className={submitClassName}>
           {pending ? pendingLabel : submitLabel}

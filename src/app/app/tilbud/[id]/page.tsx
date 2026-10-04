@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
-import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteButton } from "@/components/delete-button";
 import { CopyButton } from "@/components/copy-button";
 import { Button, Card, Input } from "@/components/ui";
 import { Field, PageHeader, Textarea } from "@/components/ui-extra";
@@ -11,7 +11,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { loadQuote } from "@/lib/quote-data";
 import { lineNet, nok, qty, quoteTotals, type QuoteStatus } from "@/lib/quotes";
 import { requireWorkspace, siteUrl } from "@/lib/session";
-import { deleteQuote, sendQuote, setQuoteStatus } from "../actions";
+import { sendQuote, setQuoteStatus } from "../actions";
 import { StatusBadge } from "../status-badge";
 import { QuoteEditor, type EditorTexts } from "./quote-editor";
 
@@ -197,12 +197,15 @@ export default async function QuotePage({ params }: PageProps<"/app/tilbud/[id]"
                   </Button>
                 </form>
               )}
-              <form action={deleteQuote}>
-                <input type="hidden" name="id" value={id} />
-                <ConfirmButton variant="danger" className="!px-3 !py-1.5 text-xs" message={q.deleteConfirm}>
-                  {q.delete}
-                </ConfirmButton>
-              </form>
+              <DeleteButton
+                kind="quote"
+                id={id}
+                message={t.ui.deleted.quote}
+                redirectTo={quote.deal_id ? `/app/salg/${quote.deal_id}` : "/app/tilbud"}
+                className="!px-3 !py-1.5 text-xs"
+              >
+                {q.delete}
+              </DeleteButton>
             </div>
             {quote.deal_id && (
               <p className="mt-3 text-xs">

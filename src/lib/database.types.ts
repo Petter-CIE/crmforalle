@@ -373,6 +373,7 @@ export type Database = {
           lost_reason: string | null;
           custom: Json;
           position: number;
+          stage_changed_at: string;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -393,6 +394,7 @@ export type Database = {
           lost_reason?: string | null;
           custom?: Json;
           position?: number;
+          stage_changed_at?: string;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -413,6 +415,7 @@ export type Database = {
           lost_reason?: string | null;
           custom?: Json;
           position?: number;
+          stage_changed_at?: string;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -863,6 +866,7 @@ export type Database = {
           notify_email: boolean;
           idle_timeout_minutes: number;
           digest_email: boolean;
+          dashboard: Json | null;
           created_at: string;
         };
         Insert: {
@@ -873,6 +877,7 @@ export type Database = {
           notify_email?: boolean;
           idle_timeout_minutes?: number;
           digest_email?: boolean;
+          dashboard?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -883,6 +888,7 @@ export type Database = {
           notify_email?: boolean;
           idle_timeout_minutes?: number;
           digest_email?: boolean;
+          dashboard?: Json | null;
           created_at?: string;
         };
         Relationships: [];
@@ -1506,6 +1512,7 @@ export type Database = {
           quote_bank_account: string | null;
           quote_terms: string | null;
           quote_valid_days: number;
+          logo_path: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -1535,6 +1542,7 @@ export type Database = {
           quote_bank_account?: string | null;
           quote_terms?: string | null;
           quote_valid_days?: number;
+          logo_path?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1564,6 +1572,7 @@ export type Database = {
           quote_bank_account?: string | null;
           quote_terms?: string | null;
           quote_valid_days?: number;
+          logo_path?: string | null;
           created_by?: string | null;
           created_at?: string;
         };

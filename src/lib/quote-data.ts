@@ -15,7 +15,7 @@ export async function loadQuote(ctx: Ctx, id: string) {
     supabase.from("quotes").select(QUOTE_SELECT).eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
     supabase
       .from("workspaces")
-      .select("name, org_number, quote_address, quote_email, quote_phone, quote_bank_account, quote_terms, quote_valid_days")
+      .select("name, org_number, logo_path, quote_address, quote_email, quote_phone, quote_bank_account, quote_terms, quote_valid_days")
       .eq("id", workspace.id)
       .single(),
   ]);
@@ -48,6 +48,7 @@ export async function loadQuote(ctx: Ctx, id: string) {
       email: ws.quote_email,
       phone: ws.quote_phone,
       bank_account: ws.quote_bank_account,
+      logo_path: ws.logo_path,
     },
     contact_person: author ? { name: author.full_name || author.email, email: author.email } : null,
     customer: {

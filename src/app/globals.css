@@ -10,6 +10,8 @@
   --brand-hover: #185a44;
   --brand-soft: #e6f2ec;
   --danger: #b42318;
+  --avatar-bg-l: 90%;
+  --avatar-fg-l: 28%;
 }
 
 @theme inline {
@@ -30,6 +32,80 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ---------- Dark mode ----------
+   Only areas marked .themed (the app and admin) follow the theme; the website and the
+   customer-facing quote page stay light. Choice is stored in the "theme" cookie: auto | light | dark. */
+:root[data-theme="dark"] .themed,
+:root[data-theme="dark"] body:has(.themed) {
+  color-scheme: dark;
+  --background: #0e1311;
+  --surface: #161c19;
+  --foreground: #e4eae7;
+  --muted: #98a39e;
+  --border: #29322e;
+  --brand: #2f9a71;
+  --brand-hover: #3aae82;
+  --brand-soft: #16302a;
+  --danger: #f2756a;
+  --avatar-bg-l: 26%;
+  --avatar-fg-l: 84%;
+  --shadow-color: 0 0 0 / 0.5;
+  /* Tinted badge colours used in a few places. */
+  --color-red-50: #341613;
+  --color-red-100: #451b17;
+  --color-red-200: #6a2a24;
+  --color-red-800: #fca5a5;
+  --color-red-900: #fecaca;
+  --color-amber-100: #3b2c0c;
+  --color-amber-600: #f5b83d;
+  --color-amber-700: #f5b83d;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+  --color-zinc-100: #252b28;
+  --color-zinc-200: #303733;
+  --color-zinc-700: #d4d8d6;
+  --color-sky-100: #0d2b3a;
+  --color-sky-800: #8fd3f7;
+  --color-purple-100: #2d1d45;
+  --color-purple-800: #d9b8fd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .themed,
+  :root:not([data-theme="light"]):not([data-theme="dark"]) body:has(.themed) {
+  color-scheme: dark;
+  --background: #0e1311;
+  --surface: #161c19;
+  --foreground: #e4eae7;
+  --muted: #98a39e;
+  --border: #29322e;
+  --brand: #2f9a71;
+  --brand-hover: #3aae82;
+  --brand-soft: #16302a;
+  --danger: #f2756a;
+  --avatar-bg-l: 26%;
+  --avatar-fg-l: 84%;
+  --shadow-color: 0 0 0 / 0.5;
+  /* Tinted badge colours used in a few places. */
+  --color-red-50: #341613;
+  --color-red-100: #451b17;
+  --color-red-200: #6a2a24;
+  --color-red-800: #fca5a5;
+  --color-red-900: #fecaca;
+  --color-amber-100: #3b2c0c;
+  --color-amber-600: #f5b83d;
+  --color-amber-700: #f5b83d;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+  --color-zinc-100: #252b28;
+  --color-zinc-200: #303733;
+  --color-zinc-700: #d4d8d6;
+  --color-sky-100: #0d2b3a;
+  --color-sky-800: #8fd3f7;
+  --color-purple-100: #2d1d45;
+  --color-purple-800: #d9b8fd;
+  }
 }
 
 /* ---------- Landing page ---------- */
@@ -89,4 +165,49 @@ body {
 .row-above {
   position: relative;
   z-index: 1;
+}
+
+/* ---------- Avatars (colour per person) ---------- */
+.avatar {
+  background: hsl(var(--h) 50% var(--avatar-bg-l));
+  color: hsl(var(--h) 45% var(--avatar-fg-l));
+}
+
+/* ---------- App motion ---------- */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+.toast-in {
+  animation: toast-in 180ms ease-out;
+}
+@keyframes toast-timer {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
+.toast-timer {
+  animation-name: toast-timer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.fade-up {
+  animation: fade-up 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-in,
+  .fade-up {
+    animation: none;
+  }
 }

@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { listWorkspaces, WORKSPACE_COOKIE } from "@/lib/session";
+import { parseLayout } from "@/lib/dashboard";
+import { listWorkspaces, requireWorkspace, WORKSPACE_COOKIE } from "@/lib/session";
 
 export async function switchWorkspace(formData: FormData) {
   const id = String(formData.get("workspace_id") ?? "");
@@ -17,4 +19,17 @@ export async function switchWorkspace(formData: FormData) {
     });
   }
   redirect("/app");
+}
+
+/** Saves the user's own layout of the "Today" page; null resets it to the default. */
+export async function saveDashboard(items: unknown) {
+  const { supabase, user } = await requireWorkspace();
+  const layout = items === null ? null : parseLayout(items);
+  if (items !== null && !layout) return { ok: false };
+  const { error } = await supabase
+    .from("profiles")
+    .update({ dashboard: layout ? { v: 1, items: layout } : null })
+    .eq("id", user.id);
+  revalidatePath("/app");
+  return { ok: !error };
 }

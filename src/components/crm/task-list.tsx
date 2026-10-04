@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { Avatar } from "@/components/avatar";
 import { ProjectDot } from "@/components/crm/project-dot";
 import { ActionForm } from "@/components/action-form";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { Input, Select } from "@/components/ui";
 import { EmptyState } from "@/components/ui-extra";
-import { createTask, deleteTask, reassignTask, toggleTask } from "@/app/app/crm-actions";
+import { createTask, reassignTask } from "@/app/app/crm-actions";
+import { SwipeRow, TaskCheck } from "@/components/crm/task-check";
+import { DeleteButton } from "@/components/delete-button";
 import { contactName, formatDate, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { nowMs } from "@/lib/time";
@@ -28,16 +31,6 @@ export type TaskRow = {
 
 type Member = { id: string; name: string };
 
-function initials(name: string) {
-  return (
-    name
-      .split(/[\s@.]+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0]?.toUpperCase())
-      .join("") || "?"
-  );
-}
 type Links = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null; project_id?: string | null };
 
 export const TASK_SELECT =
@@ -66,21 +59,13 @@ export async function TaskRows({
       {tasks.map((task) => {
         const overdue = !task.done_at && task.due_at && new Date(task.due_at).getTime() < now;
         return (
-          <li key={task.id} className="relative -mx-2 flex items-start gap-3 rounded-md px-2 py-2.5 hover:bg-background">
-            <form action={toggleTask} className="row-above">
-              <input type="hidden" name="id" value={task.id} />
-              <input type="hidden" name="done" value={task.done_at ? "false" : "true"} />
-              <input type="hidden" name="tilbake" value={path} />
-              <button
-                type="submit"
-                aria-label={task.done_at ? t.tasks.reopen : t.tasks.markDone}
-                className={`mt-0.5 grid h-5 w-5 place-items-center rounded-full border text-[10px] ${
-                  task.done_at ? "border-brand bg-brand text-white" : "border-border hover:border-brand"
-                }`}
-              >
-                {task.done_at ? "✓" : ""}
-              </button>
-            </form>
+          <SwipeRow key={task.id} id={task.id} className="relative -mx-2 flex items-start gap-3 rounded-md px-2 py-2.5 hover:bg-background">
+            <TaskCheck
+              id={task.id}
+              done={!!task.done_at}
+              path={path}
+              t={{ markDone: t.tasks.markDone, reopen: t.tasks.reopen, done: t.ui.taskDone, reopened: t.ui.taskReopened, undo: t.ui.toast.undo }}
+            />
             <div className="min-w-0 flex-1">
               <Link
                 href={`/app/oppgaver/${task.id}`}
@@ -128,12 +113,7 @@ export async function TaskRows({
                 title={task.task_members!.map((m) => nameOf.get(m.user_id) ?? "?").join(", ")}
               >
                 {task.task_members!.slice(0, 3).map((m) => (
-                  <span
-                    key={m.user_id}
-                    className="grid h-6 w-6 place-items-center rounded-full border-2 border-surface bg-brand-soft text-[9px] font-semibold text-brand"
-                  >
-                    {initials(nameOf.get(m.user_id) ?? "?")}
-                  </span>
+                  <Avatar key={m.user_id} name={nameOf.get(m.user_id) ?? "?"} className="ring-2 ring-surface" />
                 ))}
                 {task.task_members!.length > 3 && (
                   <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-surface bg-background text-[9px] text-muted">
@@ -144,9 +124,12 @@ export async function TaskRows({
             )}
             {team &&
               (task.done_at ? (
-                <span className="text-xs text-muted">{task.assignee_id ? nameOf.get(task.assignee_id) : ""}</span>
+                task.assignee_id ? (
+                  <Avatar name={nameOf.get(task.assignee_id) ?? "?"} title={nameOf.get(task.assignee_id)} />
+                ) : null
               ) : (
-                <form action={reassignTask} className="row-above">
+                <form action={reassignTask} className="row-above flex items-center gap-1.5">
+                  {task.assignee_id && <Avatar name={nameOf.get(task.assignee_id) ?? "?"} />}
                   <input type="hidden" name="id" value={task.id} />
                   <input type="hidden" name="tilbake" value={path} />
                   <AutoSubmitSelect
@@ -165,14 +148,17 @@ export async function TaskRows({
                   </AutoSubmitSelect>
                 </form>
               ))}
-            <form action={deleteTask} className="row-above">
-              <input type="hidden" name="id" value={task.id} />
-              <input type="hidden" name="tilbake" value={path} />
-              <button type="submit" className="text-xs text-muted hover:text-danger" aria-label={t.crm.delete}>
-                ✕
-              </button>
-            </form>
-          </li>
+            <DeleteButton
+              kind="task"
+              id={task.id}
+              message={t.ui.deleted.task}
+              variant="ghost"
+              className="row-above !px-1 !py-0 text-xs text-muted hover:!text-danger"
+              ariaLabel={t.crm.delete}
+            >
+              ✕
+            </DeleteButton>
+          </SwipeRow>
         );
       })}
     </ul>
@@ -213,6 +199,7 @@ export function TaskForm({
   t,
   save,
   projects,
+  inputId,
 }: {
   links?: Links;
   path: string;
@@ -222,6 +209,8 @@ export function TaskForm({
   save: string;
   /** When given, lets the user pick a project for the task. */
   projects?: { id: string; name: string }[];
+  /** id for the title field, so links like #ny-oppgave can focus it. */
+  inputId?: string;
 }) {
   return (
     <ActionForm
@@ -236,7 +225,7 @@ export function TaskForm({
       {links.contact_id && <input type="hidden" name="contact_id" value={links.contact_id} />}
       {links.deal_id && <input type="hidden" name="deal_id" value={links.deal_id} />}
       {links.project_id && <input type="hidden" name="project_id" value={links.project_id} />}
-      <Input name="title" required placeholder={t.placeholder} aria-label={t.new} className="min-w-[12rem] flex-1" />
+      <Input id={inputId} name="title" required placeholder={t.placeholder} aria-label={t.new} className="min-w-[12rem] flex-1" />
       <Input name="due" type="date" aria-label={t.due} className="w-auto" />
       {!links.project_id && projects && projects.length > 0 && (
         <Select name="project_id" defaultValue="" aria-label={t.noProject}>

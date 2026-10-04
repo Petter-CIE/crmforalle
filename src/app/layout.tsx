@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Schibsted_Grotesk } from "next/font/google";
 import { getI18n } from "@/lib/i18n/server";
 import { ServiceWorker } from "@/components/service-worker";
@@ -29,8 +30,14 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const { locale } = await getI18n();
+  const theme = (await cookies()).get("theme")?.value;
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}>
+    <html
+      lang={locale}
+      data-theme={theme === "dark" || theme === "light" ? theme : undefined}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
         {children}
         <ServiceWorker />

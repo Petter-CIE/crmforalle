@@ -9,6 +9,7 @@ import { quotePdf } from "@/lib/quote-pdf";
 import { loadQuote } from "@/lib/quote-data";
 import { parseLines, quoteTotals, VAT_RATES } from "@/lib/quotes";
 import { getI18n } from "@/lib/i18n/server";
+import { flash } from "@/lib/flash";
 import { requireWorkspace, siteUrl } from "@/lib/session";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -56,6 +57,7 @@ export async function createQuote(formData: FormData) {
     .single();
   if (error || !data) throw new Error("quote_create_failed");
   touch(undefined, deal?.id);
+  await flash("created");
   redirect(`/app/tilbud/${data.id}`);
 }
 
@@ -184,16 +186,6 @@ export async function setQuoteStatus(formData: FormData) {
   touch(id, q.deal_id);
 }
 
-export async function deleteQuote(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const id = uuid(formData.get("id"));
-  if (!id) return;
-  const { data: q } = await supabase.from("quotes").select("deal_id").eq("id", id).eq("workspace_id", workspace.id).maybeSingle();
-  await supabase.from("quotes").delete().eq("id", id).eq("workspace_id", workspace.id);
-  touch(undefined, q?.deal_id);
-  redirect(q?.deal_id ? `/app/salg/${q.deal_id}` : "/app/tilbud");
-}
-
 // ---------------------------------------------------------------- products
 function productFields(formData: FormData) {
   const price = Number(String(formData.get("unit_price") ?? "").replace(/\s/g, "").replace(",", "."));
@@ -235,9 +227,3 @@ export async function updateProduct(_p: FormResult, formData: FormData): Promise
   return { ok: true };
 }
 
-export async function deleteProduct(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const id = uuid(formData.get("id"));
-  if (id) await supabase.from("products").delete().eq("id", id).eq("workspace_id", workspace.id);
-  revalidatePath("/app/tilbud/produkter");
-}

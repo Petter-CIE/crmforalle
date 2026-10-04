@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getI18n } from "@/lib/i18n/server";
 import { lineNet, nok, osloDate, qty, quoteTotals, type QuoteDocument } from "@/lib/quotes";
+import { logoUrl } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { RespondForm } from "./respond-form";
 
@@ -32,7 +34,14 @@ export default async function PublicQuotePage({ params }: PageProps<"/tilbud/[to
       <article className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-10">
         <header className="flex flex-col gap-6 sm:flex-row sm:justify-between">
           <div className="space-y-0.5 text-sm text-muted">
-            <p className="text-xl font-semibold text-brand">{s.name}</p>
+            {s.logo_path ? (
+              <>
+                <Image src={logoUrl(s.logo_path) ?? ""} alt={s.name} width={224} height={56} unoptimized className="mb-3 h-auto max-h-14 w-auto max-w-56 object-contain" />
+                <p className="font-semibold text-foreground">{s.name}</p>
+              </>
+            ) : (
+              <p className="text-xl font-semibold text-brand">{s.name}</p>
+            )}
             {s.address && <p>{s.address}</p>}
             {s.org_number && (
               <p>

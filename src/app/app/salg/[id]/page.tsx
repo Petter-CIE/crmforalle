@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
-import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteButton } from "@/components/delete-button";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
 import { Button, Card, Input } from "@/components/ui";
 import { PageHeader, Pill } from "@/components/ui-extra";
-import { deleteDeal, setDealStage, updateDeal } from "@/app/app/crm-actions";
+import { setDealStage, updateDeal } from "@/app/app/crm-actions";
 import { contactName, formatDate, formatMoney } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -103,12 +103,9 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
                 </Button>
               </form>
             )}
-            <form action={deleteDeal}>
-              <input type="hidden" name="id" value={id} />
-              <ConfirmButton message={t.crm.confirmDelete} variant="danger">
-                {t.crm.delete}
-              </ConfirmButton>
-            </form>
+            <DeleteButton kind="deal" id={id} message={t.ui.deleted.deal} redirectTo="/app/salg">
+              {t.crm.delete}
+            </DeleteButton>
           </>
         }
       />

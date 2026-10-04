@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ButtonLink, Select } from "@/components/ui";
-import { PageHeader } from "@/components/ui-extra";
-import { contactName, formatMoney } from "@/lib/crm";
+import { EmptyHero, PageHeader } from "@/components/ui-extra";
+import { contactName, formatMoney, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { Board, type BoardDeal } from "./board";
@@ -14,20 +14,23 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SalesPage({ searchParams }: PageProps<"/app/salg">) {
   const { prosjekt } = await searchParams;
   const projectId = typeof prosjekt === "string" ? prosjekt : "";
-  const { supabase, workspace } = await requireWorkspace();
+  const ctx = await requireWorkspace();
+  const { supabase, workspace } = ctx;
   const { t, dateLocale } = await getI18n();
 
   let dealsReq = supabase
     .from("deals")
-    .select("id, title, value, stage_id, position, expected_close, companies(name), contacts(first_name, last_name), projects(name, color)")
+    .select("id, title, value, stage_id, position, expected_close, stage_changed_at, updated_at, owner_id, companies(name), contacts(first_name, last_name), projects(name, color)")
     .eq("workspace_id", workspace.id)
     .limit(1000);
   if (projectId) dealsReq = dealsReq.eq("project_id", projectId);
-  const [{ data: stages }, { data: deals }, { data: projects }] = await Promise.all([
-    supabase.from("pipeline_stages").select("id, name, is_won, is_lost").eq("workspace_id", workspace.id).order("position"),
+  const [{ data: stages }, { data: deals }, { data: projects }, members] = await Promise.all([
+    supabase.from("pipeline_stages").select("id, name, probability, is_won, is_lost").eq("workspace_id", workspace.id).order("position"),
     dealsReq,
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
+    listMembers(ctx),
   ]);
+  const ownerName = new Map(members.map((m) => [m.id, m.name]));
 
   const openStageIds = new Set((stages ?? []).filter((s) => !s.is_won && !s.is_lost).map((s) => s.id));
   const openTotal = (deals ?? []).filter((d) => openStageIds.has(d.stage_id)).reduce((s, d) => s + Number(d.value), 0);
@@ -42,6 +45,9 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
     projectColor: d.projects?.color ?? null,
     projectName: d.projects?.name ?? null,
     expectedClose: d.expected_close,
+    stageChangedAt: d.stage_changed_at,
+    updatedAt: d.updated_at,
+    owner: members.length > 1 && d.owner_id ? (ownerName.get(d.owner_id) ?? null) : null,
   }));
 
   return (
@@ -74,7 +80,21 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
           </>
         }
       />
-      <Board stages={stages ?? []} deals={boardDeals} dateLocale={dateLocale} emptyText="—" />
+      {boardDeals.length === 0 && !projectId && (
+        <EmptyHero
+          icon="deals"
+          title={t.ui.empty.dealsTitle}
+          text={t.ui.empty.dealsText}
+          actions={<ButtonLink href="/app/salg/ny">+ {t.ui.empty.dealsAction}</ButtonLink>}
+        />
+      )}
+      <Board
+        stages={stages ?? []}
+        deals={boardDeals}
+        dateLocale={dateLocale}
+        emptyText="—"
+        t={t.ui.board}
+      />
     </div>
   );
 }

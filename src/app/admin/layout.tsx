@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const { t } = await getI18n();
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="themed flex flex-1 flex-col bg-background text-foreground">
       {/* The admin area sees every customer's data, so the sign-out is fixed at 30 minutes. */}
       <IdleLogout
         minutes={30}

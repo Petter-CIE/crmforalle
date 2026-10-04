@@ -99,3 +99,17 @@ export async function removeMember(formData: FormData) {
   await supabase.from("members").delete().eq("workspace_id", workspace.id).eq("user_id", userId);
   revalidatePath("/app/innstillinger");
 }
+
+const LOGO_PATH = /^[0-9a-f-]{36}\/logo-\d+\.(png|jpg)$/;
+
+/** Sets (or with null removes) the company logo after the browser has uploaded it to storage. */
+export async function setWorkspaceLogo(path: string | null): Promise<{ ok: boolean }> {
+  const { supabase, workspace } = await managerContext();
+  if (path !== null && (!LOGO_PATH.test(path) || !path.startsWith(`${workspace.id}/`))) return { ok: false };
+  const { data: before } = await supabase.from("workspaces").select("logo_path").eq("id", workspace.id).maybeSingle();
+  const { error } = await supabase.from("workspaces").update({ logo_path: path }).eq("id", workspace.id);
+  if (error) return { ok: false };
+  if (before?.logo_path && before.logo_path !== path) await supabase.storage.from("logos").remove([before.logo_path]);
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}

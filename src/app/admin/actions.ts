@@ -102,6 +102,10 @@ async function adminDelete(kind: "data" | "workspace", formData: FormData): Prom
     return { error: error.message.includes("name_mismatch") ? t.admin.deleteMismatch : t.admin.failed };
   }
   await removeFiles(supabase, paths);
+  if (kind === "workspace") {
+    const { data: logos } = await supabase.storage.from("logos").list(id);
+    if (logos && logos.length > 0) await supabase.storage.from("logos").remove(logos.map((f) => `${id}/${f.name}`));
+  }
   const sent = formData.get("notify") === "1" ? await notifyDeletion({ kind, workspaceName: w.name, orgNumber: w.org_number, recipients }) : 0;
 
   revalidatePath("/admin");

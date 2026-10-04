@@ -13,6 +13,7 @@ export type WorkspaceSummary = {
   plan: PlanType;
   trial_ends_at: string;
   suspended_at: string | null;
+  logo_path: string | null;
   role: MemberRole;
 };
 
@@ -68,7 +69,7 @@ export async function listWorkspaces(
   const { supabase, user } = ctx ?? (await requireUser());
   const { data, error } = await supabase
     .from("members")
-    .select("role, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at)")
+    .select("role, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at, logo_path)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -112,4 +113,10 @@ export function siteUrl() {
 /** Whole days left of the trial (0 when expired). */
 export function trialDaysLeft(trialEndsAt: string) {
   return Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000));
+}
+
+/** Public URL of a workspace logo stored in the "logos" bucket. */
+export function logoUrl(path: string | null | undefined) {
+  if (!path) return null;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${path}`;
 }

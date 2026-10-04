@@ -1,11 +1,15 @@
 import { ActionForm } from "@/components/action-form";
-import { ConfirmButton } from "@/components/confirm-button";
+import { Avatar } from "@/components/avatar";
+import { DeleteButton } from "@/components/delete-button";
 import { Select } from "@/components/ui";
 import { EmptyState, Textarea } from "@/components/ui-extra";
-import { addNote, deleteNote } from "@/app/app/crm-actions";
+import { addNote } from "@/app/app/crm-actions";
 import { formatDateTime } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
+
+/** Emoji per activity type, also used on the "Today" page. */
+export const ACTIVITY_ICON: Record<string, string> = { note: "📝", call: "📞", meeting: "🤝", email: "✉️", created: "✨", stage_change: "➡️", won: "🏆", lost: "✖️" };
 
 type Scope = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null };
 
@@ -55,32 +59,36 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
       {!items || items.length === 0 ? (
         <EmptyState>{t.crm.noActivity}</EmptyState>
       ) : (
-        <ol className="space-y-3 border-l border-border pl-4">
+        <ol className="ml-3 space-y-4 border-l border-border pl-6">
           {items.map((a) => (
-            <li key={a.id} className="relative">
+            <li key={a.id} data-del={a.id} className="relative">
               <span
                 aria-hidden
-                className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ${
-                  a.type === "won" ? "bg-brand" : a.type === "lost" ? "bg-danger" : system(a.type) ? "bg-muted/50" : "bg-sky-500"
+                className={`absolute -left-9 top-0 grid h-6 w-6 place-items-center rounded-full border text-[11px] ${
+                  a.type === "won"
+                    ? "border-brand/30 bg-brand-soft"
+                    : a.type === "lost"
+                      ? "border-red-200 bg-red-50"
+                      : "border-border bg-surface"
                 }`}
-              />
+              >
+                {ACTIVITY_ICON[a.type] ?? "•"}
+              </span>
               <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted">
                 <span className="font-medium text-foreground">{label(a.type)}</span>
                 {(a.type === "created" || a.type === "stage_change") && a.body && <span className="text-foreground">{a.body}</span>}
                 <span>{formatDateTime(a.occurred_at, dateLocale)}</span>
                 {a.profiles && (
-                  <span>
-                    {t.crm.by} {a.profiles.full_name || a.profiles.email}
+                  <span className="inline-flex items-center gap-1">
+                    {t.crm.by}
+                    <Avatar name={a.profiles.full_name || a.profiles.email} size="xs" />
+                    {a.profiles.full_name || a.profiles.email}
                   </span>
                 )}
                 {a.author_id === user.id && !system(a.type) && (
-                  <form action={deleteNote} className="ml-auto">
-                    <input type="hidden" name="id" value={a.id} />
-                    <input type="hidden" name="tilbake" value={path} />
-                    <ConfirmButton message={t.crm.confirmDelete} variant="ghost" className="!px-1 !py-0 text-xs">
-                      {t.crm.delete}
-                    </ConfirmButton>
-                  </form>
+                  <DeleteButton kind="note" id={a.id} message={t.ui.deleted.note} variant="ghost" className="ml-auto !px-1 !py-0 text-xs">
+                    {t.crm.delete}
+                  </DeleteButton>
                 )}
               </div>
               {!system(a.type) && a.body && <p className="mt-1 whitespace-pre-wrap text-sm">{a.body}</p>}

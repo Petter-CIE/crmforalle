@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { ActionForm } from "@/components/action-form";
 import { Card, Input, Select } from "@/components/ui";
 import { Field } from "@/components/ui-extra";
@@ -27,6 +29,7 @@ export default async function AccountPage() {
   // Only plain strings can be passed to client components.
   const strings = Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v === "string")) as SecurityTexts;
   const texts: SecurityTexts = { ...strings, invalidCode: t.mfa.invalid };
+  const themeCookie = (await cookies()).get("theme")?.value;
 
   return (
     <div className="space-y-8">
@@ -62,6 +65,15 @@ export default async function AccountPage() {
             pushTestSent: t.mobile.pushTestSent,
             pushFailed: t.mobile.pushFailed,
           }}
+        />
+      </Card>
+
+      <Card>
+        <h2 className="mb-1 font-semibold">{t.ui.theme}</h2>
+        <p className="mb-4 text-sm text-muted">{t.ui.themeIntro}</p>
+        <ThemeSwitcher
+          initial={themeCookie === "dark" || themeCookie === "light" ? themeCookie : "auto"}
+          t={{ theme: t.ui.theme, themeAuto: t.ui.themeAuto, themeLight: t.ui.themeLight, themeDark: t.ui.themeDark }}
         />
       </Card>
 

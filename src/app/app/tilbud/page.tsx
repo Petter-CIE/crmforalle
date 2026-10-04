@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui";
-import { EmptyState, PageHeader } from "@/components/ui-extra";
+import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { contactName, formatDate, formatMoney } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { QUOTE_STATUSES, type QuoteStatus } from "@/lib/quotes";
@@ -65,7 +65,20 @@ export default async function QuotesPage({ searchParams }: PageProps<"/app/tilbu
       </nav>
 
       {(quotes ?? []).length === 0 ? (
-        <EmptyState>{q.empty}</EmptyState>
+        status ? (
+          <EmptyHero icon="search" title={t.ui.empty.noResults} />
+        ) : (
+          <EmptyHero
+            icon="quotes"
+            title={t.ui.empty.quotesTitle}
+            text={t.ui.empty.quotesText}
+            actions={
+              <form action={createQuote}>
+                <Button type="submit">+ {q.new}</Button>
+              </form>
+            }
+          />
+        )
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-surface">
           <table className="w-full text-sm">
@@ -81,7 +94,7 @@ export default async function QuotesPage({ searchParams }: PageProps<"/app/tilbu
             </thead>
             <tbody className="divide-y divide-border">
               {(quotes ?? []).map((r) => (
-                <tr key={r.id} className="hover:bg-background">
+                <tr key={r.id} data-del={r.id} className="hover:bg-background">
                   <td className="px-4 py-2 tabular-nums text-muted">#{r.number}</td>
                   <td className="px-4 py-2">
                     <Link href={`/app/tilbud/${r.id}`} className="font-medium hover:text-brand">

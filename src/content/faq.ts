@@ -150,6 +150,23 @@ const nb: Faq = {
           a: ["Ja. Huk av radene i listen (eller alle med boksen øverst), og velg handling i linjen som dukker opp: legg til i eller fjern fra prosjekt, sett ansvarlig eller slett."],
         },
         {
+          q: "Kan jeg tilpasse forsiden?",
+          a: [
+            "Ja. Trykk «Tilpass» på I dag-siden. Da kan du dra widgetene i den rekkefølgen du vil, gjøre dem brede eller smale, skjule dem og legge til andre – for eksempel nøkkeltall, salgstrakt, vunnet denne måneden, siste aktivitet og tilbud. Oppsettet er ditt eget og følger deg på PC og mobil.",
+          ],
+        },
+        {
+          q: "Finnes det mørk modus og hurtigtaster?",
+          a: [
+            "Ja. Under Konto og sikkerhet → Utseende velger du lys, mørk eller automatisk (følger telefonen/PC-en).",
+            "På PC: trykk ? for å se hurtigtastene, for eksempel N for å legge til noe nytt og G og S for å gå til Salg. På mobilen kan du sveipe en oppgave mot høyre for å huke den av, og dra ned for å oppdatere i appen.",
+          ],
+        },
+        {
+          q: "Kan jeg angre en sletting?",
+          a: ["Ja, i noen sekunder. Etter at du har slettet noe, vises «Angre» nederst på skjermen."],
+        },
+        {
           q: "Hvordan fungerer oppgaver?",
           a: [
             "En oppgave har en ansvarlig og kan ha flere som jobber med den. Den kan være åpen, pågår eller ferdig, og du kan skrive notater og legge ved filer.",
@@ -194,7 +211,10 @@ const nb: Faq = {
         },
         {
           q: "Hvor legger vi inn adresse, kontonummer og vilkår på tilbudene?",
-          a: ["Under Tilbud → Innstillinger (eier og administratorer). Der velger dere også hvor mange dager tilbudene skal gjelde."],
+          a: [
+            "Under Tilbud → Innstillinger (eier og administratorer). Der velger dere også hvor mange dager tilbudene skal gjelde.",
+            "Logoen lastes opp under Innstillinger. Den vises i menyen, i tilbuds-PDF-en og på tilbudssiden kunden ser.",
+          ],
         },
         {
           q: "Kan vi legge til egne felt?",
@@ -411,6 +431,23 @@ const en: Faq = {
           a: ["Yes. Tick the rows in the list (or all of them with the box at the top) and choose an action in the bar that appears: add to or remove from a project, set the owner or delete."],
         },
         {
+          q: "Can I customize the start page?",
+          a: [
+            "Yes. Press “Customize” on the Today page. You can drag the widgets into the order you like, make them wide or narrow, hide them and add others – for example key figures, pipeline, won this month, latest activity and quotes. The layout is your own and follows you on computer and phone.",
+          ],
+        },
+        {
+          q: "Is there a dark mode and keyboard shortcuts?",
+          a: [
+            "Yes. Under Account and security → Appearance you choose light, dark or automatic (follows your phone/computer).",
+            "On a computer: press ? to see the shortcuts, for example N to add something new and G then S to go to Deals. On the phone you can swipe a task to the right to tick it off, and pull down to refresh in the app.",
+          ],
+        },
+        {
+          q: "Can I undo a deletion?",
+          a: ["Yes, for a few seconds. After deleting something, “Undo” appears at the bottom of the screen."],
+        },
+        {
           q: "How do tasks work?",
           a: [
             "A task has an assignee and can have several people working on it. It can be open, in progress or done, and you can write notes and attach files.",
@@ -455,7 +492,10 @@ const en: Faq = {
         },
         {
           q: "Where do we enter our address, bank account and terms for quotes?",
-          a: ["Under Quotes → Settings (owner and admins). There you also choose how many days quotes are valid."],
+          a: [
+            "Under Quotes → Settings (owner and admins). There you also choose how many days quotes are valid.",
+            "The logo is uploaded under Settings. It is shown in the menu, in the quote PDF and on the quote page your customer sees.",
+          ],
         },
         {
           q: "Can we add our own fields?",

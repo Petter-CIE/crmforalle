@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Card, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
-import { canManage, requireWorkspace } from "@/lib/session";
+import { canManage, logoUrl, requireWorkspace } from "@/lib/session";
 import { changeRole, removeMember, revokeInvitation } from "./actions";
 import { hasAccountingAccess } from "@/lib/accounting/access";
 import { formatDateTime } from "@/lib/crm";
 import { AccountingCard } from "./accounting-card";
 import { InviteForm, WorkspaceForm, type SettingsTexts } from "./forms";
+import { LogoForm } from "./logo-form";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -75,6 +76,12 @@ export default async function SettingsPage() {
             {workspace.name}
             {workspace.org_number ? ` · ${s.orgNr} ${workspace.org_number}` : ""}
           </p>
+        )}
+        {manager && (
+          <div className="mt-6 border-t border-border pt-5">
+            <h3 className="mb-1 text-sm font-semibold">{t.ui.logo.title}</h3>
+            <LogoForm workspaceId={workspace.id} current={logoUrl(workspace.logo_path)} t={t.ui.logo} />
+          </div>
         )}
         <p className="mt-4 text-sm text-muted">
           {s.subscription}: <strong className="text-foreground">{t.common.plans[workspace.plan]}</strong>. {s.unlimitedUsers}

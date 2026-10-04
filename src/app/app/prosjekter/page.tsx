@@ -3,7 +3,7 @@ import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { Card } from "@/components/ui";
-import { EmptyState, PageHeader } from "@/components/ui-extra";
+import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { createProject } from "@/app/app/crm-actions";
 import { listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
@@ -71,11 +71,11 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/app/pro
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <div>
           {!projects || projects.length === 0 ? (
-            <EmptyState>{t.projects.empty}</EmptyState>
+            <EmptyHero icon="projects" title={t.ui.empty.projectsTitle} text={t.ui.empty.projectsText} />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {projects.map((p) => (
-                <Link key={p.id} href={`/app/prosjekter/${p.id}`} className="block">
+                <Link key={p.id} data-del={p.id} href={`/app/prosjekter/${p.id}`} className="block">
                   <Card className="!p-4 transition-colors hover:border-brand">
                     <div className="flex items-center gap-2">
                       <ProjectDot color={p.color} className="h-3 w-3" />

@@ -195,7 +195,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
                 pendingLabel={a.deleting}
                 resetOnSuccess
                 className="space-y-3"
-                submitClassName="!bg-red-700 hover:!bg-red-800"
+                submitClassName="!bg-red-700 hover:!bg-red-600"
               >
                 <input type="hidden" name="id" value={w.id} />
                 <Field label={a.deleteConfirm(w.name)} htmlFor={`a_del_${kind}`}>

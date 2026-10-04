@@ -8,6 +8,7 @@ import { dbErrorKey, opt } from "@/lib/crm";
 import { loadCustomFields, parseCustomValues, type CustomEntity } from "@/lib/custom-fields";
 import { getI18n } from "@/lib/i18n/server";
 import { notifyAssignment } from "@/lib/notify";
+import { flash } from "@/lib/flash";
 import { requireWorkspace } from "@/lib/session";
 
 export type FormResult = { error?: string; ok?: boolean; message?: string };
@@ -69,6 +70,7 @@ export async function createCompany(_p: FormResult, formData: FormData): Promise
     .single();
   if (error) return { error: await errorText(error, t.companies.exists) };
   revalidatePath("/app/bedrifter");
+  await flash("created");
   redirect(`/app/bedrifter/${data.id}`);
 }
 
@@ -82,15 +84,8 @@ export async function updateCompany(_p: FormResult, formData: FormData): Promise
   const { error } = await supabase.from("companies").update(fields).eq("id", companyId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error, t.companies.exists) };
   revalidatePath(`/app/bedrifter/${companyId}`);
+  await flash("saved");
   redirect(`/app/bedrifter/${companyId}`);
-}
-
-export async function deleteCompany(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const companyId = id(formData.get("id"));
-  if (companyId) await supabase.from("companies").delete().eq("id", companyId).eq("workspace_id", workspace.id);
-  revalidatePath("/app/bedrifter");
-  redirect("/app/bedrifter");
 }
 
 // ---------------------------------------------------------------- contacts
@@ -127,6 +122,7 @@ export async function createContact(_p: FormResult, formData: FormData): Promise
     await supabase.from("project_contacts").insert({ workspace_id: workspace.id, project_id: projectId, contact_id: data.id });
   }
   revalidatePath("/app/kontakter");
+  await flash("created");
   redirect(back(formData, `/app/kontakter/${data.id}`));
 }
 
@@ -140,15 +136,8 @@ export async function updateContact(_p: FormResult, formData: FormData): Promise
   const { error } = await supabase.from("contacts").update(fields).eq("id", contactId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error) };
   revalidatePath(`/app/kontakter/${contactId}`);
+  await flash("saved");
   redirect(`/app/kontakter/${contactId}`);
-}
-
-export async function deleteContact(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const contactId = id(formData.get("id"));
-  if (contactId) await supabase.from("contacts").delete().eq("id", contactId).eq("workspace_id", workspace.id);
-  revalidatePath("/app/kontakter");
-  redirect("/app/kontakter");
 }
 
 // ---------------------------------------------------------------- projects
@@ -182,6 +171,7 @@ export async function createProject(_p: FormResult, formData: FormData): Promise
     }),
   );
   revalidatePath("/app/prosjekter");
+  await flash("created");
   redirect(`/app/prosjekter/${data.id}`);
 }
 
@@ -234,14 +224,6 @@ export async function setProjectArchived(formData: FormData) {
   if (projectId) await supabase.from("projects").update({ archived }).eq("id", projectId).eq("workspace_id", workspace.id);
   revalidatePath("/app/prosjekter");
   revalidatePath(`/app/prosjekter/${projectId}`);
-}
-
-export async function deleteProject(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const projectId = id(formData.get("id"));
-  if (projectId) await supabase.from("projects").delete().eq("id", projectId).eq("workspace_id", workspace.id);
-  revalidatePath("/app/prosjekter");
-  redirect("/app/prosjekter");
 }
 
 export async function addContactToProject(formData: FormData) {
@@ -342,6 +324,7 @@ export async function createDeal(_p: FormResult, formData: FormData): Promise<Fo
     .single();
   if (error) return { error: await errorText(error) };
   revalidatePath("/app/salg");
+  await flash("created");
   redirect(back(formData, `/app/salg/${data.id}`));
 }
 
@@ -385,14 +368,6 @@ export async function setDealStage(formData: FormData) {
   const { supabase, workspace } = await requireWorkspace();
   const reason = opt(formData.get("lost_reason"), 500);
   if (reason) await supabase.from("deals").update({ lost_reason: reason }).eq("id", dealId).eq("workspace_id", workspace.id);
-}
-
-export async function deleteDeal(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const dealId = id(formData.get("id"));
-  if (dealId) await supabase.from("deals").delete().eq("id", dealId).eq("workspace_id", workspace.id);
-  revalidatePath("/app/salg");
-  redirect("/app/salg");
 }
 
 // ---------------------------------------------------------------- tasks
@@ -490,19 +465,6 @@ export async function toggleTask(formData: FormData) {
   revalidatePath("/app");
 }
 
-export async function deleteTask(formData: FormData) {
-  const { supabase, workspace } = await requireWorkspace();
-  const taskId = id(formData.get("id"));
-  if (taskId) {
-    const { data: files } = await supabase.from("task_attachments").select("path").eq("task_id", taskId).eq("workspace_id", workspace.id);
-    if (files && files.length > 0) await supabase.storage.from("attachments").remove(files.map((f) => f.path));
-    await supabase.from("tasks").delete().eq("id", taskId).eq("workspace_id", workspace.id);
-  }
-  revalidatePath(back(formData, "/app/oppgaver"));
-  revalidatePath("/app");
-  if (formData.get("redirect") === "1") redirect(back(formData, "/app/oppgaver"));
-}
-
 // ---------------------------------------------------------------- notes / activities
 export async function addNote(_p: FormResult, formData: FormData): Promise<FormResult> {
   const { supabase, user, workspace } = await requireWorkspace();
@@ -524,11 +486,3 @@ export async function addNote(_p: FormResult, formData: FormData): Promise<FormR
   return { ok: true };
 }
 
-export async function deleteNote(formData: FormData) {
-  const { supabase, user, workspace } = await requireWorkspace();
-  const noteId = id(formData.get("id"));
-  if (noteId) {
-    await supabase.from("activities").delete().eq("id", noteId).eq("workspace_id", workspace.id).eq("author_id", user.id);
-  }
-  revalidatePath(back(formData, "/app"));
-}
