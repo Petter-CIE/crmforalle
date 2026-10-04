@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui-extra";
 import { formatDate } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace, trialDaysLeft } from "@/lib/session";
-import { cardPaymentsEnabled } from "@/lib/stripe";
+import { cardPaymentsEnabled, getStripe } from "@/lib/stripe";
 import { openBillingPortal } from "./actions";
 import { OrderForm } from "./order-form";
 
@@ -22,7 +22,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
   const s = t.subscription;
   const { data: w } = await supabase
     .from("workspaces")
-    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id")
+    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id, stripe_subscription_id")
     .eq("id", workspace.id)
     .single();
   const plan = w?.plan ?? workspace.plan;
@@ -30,6 +30,19 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
   const paid = plan === "start" || plan === "bedrift";
   const byCard = paid && w?.payment_method === "card";
   const cardTrouble = byCard && !!w?.card_status && !["active", "trialing"].includes(w.card_status);
+  // Cancelled in the card portal but still running to the end of the period: ask Stripe directly,
+  // so the page shows it right after the user comes back from the portal.
+  let endsAt: string | null = null;
+  const stripe = byCard && w?.stripe_subscription_id ? getStripe() : null;
+  if (stripe && w?.stripe_subscription_id) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(w.stripe_subscription_id);
+      const end = sub.cancel_at ?? (sub.cancel_at_period_end ? (sub.items.data[0]?.current_period_end ?? null) : null);
+      if (end && sub.status !== "canceled") endsAt = new Date(end * 1000).toISOString();
+    } catch {
+      // Stripe unreachable: fall back to the stored status.
+    }
+  }
   const planName = (k: string) => t.landing.plans.find((p) => p.name.toLowerCase() === k)?.name ?? k;
 
   return (
@@ -45,7 +58,11 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
           <div className="space-y-0.5">
             <p className="font-medium">{s.active(planName(plan), w?.billing_interval === "year" ? s.yearly : s.monthly)}</p>
             {byCard ? (
-              <p className="text-sm text-muted">{s.paidByCard(w?.card_period_end ? formatDate(w.card_period_end, dateLocale) : null)}</p>
+              endsAt ? (
+                <p className="text-sm font-medium text-amber-700">{s.cardEnds(formatDate(endsAt, dateLocale))}</p>
+              ) : (
+                <p className="text-sm text-muted">{s.paidByCard(w?.card_period_end ? formatDate(w.card_period_end, dateLocale) : null)}</p>
+              )
             ) : (
               w?.invoice_email && <p className="text-sm text-muted">{s.invoiceTo(w.invoice_email)}</p>
             )}
