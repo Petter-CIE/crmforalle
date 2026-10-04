@@ -43,7 +43,10 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
       // Stripe unreachable: fall back to the stored status.
     }
   }
-  const planName = (k: string) => t.landing.plans.find((p) => p.name.toLowerCase() === k)?.name ?? k;
+  // The landing page lists the plans in this order in every language (the name is translated).
+  const PLAN_INDEX = { start: 0, bedrift: 1 } as const;
+  const planText = (k: "start" | "bedrift") => t.landing.plans[PLAN_INDEX[k]];
+  const planName = (k: string) => (k === "start" || k === "bedrift" ? planText(k).name : k);
 
   return (
     <div className="space-y-6">
@@ -100,7 +103,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
               locale={dateLocale}
               cardEnabled={cardPaymentsEnabled()}
               plans={(["start", "bedrift"] as const).map((key) => {
-                const p = t.landing.plans.find((x) => x.name.toLowerCase() === key)!;
+                const p = planText(key);
                 return { key, name: p.name, text: p.text, items: p.items };
               })}
               initial={{
