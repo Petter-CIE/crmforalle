@@ -37,13 +37,14 @@ export async function orderSubscription(_p: FormResult, formData: FormData): Pro
     console.error("order_subscription failed", error.message);
     return { error: s.failed };
   }
-  const { data: w } = await supabase.from("workspaces").select("extra_contact_packs").eq("id", workspace.id).single();
+  const { data: w } = await supabase.from("workspaces").select("extra_contact_packs, pilot_at").eq("id", workspace.id).single();
   const monthly = monthlyPrice(
     { plan, discount_percent: 0, discount_until: null, suspended_at: null, billing_interval: "month", accounting_addon: addon, extra_contact_packs: w?.extra_contact_packs ?? 0 },
     new Date().toISOString().slice(0, 10),
   );
   after(() =>
     notifyOrder({
+      pilot: !!w?.pilot_at,
       workspace: workspace.name,
       orgNumber: workspace.org_number,
       plan: plan === "bedrift" ? "Bedrift" : "Start",

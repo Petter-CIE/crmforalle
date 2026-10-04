@@ -500,10 +500,12 @@ export async function notifyOrder(o: {
   orderedBy: string;
   monthly: number;
   method: "invoice" | "card";
+  pilot?: boolean;
 }) {
   const mailer = transport();
   if (!mailer) return false;
   const lines = [
+    o.pilot ? "⭐ PILOTKUNDE – trekk 50 % rabatt på første års faktura." : null,
     `Plan: ${o.plan} (${o.interval === "year" ? "årlig" : "månedlig"})${o.addon ? " + regnskapstillegg" : ""}`,
     `Pris: ${o.monthly} kr/mnd eks. mva.${o.interval === "year" ? ` (${o.monthly * 12} kr/år)` : ""}`,
     o.method === "card" ? `Betalt med kort (Stripe) – IKKE send faktura. Kvittering til: ${o.invoiceEmail}` : `Faktura til: ${o.invoiceEmail}`,
@@ -524,13 +526,51 @@ export async function notifyOrder(o: {
       from: FROM(),
       to: process.env.ORDER_EMAIL || "post@allseats.no",
       replyTo: o.invoiceEmail,
-      subject: `Ny bestilling: ${o.workspace} – ${o.plan}${o.method === "card" ? " (kort)" : ""}`,
+      subject: `Ny bestilling: ${o.workspace} – ${o.plan}${o.method === "card" ? " (kort)" : ""}${o.pilot ? " – PILOT 50 %" : ""}`,
       text,
       html,
     });
     return true;
   } catch (e) {
     console.error("order notification failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** New feedback from inside the app, to the AllSeats team. Never throws. */
+export async function notifyFeedback(o: {
+  workspace: string;
+  pilot: boolean;
+  sender: string;
+  senderEmail: string;
+  kind: "idea" | "bug" | "other";
+  page: string | null;
+  message: string;
+}) {
+  const mailer = transport();
+  if (!mailer) return false;
+  const kind = { idea: "Mangler / idé", bug: "Fungerer ikke", other: "Annet" }[o.kind];
+  const { html, text } = render({
+    lead: `Ny tilbakemelding (${kind}) fra ${o.sender}${o.pilot ? " – pilotkunde" : ""}:`,
+    title: o.workspace,
+    quote: o.message,
+    meta: o.page ? `Side: ${o.page}` : undefined,
+    url: `${siteUrl()}/admin/tilbakemeldinger`,
+    button: "Se alle tilbakemeldinger",
+    footer: "Svar direkte på denne e-posten for å skrive til brukeren. – AllSeats CRM",
+  });
+  try {
+    await mailer.sendMail({
+      from: FROM(),
+      to: process.env.ORDER_EMAIL || "post@allseats.no",
+      replyTo: o.senderEmail || undefined,
+      subject: `Tilbakemelding${o.pilot ? " (pilot)" : ""}: ${o.workspace} – ${kind}`,
+      text,
+      html,
+    });
+    return true;
+  } catch (e) {
+    console.error("feedback notification failed", e instanceof Error ? e.message : e);
     return false;
   }
 }

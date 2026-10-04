@@ -35,6 +35,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted">
+            <Link href="/admin/tilbakemeldinger" className="hover:text-foreground hover:underline">
+              {t.admin.feedbackNav}
+            </Link>
             <Link href="/admin/integrasjoner" className="hover:text-foreground hover:underline">
               Integrasjoner
             </Link>

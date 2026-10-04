@@ -608,6 +608,47 @@ export type Database = {
           },
         ];
       };
+      feedback: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string | null;
+          kind: string;
+          page: string | null;
+          message: string;
+          handled_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id?: string | null;
+          kind?: string;
+          page?: string | null;
+          message: string;
+          handled_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          user_id?: string | null;
+          kind?: string;
+          page?: string | null;
+          message?: string;
+          handled_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       inbound_emails: {
         Row: {
           id: string;
@@ -1730,6 +1771,7 @@ export type Database = {
           stripe_subscription_id: string | null;
           card_status: string | null;
           card_period_end: string | null;
+          pilot_at: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -1768,6 +1810,7 @@ export type Database = {
           stripe_subscription_id?: string | null;
           card_status?: string | null;
           card_period_end?: string | null;
+          pilot_at?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1806,6 +1849,7 @@ export type Database = {
           stripe_subscription_id?: string | null;
           card_status?: string | null;
           card_period_end?: string | null;
+          pilot_at?: string | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -1831,6 +1875,29 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
+      submit_feedback: {
+        Args: { p_workspace: string; p_kind: string; p_page: string; p_message: string };
+        Returns: string;
+      };
+      admin_feedback: {
+        Args: { p_limit?: number };
+        Returns: {
+          id: string;
+          workspace_id: string;
+          workspace: string;
+          sender_email: string | null;
+          sender_name: string | null;
+          kind: string;
+          page: string | null;
+          message: string;
+          handled_at: string | null;
+          created_at: string;
+          pilot: boolean;
+        }[];
+      };
+      admin_set_pilot: { Args: { p_id: string; p_on: boolean }; Returns: undefined };
+      admin_workspace_pilot: { Args: { p_id: string }; Returns: string | null };
+      pilot_spots_left: { Args: never; Returns: number };
       platform_admin_status: { Args: never; Returns: { is_admin: boolean; has_aal2: boolean }[] };
       admin_workspaces: {
         Args: never;

@@ -22,7 +22,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
   const s = t.subscription;
   const { data: w } = await supabase
     .from("workspaces")
-    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id, stripe_subscription_id")
+    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id, stripe_subscription_id, pilot_at")
     .eq("id", workspace.id)
     .single();
   const plan = w?.plan ?? workspace.plan;
@@ -73,6 +73,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
           </div>
         )}
       </Card>
+      {w?.pilot_at && <Notice>⭐ {t.pilot.inApp}</Notice>}
       {sp.betalt === "feil" && <Notice tone="error">{s.payFailed}</Notice>}
       {sp.betalt === "venter" && (
         <Notice>
@@ -101,14 +102,15 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
             <h2 className="mb-4 font-semibold">{paid ? s.change : s.choose}</h2>
             <OrderForm
               locale={dateLocale}
-              cardEnabled={cardPaymentsEnabled()}
+              // Pilot customers are invoiced (the 50 % discount is applied on the invoice).
+              cardEnabled={cardPaymentsEnabled() && !w?.pilot_at}
               plans={(["start", "bedrift"] as const).map((key) => {
                 const p = planText(key);
                 return { key, name: p.name, text: p.text, items: p.items };
               })}
               initial={{
                 plan: plan === "bedrift" ? "bedrift" : "start",
-                interval: w?.billing_interval === "year" ? "year" : "month",
+                interval: w?.billing_interval === "year" || w?.pilot_at ? "year" : "month",
                 addon: !!w?.accounting_addon,
                 invoiceEmail: w?.invoice_email ?? user.email ?? "",
                 reference: w?.invoice_reference ?? "",

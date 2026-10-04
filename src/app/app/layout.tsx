@@ -15,6 +15,7 @@ import { canManage, logoUrl, requireWorkspace, trialDaysLeft } from "@/lib/sessi
 import { switchWorkspace } from "./actions";
 import { AccountingAutoSync } from "./_components/accounting-auto-sync";
 import { BottomNav } from "./_components/bottom-nav";
+import { FeedbackLink } from "./_components/feedback-link";
 import { GlobalSearch } from "./_components/global-search";
 import { Nav } from "./_components/nav";
 import { HashFocus, QuickAdd } from "./_components/quick-add";
@@ -105,6 +106,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           )}
           <GlobalSearch t={t.search} />
           <Nav t={t.nav} />
+          <div className="hidden md:block">
+            <FeedbackLink label={t.feedback.nav} />
+          </div>
           <AccountingAutoSync />
           <IdleLogout
             minutes={profile?.idle_timeout_minutes ?? 60}
@@ -189,6 +193,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             { href: "/app/rapporter", label: t.nav.reports },
             { href: "/app/e-post", label: t.nav.email },
             { href: "/app/innstillinger", label: t.nav.settings },
+            { href: "/app/tilbakemelding", label: t.feedback.nav },
             { href: "/faq", label: t.nav.help },
             ...(isPlatformAdmin ? [{ href: "/admin", label: t.admin.nav }] : []),
           ]}

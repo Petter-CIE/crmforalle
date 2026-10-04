@@ -7,7 +7,7 @@ import type { PlanType } from "@/lib/database.types";
 import { getI18n } from "@/lib/i18n/server";
 import { CONTACT_PACK, effectiveContactLimit, monthlyPrice, PLAN_PRICE } from "@/lib/pricing";
 import { nowMs } from "@/lib/time";
-import { deleteWorkspaceAdmin, updateWorkspaceAdmin, wipeWorkspaceDataAdmin } from "../actions";
+import { deleteWorkspaceAdmin, setPilotAdmin, updateWorkspaceAdmin, wipeWorkspaceDataAdmin } from "../actions";
 import { adminStatus } from "../guard";
 import { TrialInput } from "./trial-input";
 
@@ -27,10 +27,12 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
   const { t, dateLocale } = await getI18n();
   const a = t.admin;
 
-  const [{ data: all }, { data: members }, { data: log }] = await Promise.all([
+  const [{ data: all }, { data: members }, { data: log }, { data: pilotAt }, { data: spots }] = await Promise.all([
     supabase.rpc("admin_workspaces_v3"),
     supabase.rpc("admin_workspace_members", { p_id: id }),
     supabase.rpc("admin_audit_log", { p_id: id }),
+    supabase.rpc("admin_workspace_pilot", { p_id: id }),
+    supabase.rpc("pilot_spots_left"),
   ]);
   const w = (all ?? []).find((x) => x.id === id);
   if (!w) notFound();
@@ -97,83 +99,113 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
           </Card>
         </div>
 
-        <Card>
-          <h2 className="mb-1 font-semibold">{a.subscription}</h2>
-          <p className="mb-4 text-sm text-muted">
-            {a.price}: <span className="font-medium text-foreground">{formatMoney(monthlyPrice(w, today), dateLocale)}</span>
-          </p>
-          <ActionForm action={updateWorkspaceAdmin} submitLabel={a.save} pendingLabel={t.crm.saving} successText={a.saved}>
-            <input type="hidden" name="id" value={w.id} />
-            <input type="hidden" name="prev_plan" value={w.plan} />
-            <Field label={a.plan} htmlFor="a_plan">
-              <Select id="a_plan" name="plan" defaultValue={w.plan} className="w-full">
-                {PLANS.map((p) => (
-                  <option key={p} value={p}>
-                    {t.common.plans[p]}
-                    {PLAN_PRICE[p] ? ` – ${formatMoney(PLAN_PRICE[p], dateLocale)}` : ""}
-                  </option>
-                ))}
-              </Select>
-              <p className="mt-1 text-xs text-muted">{a.planHelp}</p>
-            </Field>
-            <Field label={a.billing} htmlFor="a_billing">
-              <Select id="a_billing" name="billing_interval" defaultValue={w.billing_interval} className="w-full">
-                <option value="month">{a.monthly}</option>
-                <option value="year">{a.yearly}</option>
-              </Select>
-            </Field>
-            <label className="flex items-start gap-2 text-sm">
-              <input type="checkbox" name="accounting_addon" value="1" defaultChecked={w.accounting_addon} className="mt-0.5" />
-              <span>
-                {a.addon}
-                <span className="block text-xs text-muted">{a.addonHelp}</span>
-              </span>
-            </label>
-            <Field label={a.trialEnds} htmlFor="a_trial">
-              <TrialInput initial={osloDate(w.trial_ends_at)} labels={{ d7: a.extend(7), d14: a.extend(14), d30: a.extend(30) }} />
-            </Field>
-            <Field label={a.contactLimit} htmlFor="a_limit">
-              <Input id="a_limit" name="contact_limit" type="number" min={0} defaultValue={w.contact_limit} className="w-full" />
-            </Field>
-            <Field label={a.packs} htmlFor="a_packs">
-              <Input
-                id="a_packs"
-                name="extra_contact_packs"
-                type="number"
-                min={0}
-                max={CONTACT_PACK[w.plan]?.max ?? 0}
-                defaultValue={w.extra_contact_packs}
-                className="w-full"
-              />
-              <p className="mt-1 text-xs text-muted">{a.packsHelp}</p>
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={a.discount} htmlFor="a_disc">
-                <Input id="a_disc" name="discount_percent" type="number" min={0} max={100} defaultValue={w.discount_percent} className="w-full" />
+        <div className="space-y-6">
+          <Card className={pilotAt ? "border-amber-300 bg-amber-50/40" : ""}>
+            <h2 className="mb-1 font-semibold">⭐ {a.pilot}</h2>
+            <p className="mb-3 text-sm text-muted">{pilotAt ? a.pilotSince(formatDate(pilotAt, dateLocale)) : a.pilotHelp}</p>
+            <form action={setPilotAdmin} className="flex flex-wrap items-center gap-3">
+              <input type="hidden" name="id" value={w.id} />
+              <input type="hidden" name="on" value={pilotAt ? "0" : "1"} />
+              {pilotAt || (spots ?? 0) > 0 ? (
+                <button
+                  type="submit"
+                  className={
+                    pilotAt
+                      ? "rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-background"
+                      : "rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
+                  }
+                >
+                  {pilotAt ? a.pilotOff : a.pilotOn}
+                </button>
+              ) : null}
+              <span className="text-xs text-muted">{(spots ?? 0) > 0 ? a.pilotSpots(spots ?? 0) : a.pilotFull}</span>
+            </form>
+          </Card>
+          <Card>
+            <h2 className="mb-1 font-semibold">{a.subscription}</h2>
+            <p className="mb-4 text-sm text-muted">
+              {a.price}: <span className="font-medium text-foreground">{formatMoney(monthlyPrice(w, today), dateLocale)}</span>
+            </p>
+            <ActionForm action={updateWorkspaceAdmin} submitLabel={a.save} pendingLabel={t.crm.saving} successText={a.saved}>
+              <input type="hidden" name="id" value={w.id} />
+              <input type="hidden" name="prev_plan" value={w.plan} />
+              <Field label={a.plan} htmlFor="a_plan">
+                <Select id="a_plan" name="plan" defaultValue={w.plan} className="w-full">
+                  {PLANS.map((p) => (
+                    <option key={p} value={p}>
+                      {t.common.plans[p]}
+                      {PLAN_PRICE[p] ? ` – ${formatMoney(PLAN_PRICE[p], dateLocale)}` : ""}
+                    </option>
+                  ))}
+                </Select>
+                <p className="mt-1 text-xs text-muted">{a.planHelp}</p>
               </Field>
-              <Field label={a.discountUntil} htmlFor="a_until">
-                <Input id="a_until" name="discount_until" type="date" defaultValue={w.discount_until ?? ""} className="w-full" />
+              <Field label={a.billing} htmlFor="a_billing">
+                <Select id="a_billing" name="billing_interval" defaultValue={w.billing_interval} className="w-full">
+                  <option value="month">{a.monthly}</option>
+                  <option value="year">{a.yearly}</option>
+                </Select>
               </Field>
-            </div>
-            <p className="-mt-2 text-xs text-muted">{a.discountUntilHelp}</p>
-            <Field label={a.discountNote} htmlFor="a_dnote">
-              <Input id="a_dnote" name="discount_note" defaultValue={w.discount_note ?? ""} className="w-full" />
-            </Field>
-            <Field label={a.adminNote} htmlFor="a_note">
-              <Textarea id="a_note" name="admin_note" rows={4} defaultValue={w.admin_note ?? ""} />
-            </Field>
-            <label className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
-              <input type="checkbox" name="suspended" value="1" defaultChecked={!!w.suspended_at} className="mt-0.5" />
-              <span>
-                <span className="font-medium text-red-900">{a.suspend}</span>
-                <span className="block text-xs text-red-800">
-                  {a.suspendHelp}
-                  {w.suspended_at && ` (${a.since(formatDate(w.suspended_at, dateLocale))})`}
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="accounting_addon" value="1" defaultChecked={w.accounting_addon} className="mt-0.5" />
+                <span>
+                  {a.addon}
+                  <span className="block text-xs text-muted">{a.addonHelp}</span>
                 </span>
-              </span>
-            </label>
-          </ActionForm>
-        </Card>
+              </label>
+              <Field label={a.trialEnds} htmlFor="a_trial">
+                <TrialInput
+                  initial={osloDate(w.trial_ends_at)}
+                  labels={{
+                    d7: a.extend(7),
+                    d14: a.extend(14),
+                    d30: a.extend(30),
+                  }}
+                />
+              </Field>
+              <Field label={a.contactLimit} htmlFor="a_limit">
+                <Input id="a_limit" name="contact_limit" type="number" min={0} defaultValue={w.contact_limit} className="w-full" />
+              </Field>
+              <Field label={a.packs} htmlFor="a_packs">
+                <Input
+                  id="a_packs"
+                  name="extra_contact_packs"
+                  type="number"
+                  min={0}
+                  max={CONTACT_PACK[w.plan]?.max ?? 0}
+                  defaultValue={w.extra_contact_packs}
+                  className="w-full"
+                />
+                <p className="mt-1 text-xs text-muted">{a.packsHelp}</p>
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={a.discount} htmlFor="a_disc">
+                  <Input id="a_disc" name="discount_percent" type="number" min={0} max={100} defaultValue={w.discount_percent} className="w-full" />
+                </Field>
+                <Field label={a.discountUntil} htmlFor="a_until">
+                  <Input id="a_until" name="discount_until" type="date" defaultValue={w.discount_until ?? ""} className="w-full" />
+                </Field>
+              </div>
+              <p className="-mt-2 text-xs text-muted">{a.discountUntilHelp}</p>
+              <Field label={a.discountNote} htmlFor="a_dnote">
+                <Input id="a_dnote" name="discount_note" defaultValue={w.discount_note ?? ""} className="w-full" />
+              </Field>
+              <Field label={a.adminNote} htmlFor="a_note">
+                <Textarea id="a_note" name="admin_note" rows={4} defaultValue={w.admin_note ?? ""} />
+              </Field>
+              <label className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+                <input type="checkbox" name="suspended" value="1" defaultChecked={!!w.suspended_at} className="mt-0.5" />
+                <span>
+                  <span className="font-medium text-red-900">{a.suspend}</span>
+                  <span className="block text-xs text-red-800">
+                    {a.suspendHelp}
+                    {w.suspended_at && ` (${a.since(formatDate(w.suspended_at, dateLocale))})`}
+                  </span>
+                </span>
+              </label>
+            </ActionForm>
+          </Card>
+        </div>
       </div>
 
       <Card className="border-red-200">
@@ -202,14 +234,7 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
                   <Input id={`a_del_${kind}`} name="confirm_name" autoComplete="off" required className="w-full" />
                 </Field>
                 <label className="flex items-start gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="notify"
-                    value="1"
-                    defaultChecked={notifyCount > 0}
-                    disabled={notifyCount === 0}
-                    className="mt-0.5"
-                  />
+                  <input type="checkbox" name="notify" value="1" defaultChecked={notifyCount > 0} disabled={notifyCount === 0} className="mt-0.5" />
                   <span>{a.notifyOwners(notifyCount)}</span>
                 </label>
               </ActionForm>

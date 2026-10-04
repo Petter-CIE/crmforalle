@@ -121,3 +121,27 @@ export async function wipeWorkspaceDataAdmin(_p: FormResult, formData: FormData)
 export async function deleteWorkspaceAdmin(_p: FormResult, formData: FormData) {
   return adminDelete("workspace", formData);
 }
+
+/** Marks or unmarks a company as pilot customer (50 % for the first year, invoice only). */
+export async function setPilotAdmin(formData: FormData) {
+  const { supabase, isAdmin, hasAal2 } = await adminStatus();
+  if (!isAdmin || !hasAal2) return;
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) return;
+  const { error } = await supabase.rpc("admin_set_pilot", { p_id: id, p_on: formData.get("on") === "1" });
+  if (error) console.error("admin_set_pilot failed", error.message);
+  revalidatePath("/admin");
+  revalidatePath(`/admin/${id}`);
+}
+
+/** Marks feedback as handled, or opens it again. */
+export async function setFeedbackHandledAdmin(formData: FormData) {
+  const { supabase, isAdmin, hasAal2 } = await adminStatus();
+  if (!isAdmin || !hasAal2) return;
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) return;
+  const handled = formData.get("handled") === "1";
+  const { error } = await supabase.from("feedback").update({ handled_at: handled ? new Date().toISOString() : null }).eq("id", id);
+  if (error) console.error("feedback update failed", error.message);
+  revalidatePath("/admin/tilbakemeldinger");
+}
