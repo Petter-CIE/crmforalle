@@ -142,3 +142,6 @@ grant execute on function public.push_gone(text, text[]) to anon;
 select cron.schedule('allseats-push', '* * * * *', $$ select private.push_kick() $$);
 
 -- quote_respond also pushes to the seller and the deal owner (full function in the applied migration "quote_respond_push").
+
+-- Applied as "push_send_immediately": push_enqueue calls private.push_kick() when it queued something,
+-- so notifications go out within seconds; the per-minute cron job stays as a fallback.
