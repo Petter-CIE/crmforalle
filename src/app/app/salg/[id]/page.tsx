@@ -18,6 +18,7 @@ import { createQuote } from "../../tilbud/actions";
 import { StatusBadge } from "../../tilbud/status-badge";
 import type { QuoteStatus } from "@/lib/quotes";
 import { loadDealOptions } from "../options";
+import { stageName } from "@/lib/stages";
 
 export async function generateMetadata({ params }: PageProps<"/app/salg/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -30,7 +31,7 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
   const { id } = await params;
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
-  const { t, dateLocale } = await getI18n();
+  const { t, dateLocale, locale } = await getI18n();
   const [{ data: d }, options, { data: stages }, fields, { data: quotes }] = await Promise.all([
     supabase
       .from("deals")
@@ -62,7 +63,7 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             <Pill className={d.pipeline_stages?.is_won ? "!bg-brand-soft text-brand" : d.pipeline_stages?.is_lost ? "!bg-red-50 text-danger" : ""}>
-              {d.pipeline_stages?.name}
+              {d.pipeline_stages && stageName(d.pipeline_stages.name, locale)}
             </Pill>
             <strong className="text-foreground">{formatMoney(Number(d.value), dateLocale)}</strong>
             {d.companies && (

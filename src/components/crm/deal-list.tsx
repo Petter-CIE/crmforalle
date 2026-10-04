@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EmptyState, Pill } from "@/components/ui-extra";
 import { formatMoney } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
+import { stageName } from "@/lib/stages";
 
 export type DealRow = {
   id: string;
@@ -13,7 +14,7 @@ export type DealRow = {
 export const DEAL_ROW_SELECT = "id, title, value, pipeline_stages(name, is_won, is_lost)";
 
 export async function DealList({ deals }: { deals: DealRow[] }) {
-  const { t, dateLocale } = await getI18n();
+  const { t, dateLocale, locale } = await getI18n();
   if (deals.length === 0) return <EmptyState>{t.deals.empty}</EmptyState>;
   return (
     <ul className="divide-y divide-border">
@@ -25,7 +26,7 @@ export async function DealList({ deals }: { deals: DealRow[] }) {
           <Pill
             className={d.pipeline_stages?.is_won ? "!bg-brand-soft text-brand" : d.pipeline_stages?.is_lost ? "!bg-red-50 text-danger" : ""}
           >
-            {d.pipeline_stages?.name}
+            {d.pipeline_stages && stageName(d.pipeline_stages.name, locale)}
           </Pill>
           <span className="w-28 text-right tabular-nums">{formatMoney(d.value, dateLocale)}</span>
         </li>

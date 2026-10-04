@@ -134,3 +134,70 @@ export async function saveQuoteSettings(_p: FormResult, formData: FormData): Pro
   revalidatePath("/app/tilbud");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------- pipeline stages
+export type StageInput = { id: string | null; name: string; probability: number; kind: "open" | "won" | "lost" };
+/** moveTo = index in the saved list (open stages, then won, then lost) of the stage that takes over the deals. */
+export type StageRemoval = { id: string; moveTo: number | null };
+
+/**
+ * Saves the whole pipeline at once: names, probabilities and order (open stages first, then won and lost),
+ * new stages and deleted ones. Deals in a deleted stage are moved to the chosen stage first.
+ */
+export async function saveStages(stages: StageInput[], removals: StageRemoval[]): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  const st = t.customize.stages;
+  if (!allowed) return { error: t.customize.onlyAdmins };
+  const { supabase, workspace } = ctx;
+  const ws = workspace.id;
+
+  const { data: existing } = await supabase.from("pipeline_stages").select("id, is_won, is_lost").eq("workspace_id", ws);
+  const byId = new Map((existing ?? []).map((s) => [s.id, s]));
+  const clean = stages.map((s) => ({ ...s, name: String(s.name ?? "").trim(), probability: Math.round(Number(s.probability)) }));
+  if (clean.some((s) => !s.name || s.name.length > 60 || !Number.isFinite(s.probability) || s.probability < 0 || s.probability > 100)) return { error: st.invalid };
+  const open = clean.filter((s) => s.kind === "open");
+  const won = clean.find((s) => s.kind === "won");
+  const lost = clean.find((s) => s.kind === "lost");
+  if (open.length === 0) return { error: st.needOpen };
+  if (open.length > 20) return { error: st.invalid };
+  // Won/lost must be the existing ones; open stages must be new or existing open ones.
+  if (!won?.id || !byId.get(won.id)?.is_won || !lost?.id || !byId.get(lost.id)?.is_lost) return { error: t.crm.error };
+  for (const s of open) if (s.id && (!UUID.test(s.id) || !byId.has(s.id) || byId.get(s.id)!.is_won || byId.get(s.id)!.is_lost)) return { error: t.crm.error };
+  const keep = new Set(clean.map((s) => s.id).filter(Boolean));
+  for (const r of removals) {
+    const s = byId.get(r.id);
+    if (!s || s.is_won || s.is_lost || keep.has(r.id)) return { error: t.crm.error };
+  }
+
+  // 1) Create new stages and update existing ones in the new order.
+  // The client sends the list in this order already; moveTo indexes refer to it.
+  const ordered = [...open, won, lost];
+  const ids: string[] = [];
+  for (const [position, s] of ordered.entries()) {
+    if (s.id) {
+      const { error } = await supabase.from("pipeline_stages").update({ name: s.name, probability: s.probability, position }).eq("id", s.id).eq("workspace_id", ws);
+      if (error) return { error: t.crm.error };
+      ids.push(s.id);
+    } else {
+      const { data, error } = await supabase
+        .from("pipeline_stages")
+        .insert({ workspace_id: ws, name: s.name, probability: s.probability, position })
+        .select("id")
+        .single();
+      if (error || !data) return { error: t.crm.error };
+      ids.push(data.id);
+    }
+  }
+
+  // 2) Delete removed stages, moving their deals first (to the chosen stage, or the first open one).
+  for (const r of removals) {
+    const target = typeof r.moveTo === "number" && ids[r.moveTo] ? ids[r.moveTo] : ids[0];
+    const { error: moveErr } = await supabase.from("deals").update({ stage_id: target }).eq("stage_id", r.id).eq("workspace_id", ws);
+    if (moveErr) return { error: t.crm.error };
+    const { error } = await supabase.from("pipeline_stages").delete().eq("id", r.id).eq("workspace_id", ws);
+    if (error) return { error: t.crm.error };
+  }
+
+  revalidatePath("/app", "layout");
+  return { ok: true, message: st.saved };
+}

@@ -95,6 +95,7 @@ export default async function SettingsPage() {
           <ul className="space-y-1 text-sm">
             {(
               [
+                ["/app/innstillinger/salgsfaser", t.customize.stages.link],
                 ["/app/innstillinger/felt", t.customize.fieldsLink],
                 ["/app/innstillinger/automatisering", t.customize.autoLink],
                 ["/app/tilbud/innstillinger", t.customize.quoteLink],

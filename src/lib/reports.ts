@@ -2,6 +2,8 @@ import "server-only";
 import { listMembers } from "@/lib/crm";
 import type { requireWorkspace } from "@/lib/session";
 import { nowMs } from "@/lib/time";
+import { getI18n } from "@/lib/i18n/server";
+import { stageName } from "@/lib/stages";
 
 type Ctx = Awaited<ReturnType<typeof requireWorkspace>>;
 
@@ -94,6 +96,7 @@ export type MemberRow = {
 
 export async function buildReport(ctx: Ctx, period: Period, requestedOwner: string | null) {
   const { supabase, workspace } = ctx;
+  const { locale } = await getI18n();
   const ws = workspace.id;
   const range = periodRange(period);
   const months = last12Months();
@@ -165,7 +168,7 @@ export async function buildReport(ctx: Ctx, period: Period, requestedOwner: stri
     .map((s) => {
       const rows = open.filter((d) => d.stage_id === s.id);
       const total = sum(rows, value);
-      return { id: s.id, name: s.name, probability: s.probability, count: rows.length, value: total, weighted: (total * s.probability) / 100 };
+      return { id: s.id, name: stageName(s.name, locale), probability: s.probability, count: rows.length, value: total, weighted: (total * s.probability) / 100 };
     });
 
   const trend = months.map((m) => {

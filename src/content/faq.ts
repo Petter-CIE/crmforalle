@@ -150,6 +150,12 @@ const nb: Faq = {
           a: ["Ja. Huk av radene i listen (eller alle med boksen øverst), og velg handling i linjen som dukker opp: legg til i eller fjern fra prosjekt, sett ansvarlig eller slett."],
         },
         {
+          q: "Kan vi endre salgsfasene?",
+          a: [
+            "Ja. Under Innstillinger → Salgsfaser (eier og administratorer) kan dere gi fasene nye navn, endre sannsynlighet, dra dem i ny rekkefølge, legge til nye og slette dem dere ikke bruker. Salg i en fase som slettes, flyttes til fasen dere velger.",
+          ],
+        },
+        {
           q: "Kan jeg tilpasse forsiden?",
           a: [
             "Ja. Trykk «Tilpass» på I dag-siden. Da kan du dra widgetene i den rekkefølgen du vil, gjøre dem brede eller smale, skjule dem og legge til andre – for eksempel nøkkeltall, salgstrakt, vunnet denne måneden, siste aktivitet og tilbud. Oppsettet er ditt eget og følger deg på PC og mobil.",
@@ -429,6 +435,12 @@ const en: Faq = {
         {
           q: "Can I change many companies or contacts at once?",
           a: ["Yes. Tick the rows in the list (or all of them with the box at the top) and choose an action in the bar that appears: add to or remove from a project, set the owner or delete."],
+        },
+        {
+          q: "Can we change the pipeline stages?",
+          a: [
+            "Yes. Under Settings → Pipeline stages (owner and admins) you can rename the stages, change the probability, drag them into a new order, add new ones and delete those you don't use. Deals in a stage you delete are moved to the stage you choose.",
+          ],
         },
         {
           q: "Can I customize the start page?",

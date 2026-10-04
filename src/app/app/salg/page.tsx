@@ -3,8 +3,9 @@ import { ButtonLink, Select } from "@/components/ui";
 import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { contactName, formatMoney, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
-import { requireWorkspace } from "@/lib/session";
+import { canManage, requireWorkspace } from "@/lib/session";
 import { Board, type BoardDeal } from "./board";
+import { stageName } from "@/lib/stages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -16,7 +17,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
   const projectId = typeof prosjekt === "string" ? prosjekt : "";
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
-  const { t, dateLocale } = await getI18n();
+  const { t, dateLocale, locale } = await getI18n();
 
   let dealsReq = supabase
     .from("deals")
@@ -76,6 +77,11 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
                 </button>
               </form>
             )}
+            {canManage(workspace.role) && (
+              <ButtonLink href="/app/innstillinger/salgsfaser" variant="ghost" title={t.customize.stages.link}>
+                ⚙ {t.customize.stages.title}
+              </ButtonLink>
+            )}
             <ButtonLink href={projectId ? `/app/salg/ny?prosjekt=${projectId}` : "/app/salg/ny"}>+ {t.deals.new}</ButtonLink>
           </>
         }
@@ -89,7 +95,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
         />
       )}
       <Board
-        stages={stages ?? []}
+        stages={(stages ?? []).map((s) => ({ ...s, name: stageName(s.name, locale) }))}
         deals={boardDeals}
         dateLocale={dateLocale}
         emptyText="—"

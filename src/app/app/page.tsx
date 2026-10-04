@@ -14,6 +14,7 @@ import { canManage, requireWorkspace } from "@/lib/session";
 import { daysAgoIso, nowMs } from "@/lib/time";
 import { StatusBadge } from "./tilbud/status-badge";
 import { DashboardGrid } from "./_components/dashboard-grid";
+import { stageName } from "@/lib/stages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -44,7 +45,7 @@ function osloMidnight(year: number, month: number, day: number) {
 export default async function TodayPage() {
   const ctx = await requireWorkspace();
   const { supabase, user, workspace } = ctx;
-  const { t, dateLocale } = await getI18n();
+  const { t, dateLocale, locale } = await getI18n();
   const d = t.ui.dash;
   const now = nowMs();
   const endOfToday = new Date(now);
@@ -209,7 +210,7 @@ export default async function TodayPage() {
             <div key={r.s.id}>
               <div className="mb-1 flex justify-between gap-2 text-xs">
                 <span className="truncate">
-                  {r.s.name} <span className="text-muted">· {r.n}</span>
+                  {stageName(r.s.name, locale)} <span className="text-muted">· {r.n}</span>
                 </span>
                 <span className="tabular-nums text-muted">{money(r.sum)}</span>
               </div>

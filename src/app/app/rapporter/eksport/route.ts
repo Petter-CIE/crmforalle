@@ -3,6 +3,7 @@ import { contactName, listMembers } from "@/lib/crm";
 import { csvResponse, toCsv } from "@/lib/csv";
 import { isPeriod, periodRange } from "@/lib/reports";
 import { canManage, requireWorkspace } from "@/lib/session";
+import { stageName } from "@/lib/stages";
 
 const PAGE = 1000;
 
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
         d.contacts ? contactName(d.contacts) : "",
         d.projects?.name,
         d.owner_id ? memberName.get(d.owner_id) : "",
-        stage?.name,
+        stage ? stageName(stage.name, "nb") : "",
         stage?.is_won ? "Vunnet" : stage?.is_lost ? "Tapt" : "Åpen",
         Number(d.value).toFixed(2).replace(".", ","),
         d.created_at.slice(0, 10),

@@ -7,6 +7,7 @@ import { EmptyState, Field, PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { createAutomation, deleteAutomation, toggleAutomation } from "../customize-actions";
+import { stageName } from "@/lib/stages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AutomationsPage() {
   const { supabase, workspace } = await requireWorkspace();
   if (!canManage(workspace.role)) notFound();
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const c = t.customize;
   const [{ data: stages }, { data: rules }] = await Promise.all([
     supabase.from("pipeline_stages").select("id, name").eq("workspace_id", workspace.id).order("position"),
@@ -26,7 +27,7 @@ export default async function AutomationsPage() {
       .eq("workspace_id", workspace.id)
       .order("created_at"),
   ]);
-  const stageName = new Map((stages ?? []).map((s) => [s.id, s.name]));
+  const nameOf = new Map((stages ?? []).map((s) => [s.id, stageName(s.name, locale)]));
 
   return (
     <div className="space-y-6">
@@ -40,7 +41,7 @@ export default async function AutomationsPage() {
               <Select id="a_stage" name="stage_id" required className="w-full">
                 {(stages ?? []).map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name}
+                    {stageName(s.name, locale)}
                   </option>
                 ))}
               </Select>
@@ -64,7 +65,7 @@ export default async function AutomationsPage() {
           <ul className="divide-y divide-border">
             {(rules ?? []).map((r) => (
               <li key={r.id} className={`flex flex-wrap items-center gap-3 py-2 text-sm ${r.active ? "" : "text-muted"}`}>
-                <span className="min-w-0 flex-1">{c.ruleText(stageName.get(r.stage_id) ?? "?", r.task_title, r.due_days)}</span>
+                <span className="min-w-0 flex-1">{c.ruleText(nameOf.get(r.stage_id) ?? "?", r.task_title, r.due_days)}</span>
                 <form action={toggleAutomation}>
                   <input type="hidden" name="id" value={r.id} />
                   <input type="hidden" name="active" value={r.active ? "0" : "1"} />
