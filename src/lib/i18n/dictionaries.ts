@@ -162,6 +162,10 @@ const nb = {
     operator: "AllSeats CRM leveres av CIE AS, org.nr. 818 823 452 MVA, Bjørøyvegen 332, 5177 Bjørøyhamn",
   },
   login: {
+    withMicrosoft: "Fortsett med Microsoft",
+    withGoogle: "Fortsett med Google",
+    orEmail: "eller med e-post",
+    oauthFailed: "Innloggingen ble avbrutt eller feilet. Prøv igjen, eller logg inn med e-post.",
     title: "Logg inn",
     intro: "Logg inn med passord, en lenke på e-post eller passkey.",
     badLink: "Lenken var ugyldig eller utløpt. Be om en ny.",
@@ -1807,6 +1811,10 @@ const en: Dictionary = {
     operator: "AllSeats CRM is provided by CIE AS, org. no. 818 823 452 MVA, Bjørøyvegen 332, 5177 Bjørøyhamn, Norway",
   },
   login: {
+    withMicrosoft: "Continue with Microsoft",
+    withGoogle: "Continue with Google",
+    orEmail: "or with e-mail",
+    oauthFailed: "The sign-in was cancelled or failed. Try again, or sign in with e-mail.",
     title: "Log in",
     intro: "Log in with a password, a link by e-mail or a passkey.",
     badLink: "The link was invalid or expired. Request a new one.",

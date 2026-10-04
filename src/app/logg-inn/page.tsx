@@ -8,6 +8,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { safeNext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
+import { OAuthButtons } from "@/components/oauth-buttons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -18,6 +19,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
   const params = await searchParams;
   const next = safeNext(params.neste);
   const failed = params.feil === "lenke";
+  const oauthFailed = params.feil === "oauth";
   const idle = params.utlogget === "1";
 
   const supabase = await createClient();
@@ -44,6 +46,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/logg-inn">
               <Notice tone="error">{t.login.badLink}</Notice>
             </div>
           )}
+          {oauthFailed && (
+            <div className="mb-4">
+              <Notice tone="error">{t.login.oauthFailed}</Notice>
+            </div>
+          )}
+          <OAuthButtons next={next} t={{ microsoft: t.login.withMicrosoft, google: t.login.withGoogle, or: t.login.orEmail }} />
           {idle && (
             <div className="mb-4">
               <Notice>{t.security.loggedOutIdle}</Notice>

@@ -5,6 +5,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { RegisterForm } from "./register-form";
+import { OAuthButtons } from "@/components/oauth-buttons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -30,6 +31,7 @@ export default async function RegisterPage() {
         </>
       }
     >
+      <OAuthButtons next="/kom-i-gang" t={{ microsoft: t.login.withMicrosoft, google: t.login.withGoogle, or: t.login.orEmail }} />
       <RegisterForm t={{ ...t.register, email: t.login.email, emailPlaceholder: t.login.emailPlaceholder }} />
       <p className="mt-4 text-center text-xs text-muted">
         {t.legal.registerNote}{" "}

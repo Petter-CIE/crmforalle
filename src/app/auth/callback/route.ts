@@ -22,5 +22,11 @@ export async function GET(request: NextRequest) {
     ok = !(await supabase.auth.verifyOtp({ token_hash: tokenHash, type })).error;
   }
 
-  return NextResponse.redirect(new URL(ok ? next : "/logg-inn?feil=lenke", origin));
+  if (!ok) return NextResponse.redirect(new URL("/logg-inn?feil=lenke", origin));
+  // Signed in with Microsoft/Google (or a link) but has two-step verification: ask for the code first.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    return NextResponse.redirect(new URL(`/logg-inn/mfa?neste=${encodeURIComponent(next)}`, origin));
+  }
+  return NextResponse.redirect(new URL(next, origin));
 }
