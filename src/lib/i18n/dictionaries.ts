@@ -1338,6 +1338,7 @@ const nb = {
   },
   pilot: {
     badge: "Pilotkunde",
+    pill: (n: number) => `Pilotkunde: 50 % rabatt første år – ${n} av 10 plasser igjen`,
     title: "Bli pilotkunde – 10 plasser",
     lead: "Vi ser etter de første 10 bedriftene som vil bruke AllSeats i hverdagen og si ærlig fra om hva som mangler.",
     offer: "50 % rabatt det første året på årsabonnement",
@@ -2882,6 +2883,7 @@ const en: Dictionary = {
   },
   pilot: {
     badge: "Pilot customer",
+    pill: (n: number) => `Pilot customer: 50 % off the first year – ${n} of 10 places left`,
     title: "Become a pilot customer – 10 places",
     lead: "We are looking for the first 10 companies that want to use AllSeats every day and tell us honestly what is missing.",
     offer: "50 % off the first year of a yearly subscription",

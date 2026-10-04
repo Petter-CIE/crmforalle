@@ -64,6 +64,16 @@ export default async function Home() {
         {/* Hero: the promise on the left, the seat map on the right */}
         <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-8 md:px-8 md:pt-14 lg:grid-cols-[1.1fr_1fr]">
           <div>
+            {spots > 0 && (
+              <a
+                href="#pilot"
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft px-3 py-1.5 text-sm font-medium text-brand hover:border-brand"
+              >
+                <span aria-hidden>⭐</span>
+                {pl.pill(spots)}
+                <span aria-hidden>→</span>
+              </a>
+            )}
             <h1 className="font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.025em] text-[var(--ink)] sm:text-6xl">
               {l.headline}
             </h1>
@@ -89,6 +99,64 @@ export default async function Home() {
             }}
           />
         </section>
+
+        {/* Pilot programme: first 10 companies */}
+        {spots > 0 && (
+          <section className="mx-auto w-full max-w-6xl px-4 pb-16 md:px-8">
+            {spots > 0 && (
+              <div id="pilot" className="scroll-mt-8 rounded-2xl border-2 border-dashed border-brand/40 bg-white p-6 md:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="max-w-2xl">
+                    <span className="inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
+                      {pl.badge}
+                    </span>
+                    <h3 className="mt-3 font-display text-2xl font-bold text-[var(--ink)]">{pl.title}</h3>
+                    <p className="mt-2 text-muted">{pl.lead}</p>
+                    <p className="mt-3 text-lg font-semibold text-brand">{pl.offer}</p>
+                  </div>
+                  <div className="text-right">
+                    {/* Ten seats: the taken ones filled */}
+                    <div aria-hidden className="grid grid-cols-5 gap-1.5">
+                      {Array.from({ length: 10 }, (_, i) => (
+                        <span key={i} className={`h-4 w-4 rounded-[5px_5px_2px_2px] ${i < 10 - spots ? "bg-[var(--ink)]" : "bg-[var(--seat-on)]"}`} />
+                      ))}
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-[var(--ink)]">{pl.spotsLeft(spots)}</p>
+                  </div>
+                </div>
+                <div className="mt-6 grid gap-6 md:grid-cols-2">
+                  {[
+                    [pl.giveTitle, pl.give],
+                    [pl.getTitle, pl.get],
+                  ].map(([title, items]) => (
+                    <div key={title as string}>
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{title as string}</h4>
+                      <ul className="space-y-1.5">
+                        {(items as string[]).map((x) => (
+                          <li key={x} className="flex gap-2">
+                            <span aria-hidden className="text-brand">
+                              ✓
+                            </span>
+                            {x}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <a
+                    href={`mailto:post@allseats.no?subject=${encodeURIComponent(pl.ctaSubject)}`}
+                    className="rounded-lg bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-hover"
+                  >
+                    {pl.cta}
+                  </a>
+                  <p className="text-sm text-muted">{pl.after}</p>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Features */}
         <section id="funksjoner" className="scroll-mt-8 border-t border-border bg-white">
@@ -145,59 +213,6 @@ export default async function Home() {
                 cta: l.cta,
               }}
             />
-            {spots > 0 && (
-              <div id="pilot" className="mt-10 scroll-mt-8 rounded-2xl border-2 border-dashed border-brand/40 bg-white p-6 md:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="max-w-2xl">
-                    <span className="inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
-                      {pl.badge}
-                    </span>
-                    <h3 className="mt-3 font-display text-2xl font-bold text-[var(--ink)]">{pl.title}</h3>
-                    <p className="mt-2 text-muted">{pl.lead}</p>
-                    <p className="mt-3 text-lg font-semibold text-brand">{pl.offer}</p>
-                  </div>
-                  <div className="text-right">
-                    {/* Ten seats: the taken ones filled */}
-                    <div aria-hidden className="grid grid-cols-5 gap-1.5">
-                      {Array.from({ length: 10 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={`h-4 w-4 rounded-[5px_5px_2px_2px] ${i < 10 - spots ? "bg-[var(--ink)]" : "bg-[var(--seat-on)]"}`}
-                        />
-                      ))}
-                    </div>
-                    <p className="mt-2 text-sm font-medium text-[var(--ink)]">{pl.spotsLeft(spots)}</p>
-                  </div>
-                </div>
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  {[
-                    [pl.giveTitle, pl.give],
-                    [pl.getTitle, pl.get],
-                  ].map(([title, items]) => (
-                    <div key={title as string}>
-                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{title as string}</h4>
-                      <ul className="space-y-1.5">
-                        {(items as string[]).map((x) => (
-                          <li key={x} className="flex gap-2">
-                            <span aria-hidden className="text-brand">✓</span>
-                            {x}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 flex flex-wrap items-center gap-4">
-                  <a
-                    href={`mailto:post@allseats.no?subject=${encodeURIComponent(pl.ctaSubject)}`}
-                    className="rounded-lg bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-hover"
-                  >
-                    {pl.cta}
-                  </a>
-                  <p className="text-sm text-muted">{pl.after}</p>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
