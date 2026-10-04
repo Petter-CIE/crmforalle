@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { saveDashboard } from "@/app/app/actions";
 import { WIDGETS, type WidgetId, type WidgetItem } from "@/lib/dashboard";
 
@@ -26,7 +26,7 @@ export type DashTexts = {
 };
 
 /**
- * The widgets on the "Today" page. In edit mode they can be dragged (mouse and touch) or moved
+ * The widgets on the "Today" page. In edit mode they can be dragged by grabbing them anywhere (on touch: by the header) or moved
  * with the arrows, made wide/narrow by dragging their right edge, hidden and added. Saved per user.
  */
 export function DashboardGrid({
@@ -93,6 +93,26 @@ export function DashboardGrid({
     });
   }
 
+  // While dragging, follow the pointer on the whole window: moving the card in the page releases
+  // pointer capture, so per-card handlers would stop after the first swap.
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: PointerEvent) => {
+      const el = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-widget]");
+      const target = el?.dataset.widget as WidgetId | undefined;
+      if (target && target !== dragging) moveTo(dragging, target);
+    };
+    const stop = () => setDragging(null);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+  }, [dragging]);
+
   const hidden = WIDGETS.filter((id) => !items.some((x) => x.id === id));
 
   return (
@@ -156,33 +176,24 @@ export function DashboardGrid({
               data-widget={it.id}
               aria-label={t.names[it.id]}
               className={`fade-up relative flex min-w-0 flex-col rounded-xl border bg-surface transition-shadow ${it.w === 2 ? "lg:col-span-2" : ""} ${
-                editing ? "border-dashed border-brand/50" : "border-border"
+                editing ? "cursor-grab select-none border-dashed border-brand/50 active:cursor-grabbing" : "border-border"
               } ${dragging === it.id ? "opacity-60 shadow-xl ring-2 ring-brand" : ""} ${resize?.id === it.id ? "z-20 shadow-xl ring-2 ring-brand" : ""}`}
               style={{ animationDelay: `${Math.min(i, 8) * 30}ms`, ...(resize?.id === it.id ? { width: resize.width, maxWidth: "none" } : {}) }}
+              // Edit mode: grab the card anywhere with a mouse; on touch screens by its header (so the page still scrolls).
+              onPointerDown={(e) => {
+                if (!editing || e.button !== 0) return;
+                const target = e.target as HTMLElement;
+                if (target.closest("button, a, [data-resize]")) return;
+                if (e.pointerType === "touch" && !target.closest("header")) return;
+                e.preventDefault();
+                setDragging(it.id);
+              }}
             >
-              <header className="flex items-center gap-2 px-5 pt-4">
+              <header className={`flex items-center gap-2 px-5 pt-4 ${editing ? "touch-none" : ""}`}>
                 {editing && (
-                  <button
-                    type="button"
-                    aria-label={`${t.drag}: ${t.names[it.id]}`}
-                    title={t.drag}
-                    className="-ml-2 cursor-grab touch-none rounded p-1 text-lg leading-none text-muted hover:bg-background active:cursor-grabbing"
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.setPointerCapture(e.pointerId);
-                      setDragging(it.id);
-                    }}
-                    onPointerMove={(e) => {
-                      if (dragging !== it.id) return;
-                      const el = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-widget]");
-                      const target = el?.dataset.widget as WidgetId | undefined;
-                      if (target && target !== it.id) moveTo(it.id, target);
-                    }}
-                    onPointerUp={() => setDragging(null)}
-                    onPointerCancel={() => setDragging(null)}
-                  >
+                  <span aria-hidden title={t.drag} className="-ml-2 rounded p-1 text-lg leading-none text-muted">
                     ⠿
-                  </button>
+                  </span>
                 )}
                 <h2 className="min-w-0 flex-1 truncate font-semibold">{t.names[it.id]}</h2>
                 {editing ? (
@@ -221,6 +232,7 @@ export function DashboardGrid({
               {editing && (
                 <button
                   type="button"
+                  data-resize
                   aria-label={`${t.resize}: ${t.names[it.id]} (${it.w === 2 ? t.wide : t.narrow})`}
                   title={t.resize}
                   className="group absolute -right-2 top-0 bottom-0 hidden w-4 cursor-ew-resize touch-none items-center justify-center lg:flex"
