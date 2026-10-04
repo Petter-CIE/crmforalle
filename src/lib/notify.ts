@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { queuePush } from "@/lib/push";
 import { siteUrl } from "@/lib/session";
+import { icsEvent } from "@/lib/ics";
 
 /**
  * E-mail notifications sent over our own SMTP (One.com, noreply@allseats.no).
@@ -571,6 +572,118 @@ export async function notifyFeedback(o: {
     return true;
   } catch (e) {
     console.error("feedback notification failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** Booked meeting: confirmation (with calendar invitation and cancel link) to the customer, notice to the host. */
+export async function sendBookingMails(b: {
+  id: string;
+  cancelToken: string;
+  startsAt: string;
+  endsAt: string;
+  title: string;
+  location: string | null;
+  company: string;
+  hostName: string;
+  hostEmail: string | null;
+  hostLocale: string | null;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string | null;
+  guestCompany: string | null;
+  message: string | null;
+  guestLocale: "nb" | "en";
+  taskId: string | null;
+}) {
+  const mailer = transport();
+  if (!mailer) return false;
+  const when = (locale: string) =>
+    new Date(b.startsAt).toLocaleString(locale === "en" ? "en-GB" : "nb-NO", {
+      timeZone: "Europe/Oslo",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  const cancelUrl = `${siteUrl()}/booking/avbestill/${b.cancelToken}`;
+  const ics = icsEvent({
+    uid: `${b.id}@allseats.no`,
+    start: b.startsAt,
+    end: b.endsAt,
+    title: `${b.title} – ${b.company}`,
+    description: [`${b.hostName}, ${b.company}`, b.location, b.message, cancelUrl].filter(Boolean).join("\n"),
+    location: b.location,
+    organizer: b.hostEmail ? { name: b.hostName, email: b.hostEmail } : undefined,
+  });
+  const en = b.guestLocale === "en";
+  const guest = render({
+    lead: en ? `Hi ${b.guestName}, your meeting is booked:` : `Hei ${b.guestName}, møtet er booket:`,
+    title: `${b.title} – ${when(b.guestLocale)}`,
+    meta: [en ? `With ${b.hostName}, ${b.company}` : `Med ${b.hostName}, ${b.company}`, b.location].filter(Boolean).join(" · "),
+    url: cancelUrl,
+    button: en ? "Cancel the meeting" : "Avbestill møtet",
+    footer: en ? "The calendar invitation is attached. – AllSeats CRM" : "Invitasjonen til kalenderen ligger vedlagt. – AllSeats CRM",
+  });
+  const hostEn = b.hostLocale === "en";
+  const host = render({
+    lead: hostEn ? `${b.guestName} booked a meeting with you:` : `${b.guestName} har booket et møte med deg:`,
+    title: `${b.title} – ${when(b.hostLocale ?? "nb")}`,
+    meta: [b.guestCompany, b.guestEmail, b.guestPhone].filter(Boolean).join(" · "),
+    quote: b.message ?? undefined,
+    url: b.taskId ? `${siteUrl()}/app/oppgaver/${b.taskId}` : `${siteUrl()}/app/oppgaver`,
+    button: hostEn ? "Open in AllSeats" : "Åpne i AllSeats",
+    footer: hostEn ? "The customer is saved as a contact. – AllSeats CRM" : "Kunden er lagret som kontakt. – AllSeats CRM",
+  });
+  const attachment = { filename: "mote.ics", content: ics, contentType: "text/calendar; charset=utf-8; method=PUBLISH" };
+  try {
+    await mailer.sendMail({
+      from: FROM(),
+      to: b.guestEmail,
+      replyTo: b.hostEmail ?? undefined,
+      subject: `${en ? "Booked" : "Booket"}: ${b.title} – ${when(b.guestLocale)}`,
+      text: guest.text,
+      html: guest.html,
+      attachments: [attachment],
+    });
+    if (b.hostEmail) {
+      await mailer.sendMail({
+        from: FROM(),
+        to: b.hostEmail,
+        replyTo: b.guestEmail,
+        subject: `${hostEn ? "New booking" : "Ny booking"}: ${b.guestName} – ${when(b.hostLocale ?? "nb")}`,
+        text: host.text,
+        html: host.html,
+        attachments: [attachment],
+      });
+    }
+    return true;
+  } catch (e) {
+    console.error("booking mail failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** Tells the host that a customer cancelled a booked meeting. */
+export async function sendBookingCancelled(o: { startsAt: string; guestName: string; guestEmail: string; hostEmail: string | null; hostLocale: string | null }) {
+  const mailer = transport();
+  if (!mailer || !o.hostEmail) return false;
+  const en = o.hostLocale === "en";
+  const when = new Date(o.startsAt).toLocaleString(en ? "en-GB" : "nb-NO", { timeZone: "Europe/Oslo", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  const { html, text } = render({
+    lead: en ? `${o.guestName} cancelled the meeting:` : `${o.guestName} har avbestilt møtet:`,
+    title: when,
+    meta: o.guestEmail,
+    url: `${siteUrl()}/app/oppgaver`,
+    button: en ? "Open AllSeats" : "Åpne AllSeats",
+    footer: en ? "The task for the meeting has been removed. – AllSeats CRM" : "Oppgaven for møtet er fjernet. – AllSeats CRM",
+  });
+  try {
+    await mailer.sendMail({ from: FROM(), to: o.hostEmail, replyTo: o.guestEmail, subject: `${en ? "Cancelled" : "Avbestilt"}: ${o.guestName} – ${when}`, text, html });
+    return true;
+  } catch (e) {
+    console.error("booking cancel mail failed", e instanceof Error ? e.message : e);
     return false;
   }
 }

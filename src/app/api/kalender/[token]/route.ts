@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { siteUrl } from "@/lib/session";
+import { icsEscape as esc, icsFold as fold, icsStamp as stamp } from "@/lib/ics";
 
 // Personal calendar feed (iCalendar) with the user's tasks. The secret token in the URL is the only key,
 // so calendar apps (Google, Outlook, Apple) can subscribe without logging in.
@@ -8,23 +9,6 @@ import { siteUrl } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 type Item = { id: string; title: string; description: string | null; due_at: string; done: boolean; updated_at: string; workspace: string; related: string | null };
-
-const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
-const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-
-/** Lines longer than 75 octets are folded, as the iCalendar format requires. */
-function fold(line: string) {
-  const out: string[] = [];
-  let cur = "";
-  for (const ch of line) {
-    if (Buffer.byteLength(cur + ch) > 74) {
-      out.push(cur);
-      cur = " " + ch;
-    } else cur += ch;
-  }
-  out.push(cur);
-  return out.join("\r\n");
-}
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/kalender/[token]">) {
   const { token: raw } = await ctx.params;

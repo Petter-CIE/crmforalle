@@ -135,6 +135,136 @@ export type Database = {
           },
         ];
       };
+      booking_pages: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string;
+          slug: string;
+          title: string;
+          intro: string | null;
+          location: string | null;
+          duration_min: number;
+          weekdays: number[];
+          day_start: string;
+          day_end: string;
+          buffer_min: number;
+          notice_hours: number;
+          days_ahead: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id: string;
+          slug: string;
+          title?: string;
+          intro?: string | null;
+          location?: string | null;
+          duration_min?: number;
+          weekdays?: number[];
+          day_start?: string;
+          day_end?: string;
+          buffer_min?: number;
+          notice_hours?: number;
+          days_ahead?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          user_id?: string;
+          slug?: string;
+          title?: string;
+          intro?: string | null;
+          location?: string | null;
+          duration_min?: number;
+          weekdays?: number[];
+          day_start?: string;
+          day_end?: string;
+          buffer_min?: number;
+          notice_hours?: number;
+          days_ahead?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "booking_pages_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bookings: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          page_id: string | null;
+          user_id: string;
+          starts_at: string;
+          ends_at: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          company: string | null;
+          message: string | null;
+          contact_id: string | null;
+          task_id: string | null;
+          cancel_token: string;
+          cancelled_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          page_id?: string | null;
+          user_id: string;
+          starts_at: string;
+          ends_at: string;
+          name: string;
+          email: string;
+          phone?: string | null;
+          company?: string | null;
+          message?: string | null;
+          contact_id?: string | null;
+          task_id?: string | null;
+          cancel_token?: string;
+          cancelled_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          page_id?: string | null;
+          user_id?: string;
+          starts_at?: string;
+          ends_at?: string;
+          name?: string;
+          email?: string;
+          phone?: string | null;
+          company?: string | null;
+          message?: string | null;
+          contact_id?: string | null;
+          task_id?: string | null;
+          cancel_token?: string;
+          cancelled_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       companies: {
         Row: {
           id: string;
@@ -1899,6 +2029,10 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
+      booking_page_public: { Args: { p_slug: string }; Returns: Json };
+      booking_create: { Args: { p_slug: string; p_start: string; p_data: Json; p_ip: string }; Returns: Json };
+      booking_by_token: { Args: { p_token: string }; Returns: Json };
+      booking_cancel: { Args: { p_token: string }; Returns: Json };
       submit_feedback: {
         Args: { p_workspace: string; p_kind: string; p_page: string; p_message: string };
         Returns: string;

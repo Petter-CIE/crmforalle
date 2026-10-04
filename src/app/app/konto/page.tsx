@@ -70,6 +70,14 @@ export default async function AccountPage() {
       </Card>
 
       <Card>
+        <h2 className="mb-1 font-semibold">🗓️ {t.booking.title}</h2>
+        <p className="mb-4 text-sm text-muted">{t.booking.intro}</p>
+        <Link href="/app/konto/booking" className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover">
+          {t.booking.title} →
+        </Link>
+      </Card>
+
+      <Card>
         <h2 className="mb-1 font-semibold">{t.calendar.title}</h2>
         <p className="mb-4 text-sm text-muted">{t.calendar.intro}</p>
         <CalendarLink t={t.calendar} />
