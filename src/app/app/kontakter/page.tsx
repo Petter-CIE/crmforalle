@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { BulkBar, RowCheckbox, SelectAll } from "@/components/crm/bulk-bar";
+import { ListFilterForm } from "@/components/crm/list-filter-form";
 import { ProjectChips } from "@/components/crm/project-chips";
-import { ButtonLink, Card, Input, Select } from "@/components/ui";
+import { SavedViews } from "@/components/crm/saved-views";
+import { ButtonLink, Card } from "@/components/ui";
 import { EmptyHero, PageHeader } from "@/components/ui-extra";
-import { contactName, listMembers } from "@/lib/crm";
+import { contactName, formatDate, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
+import { filterQuery, inactiveSince, parseFilters, safeLike } from "@/lib/list-filters";
 import { requireWorkspace } from "@/lib/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,25 +21,30 @@ const FORM_ID = "bulk-contacts";
 
 export default async function ContactsPage({ searchParams }: PageProps<"/app/kontakter">) {
   const sp = await searchParams;
-  const query = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
-  const projectId = typeof sp.prosjekt === "string" ? sp.prosjekt : "";
+  const f = parseFilters(sp);
+  const query = f.q;
+  const projectId = f.project;
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
-  const { t } = await getI18n();
+  const { t, dateLocale } = await getI18n();
 
   const join = projectId ? "project_contacts!inner(project_id)" : "project_contacts(project_id)";
   let req = supabase
     .from("contacts")
-    .select(`id, first_name, last_name, email, phone, title, companies(id, name), ${join}`)
+    .select(`id, first_name, last_name, email, phone, title, last_activity_at, companies(id, name), ${join}`)
     .eq("workspace_id", workspace.id)
     .order("first_name")
     .limit(1000);
   if (projectId) req = req.eq("project_contacts.project_id", projectId);
+  if (f.owner) req = f.owner === "ingen" ? req.is("owner_id", null) : req.eq("owner_id", f.owner);
+  if (f.city) req = req.ilike("city", `%${safeLike(f.city)}%`);
+  if (f.inactive) req = req.or(`last_activity_at.is.null,last_activity_at.lt.${inactiveSince(f.inactive)}`);
+  if (f.consent) req = req.eq("marketing_consent", true);
   if (query) {
     const safe = query.replace(/[%,()]/g, " ");
     req = req.or(`first_name.ilike.%${safe}%,last_name.ilike.%${safe}%,email.ilike.%${safe}%,phone.ilike.%${safe}%`);
   }
-  const [{ data: contacts }, { data: projects }, members] = await Promise.all([
+  const [{ data: contacts }, { data: projects }, members, { data: views }] = await Promise.all([
     req,
     supabase
       .from("projects")
@@ -45,7 +53,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
       .eq("archived", false)
       .order("name"),
     listMembers(ctx),
+    supabase.from("saved_views").select("id, name, query, shared, user_id").eq("workspace_id", workspace.id).eq("entity", "contacts").order("name"),
   ]);
+  const current = filterQuery(f);
   const projectById = new Map((projects ?? []).map((p) => [p.id, p]));
 
   return (
@@ -54,6 +64,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
         title={t.contacts.title}
         actions={
           <>
+            <ButtonLink href="/app/duplikater?type=kontakter" variant="ghost">
+              {t.dupes.title}
+            </ButtonLink>
             <ButtonLink href="/app/import" variant="secondary">
               {t.import.button}
             </ButtonLink>
@@ -63,25 +76,45 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
           </>
         }
       />
-      <form className="flex flex-col gap-2 sm:flex-row">
-        <Input name="q" defaultValue={query} placeholder={t.contacts.searchPlaceholder} aria-label={t.crm.search} />
-        <Select name="prosjekt" defaultValue={projectId} aria-label={t.contacts.projects}>
-          <option value="">{t.contacts.allProjects}</option>
-          {(projects ?? []).map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
-        <button
-          type="submit"
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm hover:bg-background"
-        >
-          {t.contacts.filter}
-        </button>
-      </form>
+      <ListFilterForm
+        f={f}
+        base="/app/kontakter"
+        projects={projects ?? []}
+        members={members}
+        consent={true}
+        t={{
+          search: t.crm.search,
+          searchPlaceholder: t.contacts.searchPlaceholder,
+          allProjects: t.contacts.allProjects,
+          filter: t.contacts.filter,
+          owner: t.views.owner,
+          anyOwner: t.views.anyOwner,
+          noOwner: t.views.noOwner,
+          city: t.views.city,
+          anyActivity: t.views.anyActivity,
+          inactiveDays: t.views.inactiveDays,
+          consentYes: t.views.consentYes,
+          reset: t.views.reset,
+        }}
+      />
+      <SavedViews
+        entity="contacts"
+        base="/app/kontakter"
+        current={current}
+        views={(views ?? []).map((v) => ({ id: v.id, name: v.name, query: v.query, shared: v.shared, mine: v.user_id === ctx.user.id }))}
+        t={{
+          title: t.views.title,
+          all: t.views.all,
+          save: t.views.save,
+          namePlaceholder: t.views.namePlaceholder,
+          shared: t.views.shared,
+          saveBtn: t.views.saveBtn,
+          remove: t.views.remove,
+          sharedBadge: t.views.sharedBadge,
+        }}
+      />
       {!contacts || contacts.length === 0 ? (
-        query || projectId ? (
+        current ? (
           <EmptyHero icon="search" title={t.ui.empty.noResults} text={t.ui.empty.noResultsText} />
         ) : (
           <EmptyHero
@@ -112,6 +145,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
                 <th className="hidden px-4 py-2 font-medium lg:table-cell">
                   {t.contacts.phone} / {t.contacts.email}
                 </th>
+                <th className="hidden px-4 py-2 font-medium xl:table-cell">{t.views.lastActivity}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -142,6 +176,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
                   <td className="hidden px-4 py-2.5 text-xs text-muted lg:table-cell">
                     <div>{k.phone}</div>
                     <div className="max-w-56 truncate">{k.email}</div>
+                  </td>
+                  <td className="hidden whitespace-nowrap px-4 py-2.5 text-xs text-muted xl:table-cell">
+                    {k.last_activity_at ? formatDate(k.last_activity_at, dateLocale) : t.views.never}
                   </td>
                 </tr>
               ))}

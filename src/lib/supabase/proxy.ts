@@ -20,6 +20,8 @@ const PUBLIC_PATHS = [
   "/manifest.webmanifest",
   "/sw.js",
   "/offline",
+  "/skjema",
+  "/api/lead",
 ];
 
 function isPublic(pathname: string) {

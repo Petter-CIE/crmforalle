@@ -14,7 +14,7 @@ import { EmptyState, InfoRow, PageHeader } from "@/components/ui-extra";
 import { CustomFieldValues } from "@/components/crm/custom-fields";
 import { asCustomValues, loadCustomFields } from "@/lib/custom-fields";
 import { addCompanyToProject, removeCompanyFromProject } from "@/app/app/crm-actions";
-import { contactName } from "@/lib/crm";
+import { contactName, formatDate } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 
@@ -58,6 +58,11 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
         actions={
           <>
             <ButtonLink href={`/app/salg/ny?bedrift=${id}`}>+ {t.deals.new}</ButtonLink>
+            {(c.email || (contacts ?? []).some((k) => k.email)) && (
+              <ButtonLink href={`/app/e-post/skriv?bedrift=${id}`} variant="secondary">
+                ✉ {t.emails.send}
+              </ButtonLink>
+            )}
             <ButtonLink href={`${path}/rediger`} variant="secondary">
               {t.crm.edit}
             </ButtonLink>
@@ -67,6 +72,11 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
           </>
         }
       />
+      {c.brreg_status && (
+        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-danger">
+          ⚠ {t.watch[c.brreg_status as keyof typeof t.watch.badge]}
+        </p>
+      )}
       <QuickActions phone={c.phone} email={c.email} address={[c.address, [c.postal_code, c.city].filter(Boolean).join(" ")].filter(Boolean).join(", ") || null} website={c.website} t={{ call: t.mobile.call, sms: t.mobile.sms, email: t.mobile.email, map: t.mobile.map, web: t.mobile.web, note: t.mobile.note }} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
@@ -80,6 +90,11 @@ export default async function CompanyPage({ params }: PageProps<"/app/bedrifter/
               <InfoRow label={t.companies.industry}>{c.nace_description}</InfoRow>
               <InfoRow label={t.crm.notes}>{c.notes && <span className="whitespace-pre-wrap">{c.notes}</span>}</InfoRow>
             </dl>
+            {c.org_number && (
+              <p className="mt-2 text-xs text-muted">
+                🏛️ {c.brreg_checked_at ? t.watch.checked(formatDate(c.brreg_checked_at, dateLocale)) : t.watch.watching}
+              </p>
+            )}
             <div className="mt-3">
               <CustomFieldValues fields={fields} values={asCustomValues(c.custom)} dateLocale={dateLocale} yes={t.crm.yes} />
             </div>

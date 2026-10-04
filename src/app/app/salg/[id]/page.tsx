@@ -5,7 +5,7 @@ import { ActionForm } from "@/components/action-form";
 import { DeleteButton } from "@/components/delete-button";
 import { TaskPanel } from "@/components/crm/task-list";
 import { Timeline } from "@/components/crm/timeline";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, ButtonLink, Card, Input } from "@/components/ui";
 import { PageHeader, Pill } from "@/components/ui-extra";
 import { setDealStage, updateDeal } from "@/app/app/crm-actions";
 import { contactName, formatDate, formatMoney } from "@/lib/crm";
@@ -103,6 +103,11 @@ export default async function DealPage({ params }: PageProps<"/app/salg/[id]">) 
                   {t.deals.reopen}
                 </Button>
               </form>
+            )}
+            {(d.contact_id || d.company_id) && (
+              <ButtonLink href={`/app/e-post/skriv?salg=${id}`} variant="secondary">
+                ✉ {t.emails.send}
+              </ButtonLink>
             )}
             <DeleteButton kind="deal" id={id} message={t.ui.deleted.deal} redirectTo="/app/salg">
               {t.crm.delete}

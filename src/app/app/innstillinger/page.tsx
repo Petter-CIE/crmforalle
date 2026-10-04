@@ -96,6 +96,9 @@ export default async function SettingsPage() {
             {(
               [
                 ["/app/innstillinger/salgsfaser", t.customize.stages.link],
+                ["/app/innstillinger/skjema", t.leads.link],
+                ["/app/innstillinger/e-postmaler", t.emails.templatesLink],
+                ["/app/duplikater", t.dupes.link],
                 ["/app/innstillinger/felt", t.customize.fieldsLink],
                 ["/app/innstillinger/automatisering", t.customize.autoLink],
                 ["/app/tilbud/innstillinger", t.customize.quoteLink],

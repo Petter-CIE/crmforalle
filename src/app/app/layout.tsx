@@ -96,6 +96,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
                   width={96}
                   height={24}
                   unoptimized
+                  style={{ width: "auto" }}
                   className="h-6 w-auto max-w-24 object-contain"
                 />
               )}

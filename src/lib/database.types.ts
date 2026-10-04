@@ -155,6 +155,10 @@ export type Database = {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          brreg_snapshot: Json | null;
+          brreg_status: string | null;
+          brreg_checked_at: string | null;
+          last_activity_at: string | null;
         };
         Insert: {
           id?: string;
@@ -175,6 +179,10 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          brreg_snapshot?: Json | null;
+          brreg_status?: string | null;
+          brreg_checked_at?: string | null;
+          last_activity_at?: string | null;
         };
         Update: {
           id?: string;
@@ -195,6 +203,10 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          brreg_snapshot?: Json | null;
+          brreg_status?: string | null;
+          brreg_checked_at?: string | null;
+          last_activity_at?: string | null;
         };
         Relationships: [
           {
@@ -241,6 +253,7 @@ export type Database = {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          last_activity_at: string | null;
         };
         Insert: {
           id?: string;
@@ -262,6 +275,7 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_activity_at?: string | null;
         };
         Update: {
           id?: string;
@@ -283,6 +297,7 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_activity_at?: string | null;
         };
         Relationships: [
           {
@@ -465,6 +480,54 @@ export type Database = {
           },
           {
             foreignKeyName: "deals_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_templates: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          subject: string;
+          body: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          subject: string;
+          body: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          name?: string;
+          subject?: string;
+          body?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_templates_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
@@ -723,6 +786,104 @@ export type Database = {
           },
           {
             foreignKeyName: "invitations_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lead_forms: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          public_key: string;
+          active: boolean;
+          owner_id: string | null;
+          project_id: string | null;
+          create_deal: boolean;
+          create_task: boolean;
+          ask_phone: boolean;
+          ask_company: boolean;
+          require_message: boolean;
+          title: string | null;
+          intro: string | null;
+          button_text: string | null;
+          thank_you: string | null;
+          submissions: number;
+          last_submission_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          public_key?: string;
+          active?: boolean;
+          owner_id?: string | null;
+          project_id?: string | null;
+          create_deal?: boolean;
+          create_task?: boolean;
+          ask_phone?: boolean;
+          ask_company?: boolean;
+          require_message?: boolean;
+          title?: string | null;
+          intro?: string | null;
+          button_text?: string | null;
+          thank_you?: string | null;
+          submissions?: number;
+          last_submission_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          name?: string;
+          public_key?: string;
+          active?: boolean;
+          owner_id?: string | null;
+          project_id?: string | null;
+          create_deal?: boolean;
+          create_task?: boolean;
+          ask_phone?: boolean;
+          ask_company?: boolean;
+          require_message?: boolean;
+          title?: string | null;
+          intro?: string | null;
+          button_text?: string | null;
+          thank_you?: string | null;
+          submissions?: number;
+          last_submission_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lead_forms_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_forms_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_forms_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_forms_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
@@ -1220,6 +1381,54 @@ export type Database = {
           },
           {
             foreignKeyName: "quotes_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      saved_views: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string;
+          entity: string;
+          name: string;
+          query: string;
+          shared: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id: string;
+          entity: string;
+          name: string;
+          query: string;
+          shared?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          user_id?: string;
+          entity?: string;
+          name?: string;
+          query?: string;
+          shared?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_views_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_views_workspace_id_fkey";
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
@@ -1737,6 +1946,11 @@ export type Database = {
         Returns: Json;
       };
       digest_claim: { Args: { p_ticket: string }; Returns: Json };
+      lead_submit: { Args: { p_key: string; p_data: Json; p_ip: string }; Returns: Json };
+      lead_form_public: { Args: { p_key: string }; Returns: Json };
+      brreg_claim: { Args: { p_ticket: string }; Returns: Json };
+      brreg_snapshots: { Args: { p_ticket: string; p_orgs: string[] }; Returns: Json };
+      brreg_apply: { Args: { p_ticket: string; p_items: Json; p_run_started: string }; Returns: number };
       push_subscribe: {
         Args: { p_endpoint: string; p_p256dh: string; p_auth: string; p_user_agent: string | null };
         Returns: undefined;

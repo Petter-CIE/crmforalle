@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { BulkBar, RowCheckbox, SelectAll } from "@/components/crm/bulk-bar";
+import { ListFilterForm } from "@/components/crm/list-filter-form";
 import { ProjectChips } from "@/components/crm/project-chips";
-import { ButtonLink, Card, Input, Select } from "@/components/ui";
+import { SavedViews } from "@/components/crm/saved-views";
+import { ButtonLink, Card } from "@/components/ui";
 import { EmptyHero, PageHeader } from "@/components/ui-extra";
-import { listMembers } from "@/lib/crm";
+import { formatDate, listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
+import { filterQuery, inactiveSince, parseFilters, safeLike } from "@/lib/list-filters";
 import { requireWorkspace } from "@/lib/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,25 +21,29 @@ const FORM_ID = "bulk-companies";
 
 export default async function CompaniesPage({ searchParams }: PageProps<"/app/bedrifter">) {
   const sp = await searchParams;
-  const query = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
-  const projectId = typeof sp.prosjekt === "string" ? sp.prosjekt : "";
+  const f = parseFilters(sp);
+  const query = f.q;
+  const projectId = f.project;
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
-  const { t } = await getI18n();
+  const { t, dateLocale } = await getI18n();
 
   const join = projectId ? "project_companies!inner(project_id)" : "project_companies(project_id)";
   let req = supabase
     .from("companies")
-    .select(`id, name, org_number, city, contacts(count), deals(count), ${join}`)
+    .select(`id, name, org_number, city, brreg_status, last_activity_at, contacts(count), deals(count), ${join}`)
     .eq("workspace_id", workspace.id)
     .order("name")
     .limit(1000);
   if (projectId) req = req.eq("project_companies.project_id", projectId);
+  if (f.owner) req = f.owner === "ingen" ? req.is("owner_id", null) : req.eq("owner_id", f.owner);
+  if (f.city) req = req.ilike("city", `%${safeLike(f.city)}%`);
+  if (f.inactive) req = req.or(`last_activity_at.is.null,last_activity_at.lt.${inactiveSince(f.inactive)}`);
   if (query) {
     const safe = query.replace(/[%,()]/g, " ");
     req = req.or(`name.ilike.%${safe}%,org_number.ilike.%${safe.replace(/\s/g, "")}%,city.ilike.%${safe}%`);
   }
-  const [{ data: companies }, { data: projects }, members] = await Promise.all([
+  const [{ data: companies }, { data: projects }, members, { data: views }] = await Promise.all([
     req,
     supabase
       .from("projects")
@@ -45,7 +52,9 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
       .eq("archived", false)
       .order("name"),
     listMembers(ctx),
+    supabase.from("saved_views").select("id, name, query, shared, user_id").eq("workspace_id", workspace.id).eq("entity", "companies").order("name"),
   ]);
+  const current = filterQuery(f);
   const projectById = new Map((projects ?? []).map((p) => [p.id, p]));
 
   return (
@@ -54,6 +63,9 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
         title={t.companies.title}
         actions={
           <>
+            <ButtonLink href="/app/duplikater" variant="ghost">
+              {t.dupes.title}
+            </ButtonLink>
             <ButtonLink href="/app/import" variant="secondary">
               {t.import.button}
             </ButtonLink>
@@ -61,25 +73,45 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
           </>
         }
       />
-      <form className="flex flex-col gap-2 sm:flex-row">
-        <Input name="q" defaultValue={query} placeholder={t.companies.searchPlaceholder} aria-label={t.crm.search} />
-        <Select name="prosjekt" defaultValue={projectId} aria-label={t.companies.projects}>
-          <option value="">{t.contacts.allProjects}</option>
-          {(projects ?? []).map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
-        <button
-          type="submit"
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm hover:bg-background"
-        >
-          {t.contacts.filter}
-        </button>
-      </form>
+      <ListFilterForm
+        f={f}
+        base="/app/bedrifter"
+        projects={projects ?? []}
+        members={members}
+        consent={false}
+        t={{
+          search: t.crm.search,
+          searchPlaceholder: t.companies.searchPlaceholder,
+          allProjects: t.contacts.allProjects,
+          filter: t.contacts.filter,
+          owner: t.views.owner,
+          anyOwner: t.views.anyOwner,
+          noOwner: t.views.noOwner,
+          city: t.views.city,
+          anyActivity: t.views.anyActivity,
+          inactiveDays: t.views.inactiveDays,
+          consentYes: t.views.consentYes,
+          reset: t.views.reset,
+        }}
+      />
+      <SavedViews
+        entity="companies"
+        base="/app/bedrifter"
+        current={current}
+        views={(views ?? []).map((v) => ({ id: v.id, name: v.name, query: v.query, shared: v.shared, mine: v.user_id === ctx.user.id }))}
+        t={{
+          title: t.views.title,
+          all: t.views.all,
+          save: t.views.save,
+          namePlaceholder: t.views.namePlaceholder,
+          shared: t.views.shared,
+          saveBtn: t.views.saveBtn,
+          remove: t.views.remove,
+          sharedBadge: t.views.sharedBadge,
+        }}
+      />
       {!companies || companies.length === 0 ? (
-        query || projectId ? (
+        current ? (
           <EmptyHero icon="search" title={t.ui.empty.noResults} text={t.ui.empty.noResultsText} />
         ) : (
           <EmptyHero
@@ -110,6 +142,7 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
                 <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.companies.projects}</th>
                 <th className="px-3 py-2 text-right font-medium">{t.companies.contacts}</th>
                 <th className="hidden px-4 py-2 text-right font-medium sm:table-cell">{t.companies.deals}</th>
+                <th className="hidden px-4 py-2 font-medium xl:table-cell">{t.views.lastActivity}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -124,6 +157,11 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
                       <Link href={`/app/bedrifter/${c.id}`} className="row-link font-medium hover:text-brand">
                         {c.name}
                       </Link>
+                      {c.brreg_status && (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                          {t.watch.badge[c.brreg_status as keyof typeof t.watch.badge]}
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="hidden px-3 py-2.5 tabular-nums text-muted lg:table-cell">{c.org_number}</td>
@@ -137,6 +175,9 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
                   <td className="px-3 py-2.5 text-right tabular-nums">{c.contacts?.[0]?.count ?? 0}</td>
                   <td className="hidden px-4 py-2.5 text-right tabular-nums sm:table-cell">
                     {c.deals?.[0]?.count ?? 0}
+                  </td>
+                  <td className="hidden whitespace-nowrap px-4 py-2.5 text-xs text-muted xl:table-cell">
+                    {c.last_activity_at ? formatDate(c.last_activity_at, dateLocale) : t.views.never}
                   </td>
                 </tr>
               ))}

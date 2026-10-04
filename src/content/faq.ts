@@ -150,6 +150,36 @@ const nb: Faq = {
           a: ["Ja. Huk av radene i listen (eller alle med boksen øverst), og velg handling i linjen som dukker opp: legg til i eller fjern fra prosjekt, sett ansvarlig eller slett."],
         },
         {
+          q: "Kan henvendelser fra nettsiden komme rett inn i CRM-et?",
+          a: [
+            "Ja. Under Innstillinger → Nettskjema lager dere et kontaktskjema og limer inn koden på nettsiden (WordPress, Wix, Squarespace m.fl.), eller lar deres eget skjema sende til oss. Hver henvendelse blir en kontakt, et salg og en oppfølgingsoppgave, og den ansvarlige får varsel på mobil og e-post.",
+          ],
+        },
+        {
+          q: "Kan jeg sende e-post til kunder fra CRM-et?",
+          a: [
+            "Ja. Trykk «Send e-post» på en kontakt, bedrift eller et salg. Velg gjerne en mal – navn og firma fylles inn automatisk. E-posten lagres i historikken, og svar fra kunden kommer til din egen e-post. Malene lages under Innstillinger → E-postmaler.",
+          ],
+        },
+        {
+          q: "Hva gjør vi med duplikater?",
+          a: [
+            "CRM-et varsler når du legger inn en bedrift eller kontakt som ser ut til å finnes fra før. Under Bedrifter → Mulige duplikater ser dere alle mulige dobbeltregistreringer og kan slå dem sammen, så all historikk havner på ett sted.",
+          ],
+        },
+        {
+          q: "Får vi beskjed om kunden går konkurs?",
+          a: [
+            "Ja. Alle bedrifter med org.nr. sjekkes hver natt mot Brønnøysundregistrene. Ved konkurs, avvikling, sletting eller nytt navn, ny adresse eller ny næringskode får den ansvarlige varsel, og endringen lagres i historikken til bedriften.",
+          ],
+        },
+        {
+          q: "Kan vi lagre filtre?",
+          a: [
+            "Ja. Filtrer listen over bedrifter eller kontakter (f.eks. ansvarlig, sted og «ingen aktivitet på 60 dager») og trykk «Lagre visning». Visningen kan være din egen eller deles med teamet.",
+          ],
+        },
+        {
           q: "Kan vi endre salgsfasene?",
           a: [
             "Ja. Under Innstillinger → Salgsfaser (eier og administratorer) kan dere gi fasene nye navn, endre sannsynlighet, dra dem i ny rekkefølge, legge til nye og slette dem dere ikke bruker. Salg i en fase som slettes, flyttes til fasen dere velger.",
@@ -435,6 +465,36 @@ const en: Faq = {
         {
           q: "Can I change many companies or contacts at once?",
           a: ["Yes. Tick the rows in the list (or all of them with the box at the top) and choose an action in the bar that appears: add to or remove from a project, set the owner or delete."],
+        },
+        {
+          q: "Can enquiries from our website go straight into the CRM?",
+          a: [
+            "Yes. Under Settings → Web forms you create a contact form and paste the code on your website (WordPress, Wix, Squarespace and others), or let your own form send to us. Every enquiry becomes a contact, a deal and a follow-up task, and the person responsible is notified by push and e-mail.",
+          ],
+        },
+        {
+          q: "Can I e-mail customers from the CRM?",
+          a: [
+            "Yes. Press “Send e-mail” on a contact, company or deal. Pick a template if you like – name and company are filled in automatically. The e-mail is saved in the history, and replies from the customer come to your own e-mail. Templates are made under Settings → E-mail templates.",
+          ],
+        },
+        {
+          q: "What about duplicates?",
+          a: [
+            "The CRM warns you when you add a company or contact that seems to exist already. Under Companies → Possible duplicates you see all likely double registrations and can merge them, so all history ends up in one place.",
+          ],
+        },
+        {
+          q: "Will we know if a customer goes bankrupt?",
+          a: [
+            "Yes. All companies with an org. number are checked every night against the Brønnøysund Register. On bankruptcy, winding up, deletion or a new name, address or industry code, the person responsible is notified and the change is saved in the company's history.",
+          ],
+        },
+        {
+          q: "Can we save filters?",
+          a: [
+            "Yes. Filter the list of companies or contacts (e.g. owner, city and “no activity for 60 days”) and press “Save view”. The view can be your own or shared with the team.",
+          ],
         },
         {
           q: "Can we change the pipeline stages?",

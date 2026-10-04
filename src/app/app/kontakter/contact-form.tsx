@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Input } from "@/components/ui";
 import { SearchSelect } from "@/components/search-select";
+import { DuplicateWarning } from "@/components/crm/duplicate-warning";
 import { Field, Textarea } from "@/components/ui-extra";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -101,6 +102,7 @@ export function ContactForm({
       <Field label={t.crm.notes} htmlFor="k_notes">
         <Textarea id="k_notes" name="notes" rows={3} defaultValue={initial.notes ?? ""} />
       </Field>
+      <DuplicateWarning kind="contact" excludeId={initial.id} t={{ label: t.dupes.warnContact, open: t.dupes.open }} />
     </ActionForm>
   );
 }

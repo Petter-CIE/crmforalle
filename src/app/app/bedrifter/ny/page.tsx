@@ -23,7 +23,7 @@ export default async function NewCompanyPage() {
     <div className="space-y-6">
       <PageHeader title={t.companies.new} backHref="/app/bedrifter" backLabel={t.companies.title} />
       <Card>
-        <CompanyForm action={createCompany} initial={empty} t={companyFormTexts(t)} brreg={t.brreg}
+        <CompanyForm action={createCompany} initial={empty} t={companyFormTexts(t)} brreg={t.brreg} dup={{ label: t.dupes.warnCompany, open: t.dupes.open }}
           showBrreg
           extra={<CustomFieldInputs fields={fields} values={{}} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />

@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import type { FormResult } from "@/app/app/crm-actions";
 import { opt } from "@/lib/crm";
 import { CUSTOM_ENTITIES, CUSTOM_TYPES, MAX_FIELDS_PER_ENTITY, type CustomEntity, type CustomType } from "@/lib/custom-fields";
 import { getI18n } from "@/lib/i18n/server";
+import { flash } from "@/lib/flash";
 import { canManage, requireWorkspace } from "@/lib/session";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -200,4 +202,64 @@ export async function saveStages(stages: StageInput[], removals: StageRemoval[])
 
   revalidatePath("/app", "layout");
   return { ok: true, message: st.saved };
+}
+
+// ---------------------------------------------------------------- web forms
+function leadFields(formData: FormData) {
+  const text = (k: string, max: number) => opt(formData.get(k), max);
+  const ownerId = String(formData.get("owner_id") ?? "");
+  const projectId = String(formData.get("project_id") ?? "");
+  return {
+    name: String(formData.get("name") ?? "").trim().slice(0, 80),
+    owner_id: UUID.test(ownerId) ? ownerId : null,
+    project_id: UUID.test(projectId) ? projectId : null,
+    create_deal: formData.get("create_deal") === "1",
+    create_task: formData.get("create_task") === "1",
+    ask_phone: formData.get("ask_phone") === "1",
+    ask_company: formData.get("ask_company") === "1",
+    require_message: formData.get("require_message") === "1",
+    title: text("title", 120),
+    intro: text("intro", 1000),
+    button_text: text("button_text", 40),
+    thank_you: text("thank_you", 1000),
+  };
+}
+
+export async function createLeadForm(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  if (!allowed) return { error: t.leads.onlyAdmins };
+  const f = leadFields(formData);
+  if (!f.name) return { error: t.crm.required };
+  const { data, error } = await ctx.supabase
+    .from("lead_forms")
+    .insert({ ...f, owner_id: f.owner_id ?? ctx.user.id, workspace_id: ctx.workspace.id, created_by: ctx.user.id })
+    .select("id")
+    .single();
+  if (error || !data) return { error: t.crm.error };
+  await flash("created");
+  redirect(`/app/innstillinger/skjema/${data.id}`);
+}
+
+export async function updateLeadForm(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const { ctx, t, allowed } = await manager();
+  if (!allowed) return { error: t.leads.onlyAdmins };
+  const id = String(formData.get("id") ?? "");
+  const f = leadFields(formData);
+  if (!UUID.test(id) || !f.name) return { error: t.crm.required };
+  const { error } = await ctx.supabase
+    .from("lead_forms")
+    .update({ ...f, active: formData.get("active") === "1" })
+    .eq("id", id)
+    .eq("workspace_id", ctx.workspace.id);
+  if (error) return { error: t.crm.error };
+  revalidatePath("/app/innstillinger/skjema");
+  return { ok: true, message: t.leads.saved };
+}
+
+export async function deleteLeadForm(formData: FormData) {
+  const { ctx, allowed } = await manager();
+  const id = String(formData.get("id") ?? "");
+  if (allowed && UUID.test(id)) await ctx.supabase.from("lead_forms").delete().eq("id", id).eq("workspace_id", ctx.workspace.id);
+  revalidatePath("/app/innstillinger/skjema");
+  redirect("/app/innstillinger/skjema");
 }

@@ -9,7 +9,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 
 /** Emoji per activity type, also used on the "Today" page. */
-export const ACTIVITY_ICON: Record<string, string> = { note: "📝", call: "📞", meeting: "🤝", email: "✉️", created: "✨", stage_change: "➡️", won: "🏆", lost: "✖️" };
+export const ACTIVITY_ICON: Record<string, string> = { note: "📝", call: "📞", meeting: "🤝", email: "✉️", created: "✨", stage_change: "➡️", won: "🏆", lost: "✖️", lead: "🌐", brreg: "🏛️", email_sent: "📤" };
 
 type Scope = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null };
 

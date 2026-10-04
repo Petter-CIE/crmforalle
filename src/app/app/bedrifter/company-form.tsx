@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
 import { BrregSearch, type BrregTexts } from "@/components/brreg-search";
+import { DuplicateWarning } from "@/components/crm/duplicate-warning";
 import { Input } from "@/components/ui";
 import type { BrregCompany } from "@/lib/brreg";
 import type { FormResult } from "@/app/app/crm-actions";
@@ -46,7 +47,10 @@ export function CompanyForm({
   brreg,
   showBrreg,
   extra,
+  dup,
 }: {
+  /** Texts for the duplicate warning (shown when creating). */
+  dup?: { label: string; open: string };
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: CompanyValues;
   t: Texts;
@@ -123,6 +127,7 @@ export function CompanyForm({
           className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
         />
       </div>
+      {dup && <DuplicateWarning kind="company" excludeId={initial.id} t={dup} />}
     </ActionForm>
   );
 }

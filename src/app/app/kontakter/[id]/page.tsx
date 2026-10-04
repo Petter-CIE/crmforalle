@@ -67,6 +67,11 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
             <ButtonLink href={`/app/salg/ny?kontakt=${id}${k.company_id ? `&bedrift=${k.company_id}` : ""}`}>
               + {t.deals.new}
             </ButtonLink>
+            {k.email && (
+              <ButtonLink href={`/app/e-post/skriv?kontakt=${id}`} variant="secondary">
+                ✉ {t.emails.send}
+              </ButtonLink>
+            )}
             <ButtonLink href={`${path}/rediger`} variant="secondary">
               {t.crm.edit}
             </ButtonLink>

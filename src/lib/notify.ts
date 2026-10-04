@@ -426,3 +426,64 @@ export async function notifyQuoteResponse(o: {
     console.error("notifyQuoteResponse failed", e instanceof Error ? e.message : e);
   }
 }
+
+/** Tells the owner of a web form about a new enquiry. Never throws. */
+export async function notifyLead(o: {
+  to: string;
+  locale: string;
+  workspace: string;
+  form: string;
+  url: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  message: string;
+}) {
+  const mailer = transport();
+  if (!mailer) return false;
+  const en = o.locale === "en";
+  const details = [o.company, o.email, o.phone].filter(Boolean).join(" · ");
+  const { html, text } = render({
+    lead: en ? `New enquiry from the form «${o.form}» in ${o.workspace}:` : `Ny henvendelse fra skjemaet «${o.form}» i ${o.workspace}:`,
+    title: o.name,
+    meta: details || undefined,
+    quote: o.message || undefined,
+    url: `${siteUrl()}${o.url}`,
+    button: en ? "Open in the CRM" : "Åpne i CRM-et",
+    footer: en
+      ? "The contact, a deal and a follow-up task have been created. You can turn e-mails off under Account and security."
+      : "Kontakten, et salg og en oppfølgingsoppgave er opprettet. Du kan slå av e-postvarsler under Konto og sikkerhet.",
+  });
+  try {
+    await mailer.sendMail({
+      from: FROM(),
+      to: o.to,
+      replyTo: o.email || undefined,
+      subject: en ? `New enquiry: ${o.name}` : `Ny henvendelse: ${o.name}`,
+      text,
+      html,
+    });
+    return true;
+  } catch (e) {
+    console.error("lead notification failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** An e-mail written by a user in the CRM to a customer. Plain text, the user's reply address. Throws on failure. */
+export async function sendCrmEmail(o: { to: string; fromName: string; replyTo: string; bcc?: string; subject: string; body: string }) {
+  const mailer = transport();
+  if (!mailer) throw new Error("smtp_not_configured");
+  const html = `<!doctype html><html><body style="margin:0;padding:24px 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#18181b">
+<div style="max-width:640px;white-space:pre-wrap">${esc(o.body)}</div></body></html>`;
+  await mailer.sendMail({
+    from: `${o.fromName.replace(/["<>]/g, "")} via AllSeats <${process.env.SMTP_USER || "noreply@allseats.no"}>`,
+    replyTo: o.replyTo,
+    to: o.to,
+    bcc: o.bcc,
+    subject: o.subject,
+    text: o.body,
+    html,
+  });
+}

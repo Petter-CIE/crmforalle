@@ -36,7 +36,7 @@ export default async function PublicQuotePage({ params }: PageProps<"/tilbud/[to
           <div className="space-y-0.5 text-sm text-muted">
             {s.logo_path ? (
               <>
-                <Image src={logoUrl(s.logo_path) ?? ""} alt={s.name} width={224} height={56} unoptimized className="mb-3 h-auto max-h-14 w-auto max-w-56 object-contain" />
+                <Image src={logoUrl(s.logo_path) ?? ""} alt={s.name} width={224} height={56} unoptimized style={{ width: "auto", height: "auto" }} className="mb-3 h-auto max-h-14 w-auto max-w-56 object-contain" />
                 <p className="font-semibold text-foreground">{s.name}</p>
               </>
             ) : (

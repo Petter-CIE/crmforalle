@@ -30,6 +30,7 @@ export default async function EditCompanyPage({ params }: PageProps<"/app/bedrif
       <PageHeader title={t.companies.edit} backHref={`/app/bedrifter/${id}`} backLabel={c.name} />
       <Card>
         <CompanyForm
+          dup={{ label: t.dupes.warnCompany, open: t.dupes.open }}
           action={updateCompany}
           initial={{
             id: c.id,

@@ -53,7 +53,7 @@ export function LogoForm({ workspaceId, current, t }: { workspaceId: string; cur
       <div className="flex flex-wrap items-center gap-4">
         <div className="grid h-16 w-40 place-items-center overflow-hidden rounded-lg border border-dashed border-border bg-white p-2">
           {preview ? (
-            <Image src={preview} alt="" width={160} height={64} unoptimized className="max-h-12 w-auto object-contain" />
+            <Image src={preview} alt="" width={160} height={64} unoptimized style={{ width: "auto", height: "auto" }} className="max-h-12 w-auto object-contain" />
           ) : (
             <span className="text-xs text-zinc-400">Logo</span>
           )}
