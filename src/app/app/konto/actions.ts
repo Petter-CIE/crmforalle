@@ -68,3 +68,21 @@ export async function getCalendarLink(rotate = false) {
   if (error || !data) return null;
   return `${siteUrl()}/api/kalender/${data}.ics`;
 }
+
+/** Turns mail logging / calendar use on or off for the user's Outlook connection. */
+export async function saveOutlookOptions(formData: FormData) {
+  const { supabase, user, workspace } = await requireWorkspace();
+  await supabase
+    .from("mail_connections")
+    .update({ mail_enabled: formData.get("mail") === "1", calendar_enabled: formData.get("calendar") === "1" })
+    .eq("workspace_id", workspace.id)
+    .eq("user_id", user.id);
+  revalidatePath("/app/konto");
+}
+
+/** Removes the Outlook connection (and the stored token). Microsoft access can also be revoked at myapps.microsoft.com. */
+export async function disconnectOutlook() {
+  const { supabase, user, workspace } = await requireWorkspace();
+  await supabase.from("mail_connections").delete().eq("workspace_id", workspace.id).eq("user_id", user.id);
+  revalidatePath("/app/konto");
+}

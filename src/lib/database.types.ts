@@ -1062,6 +1062,59 @@ export type Database = {
           },
         ];
       };
+      mail_connections: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string;
+          provider: string;
+          account_email: string | null;
+          refresh_token: string;
+          mail_enabled: boolean;
+          calendar_enabled: boolean;
+          synced_until: string;
+          last_sync_at: string | null;
+          last_error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id: string;
+          provider?: string;
+          account_email?: string | null;
+          refresh_token: string;
+          mail_enabled?: boolean;
+          calendar_enabled?: boolean;
+          synced_until?: string;
+          last_sync_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          user_id?: string;
+          provider?: string;
+          account_email?: string | null;
+          refresh_token?: string;
+          mail_enabled?: boolean;
+          calendar_enabled?: boolean;
+          synced_until?: string;
+          last_sync_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mail_connections_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       members: {
         Row: {
           workspace_id: string;
@@ -2029,6 +2082,8 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
+      mail_claim: { Args: { p_ticket: string }; Returns: Json };
+      mail_apply: { Args: { p_ticket: string; p_connection: string; p_result: Json }; Returns: number };
       booking_page_public: { Args: { p_slug: string }; Returns: Json };
       booking_create: { Args: { p_slug: string; p_start: string; p_data: Json; p_ip: string }; Returns: Json };
       booking_by_token: { Args: { p_token: string }; Returns: Json };
