@@ -1,4 +1,4 @@
--- NOT APPLIED YET – to be run by the owner when decided.
+-- Applied 2026-10-04 (approved by the owner).
 -- Makes a company's data read-only (no new or changed records; deleting still works) when the
 -- free trial has ended without a subscription. Matches the FAQ: "dere kan fortsatt lese og eksportere".
 

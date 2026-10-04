@@ -34,6 +34,8 @@ export function dbErrorKey(error: { code?: string; message?: string } | null) {
   if (!error) return null;
   if (error.message?.includes("contact_limit_reached")) return "limit" as const;
   if (error.code === "23505") return "duplicate" as const;
+  // Blocked by row-level security – in practice: the trial is over and the data is read-only.
+  if (error.code === "42501" || error.message?.includes("row-level security")) return "readonly" as const;
   return "error" as const;
 }
 

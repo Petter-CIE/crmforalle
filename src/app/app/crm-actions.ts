@@ -24,6 +24,7 @@ async function errorText(error: { code?: string; message?: string } | null, dupl
   const { t } = await getI18n();
   const key = dbErrorKey(error);
   if (key === "limit") return t.crm.limitReached;
+  if (key === "readonly") return t.subscription.readOnly;
   if (key === "duplicate" && duplicate) return duplicate;
   return t.crm.error;
 }

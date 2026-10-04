@@ -1302,7 +1302,8 @@ const nb = {
     badEmail: "Skriv inn en gyldig e-postadresse for fakturaen.",
     failed: "Bestillingen feilet. Prøv igjen eller skriv til post@allseats.no.",
     banner: "Velg abonnement →",
-    bannerOver: "Prøveperioden er over – velg abonnement for å fortsette.",
+    bannerOver: "Prøveperioden er over – dataene kan leses og eksporteres, men ikke endres. Velg abonnement for å fortsette.",
+    readOnly: "Prøveperioden er over, så dataene kan ikke endres. Velg abonnement under Innstillinger → Abonnement.",
     cancel: "Vil dere si opp eller bytte til færre kontakter? Skriv til post@allseats.no.",
   },
   calendar: {
@@ -2777,7 +2778,8 @@ const en: Dictionary = {
     badEmail: "Enter a valid e-mail address for the invoice.",
     failed: "The order failed. Try again or write to post@allseats.no.",
     banner: "Choose subscription →",
-    bannerOver: "The trial has ended – choose a subscription to continue.",
+    bannerOver: "The trial has ended – the data can be read and exported, but not changed. Choose a subscription to continue.",
+    readOnly: "The trial has ended, so the data can't be changed. Choose a subscription under Settings → Subscription.",
     cancel: "Want to cancel or move to fewer contacts? Write to post@allseats.no.",
   },
   calendar: {
