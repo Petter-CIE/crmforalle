@@ -11,6 +11,7 @@ export type NavTexts = {
   tasks: string;
   projects: string;
   settings: string;
+  team: string;
   email: string;
   reports: string;
   quotes: string;
@@ -30,6 +31,7 @@ export function Nav({ t }: { t: NavTexts }) {
     { href: "/app/oppgaver", label: t.tasks },
     { href: "/app/rapporter", label: t.reports },
     { href: "/app/e-post", label: t.email },
+    { href: "/app/team", label: t.team },
     { href: "/app/innstillinger", label: t.settings },
     { href: "/faq", label: t.help },
   ];

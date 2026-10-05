@@ -69,7 +69,7 @@ export default async function TodayPage() {
 
   const steps = [
     { done: true, label: t.today.stepCreate, href: null },
-    { done: (memberCount ?? 0) > 1, label: t.today.stepInvite, href: canManage(workspace.role) ? "/app/innstillinger#brukere" : null },
+    { done: (memberCount ?? 0) > 1, label: t.today.stepInvite, href: canManage(workspace.role) ? "/app/team" : null },
     { done: (companyCount ?? 0) > 0, label: t.today.stepCustomers, href: "/app/bedrifter/ny" },
     { done: (deals ?? []).length > 0, label: t.today.stepPipeline, href: "/app/salg/ny" },
   ];

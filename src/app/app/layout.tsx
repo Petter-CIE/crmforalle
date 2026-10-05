@@ -192,6 +192,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             { href: "/app/prosjekter", label: t.nav.projects },
             { href: "/app/rapporter", label: t.nav.reports },
             { href: "/app/e-post", label: t.nav.email },
+            { href: "/app/team", label: t.nav.team },
             { href: "/app/innstillinger", label: t.nav.settings },
             { href: "/app/tilbakemelding", label: t.feedback.nav },
             { href: "/faq", label: t.nav.help },
