@@ -3,7 +3,7 @@ import { Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
 import { createContact } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
-import { requireWorkspace } from "@/lib/session";
+import { isProjectLimited, requireWorkspace } from "@/lib/session";
 import { CustomFieldInputs } from "@/components/crm/custom-fields";
 import { loadCustomFields } from "@/lib/custom-fields";
 import { ContactForm } from "../contact-form";
@@ -23,14 +23,22 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
   const parts = name.split(/\s+/).filter(Boolean);
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: company }, fields] = await Promise.all([
+  const [{ data: company }, fields, { data: projects }] = await Promise.all([
     companyId
       ? supabase.from("companies").select("id, name").eq("id", companyId).eq("workspace_id", workspace.id).maybeSingle()
       : Promise.resolve({ data: null }),
     loadCustomFields(supabase, workspace.id, "contact"),
+    supabase.from("projects").select("id, name, color").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
   ]);
+  // Preselect the project we came from; a user limited to a single project gets that one.
+  const projectList = projects ?? [];
+  const selectedProjects =
+    projectId && projectList.some((p) => p.id === projectId)
+      ? [projectId]
+      : isProjectLimited(workspace) && projectList.length === 1
+        ? [projectList[0].id]
+        : [];
   const hidden: Record<string, string> = {};
-  if (projectId) hidden.project_id = projectId;
   if (email) hidden.tilbake = "/app/e-post";
   if (companyId) hidden.tilbake = `/app/bedrifter/${companyId}`;
   else if (projectId) hidden.tilbake = `/app/prosjekter/${projectId}`;
@@ -52,6 +60,8 @@ export default async function NewContactPage({ searchParams }: PageProps<"/app/k
           company={company ? { id: company.id, label: company.name } : null}
           t={t}
           hidden={hidden}
+          projects={projectList}
+          selectedProjects={selectedProjects}
           extra={<CustomFieldInputs fields={fields} values={{}} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />
       </Card>

@@ -19,11 +19,20 @@ export default async function EditContactPage({ params }: PageProps<"/app/kontak
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
   const { t } = await getI18n();
-  const [{ data: k }, fields] = await Promise.all([
-    supabase.from("contacts").select("*, companies(id, name)").eq("id", id).eq("workspace_id", workspace.id).maybeSingle(),
+  const [{ data: k }, fields, { data: projects }] = await Promise.all([
+    supabase
+      .from("contacts")
+      .select("*, companies(id, name), project_contacts(project_id)")
+      .eq("id", id)
+      .eq("workspace_id", workspace.id)
+      .maybeSingle(),
     loadCustomFields(supabase, workspace.id, "contact"),
+    supabase.from("projects").select("id, name, color, archived").eq("workspace_id", workspace.id).order("name"),
   ]);
   if (!k) notFound();
+  const selectedProjects = (k.project_contacts ?? []).map((pc) => pc.project_id);
+  // Archived projects are only listed when the contact is already in them (so saving keeps them).
+  const projectList = (projects ?? []).filter((p) => !p.archived || selectedProjects.includes(p.id));
   return (
     <div className="space-y-6">
       <PageHeader title={t.contacts.edit} backHref={`/app/kontakter/${id}`} backLabel={contactName(k)} />
@@ -33,6 +42,8 @@ export default async function EditContactPage({ params }: PageProps<"/app/kontak
           initial={k}
           company={k.companies ? { id: k.companies.id, label: k.companies.name } : null}
           t={t}
+          projects={projectList}
+          selectedProjects={selectedProjects}
           extra={<CustomFieldInputs fields={fields} values={asCustomValues(k.custom)} t={{ choose: t.crm.choose, title: t.crm.customFields }} />}
         />
       </Card>
