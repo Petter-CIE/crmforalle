@@ -386,6 +386,7 @@ export type Database = {
           postal_code: string | null;
           city: string | null;
           marketing_consent: boolean;
+          kind: "b2b" | "b2c";
           marketing_consent_at: string | null;
           notes: string | null;
           custom: Json;
@@ -396,6 +397,7 @@ export type Database = {
           last_activity_at: string | null;
         };
         Insert: {
+          kind?: "b2b" | "b2c";
           id?: string;
           workspace_id: string;
           company_id?: string | null;
@@ -418,6 +420,7 @@ export type Database = {
           last_activity_at?: string | null;
         };
         Update: {
+          kind?: "b2b" | "b2c";
           id?: string;
           workspace_id?: string;
           company_id?: string | null;

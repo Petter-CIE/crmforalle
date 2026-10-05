@@ -21,6 +21,7 @@ export function SearchSelect({
   exclude,
   onPick,
   clearOnPick = false,
+  brreg = false,
   className = "",
 }: {
   kind: SearchKind;
@@ -35,6 +36,8 @@ export function SearchSelect({
   exclude?: string[];
   onPick?: (item: SearchItem) => void;
   clearOnPick?: boolean;
+  /** Companies only: also offer matches from Brønnøysundregistrene (submitted as "brreg:<org nr>"). */
+  brreg?: boolean;
   className?: string;
 }) {
   const auto = useId();
@@ -57,7 +60,9 @@ export function SearchSelect({
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/app/sok?type=${kind}&q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
+        const res = await fetch(`/app/sok?type=${kind}&q=${encodeURIComponent(q)}${brreg ? "&brreg=1" : ""}`, {
+          signal: ctrl.signal,
+        });
         const data = (await res.json()) as SearchItem[];
         const skip = new Set(excludeKey ? excludeKey.split(",") : []);
         setItems(data.filter((d) => !skip.has(d.id)));
@@ -72,7 +77,7 @@ export function SearchSelect({
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [open, query, kind, selected, excludeKey]);
+  }, [open, query, kind, selected, excludeKey, brreg]);
 
   // Close when clicking outside.
   useEffect(() => {

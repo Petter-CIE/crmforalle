@@ -40,6 +40,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
   if (f.city) req = req.ilike("city", `%${safeLike(f.city)}%`);
   if (f.inactive) req = req.or(`last_activity_at.is.null,last_activity_at.lt.${inactiveSince(f.inactive)}`);
   if (f.consent) req = req.eq("marketing_consent", true);
+  if (f.kind) req = req.eq("kind", f.kind);
   if (query) {
     const safe = query.replace(/[%,()]/g, " ");
     req = req.or(`first_name.ilike.%${safe}%,last_name.ilike.%${safe}%,email.ilike.%${safe}%,phone.ilike.%${safe}%`);
@@ -95,6 +96,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/app/kon
           inactiveDays: t.views.inactiveDays,
           consentYes: t.views.consentYes,
           reset: t.views.reset,
+          kinds: { any: t.views.anyKind, b2b: t.contacts.kindB2b, b2c: t.contacts.kindB2c },
         }}
       />
       <SavedViews

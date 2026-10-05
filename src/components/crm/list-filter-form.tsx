@@ -15,6 +15,8 @@ type Texts = {
   inactiveDays: (d: number) => string;
   consentYes: string;
   reset: string;
+  /** Contacts only: the B2B/B2C filter. */
+  kinds?: { any: string; b2b: string; b2c: string };
 };
 
 /** Search and filters above the company/contact lists (a plain GET form, so the URL holds the view). */
@@ -33,7 +35,7 @@ export function ListFilterForm({
   consent?: boolean;
   t: Texts;
 }) {
-  const any = f.q || f.project || f.owner || f.city || f.inactive || f.consent;
+  const any = f.q || f.project || f.owner || f.city || f.inactive || f.consent || f.kind;
   return (
     <form className="space-y-2">
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -73,6 +75,13 @@ export function ListFilterForm({
             </option>
           ))}
         </Select>
+        {t.kinds && (
+          <Select name="type" defaultValue={f.kind} aria-label={t.kinds.any} className="!py-1.5">
+            <option value="">{t.kinds.any}</option>
+            <option value="b2b">{t.kinds.b2b}</option>
+            <option value="b2c">{t.kinds.b2c}</option>
+          </Select>
+        )}
         {consent && (
           <label className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm">
             <input type="checkbox" name="samtykke" value="1" defaultChecked={f.consent} className="h-4 w-4 accent-[var(--brand)]" />

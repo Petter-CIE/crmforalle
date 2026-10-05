@@ -31,6 +31,8 @@ type RawEnhet = {
   navn: string;
   organisasjonsform?: { kode?: string };
   forretningsadresse?: RawAddress;
+  /** Sub-units (underenheter) have a location address instead of a business address. */
+  beliggenhetsadresse?: RawAddress;
   postadresse?: RawAddress;
   naeringskode1?: { kode?: string; beskrivelse?: string };
   hjemmeside?: string;
@@ -42,7 +44,7 @@ type RawEnhet = {
 };
 
 function map(e: RawEnhet): BrregCompany {
-  const a = e.forretningsadresse ?? e.postadresse;
+  const a = e.forretningsadresse ?? e.beliggenhetsadresse ?? e.postadresse;
   return {
     orgNumber: e.organisasjonsnummer,
     name: e.navn,
@@ -76,9 +78,17 @@ export async function searchBrreg(query: string, size = 8): Promise<BrregCompany
       headers: { Accept: "application/json" },
       next: { revalidate: 86400 },
     });
-    if (res.status === 404 || res.status === 410) return [];
-    if (!res.ok) throw new Error(`Brreg ${res.status}`);
-    return [map((await res.json()) as RawEnhet)];
+    if (res.ok) return [map((await res.json()) as RawEnhet)];
+    if (res.status !== 404 && res.status !== 410) throw new Error(`Brreg ${res.status}`);
+    // Not a main unit: the number may belong to a sub-unit (a branch or department), which
+    // brreg.no shows as well.
+    const sub = await fetch(`${BASE}/underenheter/${orgNumber}`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 86400 },
+    });
+    if (sub.status === 404 || sub.status === 410) return [];
+    if (!sub.ok) throw new Error(`Brreg ${sub.status}`);
+    return [map((await sub.json()) as RawEnhet)];
   }
 
   const url = `${BASE}/enheter?navn=${encodeURIComponent(q)}&size=${size}`;

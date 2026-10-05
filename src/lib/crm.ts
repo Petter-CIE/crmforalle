@@ -16,8 +16,19 @@ export function formatDateTime(value: string, dateLocale: string) {
   return new Date(value).toLocaleString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export function contactName(c: { first_name: string; last_name: string | null }) {
-  return [c.first_name, c.last_name].filter(Boolean).join(" ");
+/**
+ * Display name of a contact. The name is optional (a first contact may only be post@firma.no),
+ * so it falls back to the e-mail, phone or company when those were selected, else a dash.
+ */
+export function contactName(c: {
+  first_name: string;
+  last_name: string | null;
+  email?: string | null;
+  phone?: string | null;
+  companies?: { name: string } | null;
+}) {
+  const name = [c.first_name, c.last_name].filter(Boolean).join(" ").trim();
+  return name || c.email || c.phone || c.companies?.name || "–";
 }
 
 /** Members of the current workspace as {id, name} for owner/assignee pickers. */
