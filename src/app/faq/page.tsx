@@ -8,7 +8,7 @@ import { getI18n } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale } = await getI18n();
-  return { title: faq[locale].title, description: faq[locale].lead };
+  return { title: faq[locale].title, description: faq[locale].lead, alternates: { canonical: "/faq" } };
 }
 
 export default async function FaqPage() {
