@@ -156,6 +156,7 @@ function contactFields(formData: FormData) {
     postal_code: opt(formData.get("postal_code"), 20),
     city: opt(formData.get("city"), 100),
     marketing_consent: formData.get("marketing_consent") === "1",
+    kind: (formData.get("kind") === "b2c" ? "b2c" : formData.get("kind") === "b2b" ? "b2b" : undefined) as "b2b" | "b2c" | undefined,
     notes: opt(formData.get("notes"), 5000),
   };
 }

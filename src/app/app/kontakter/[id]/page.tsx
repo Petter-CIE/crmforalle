@@ -20,7 +20,7 @@ import { requireWorkspace } from "@/lib/session";
 export async function generateMetadata({ params }: PageProps<"/app/kontakter/[id]">): Promise<Metadata> {
   const { id } = await params;
   const { supabase, workspace } = await requireWorkspace();
-  const { data } = await supabase.from("contacts").select("first_name, last_name").eq("id", id).eq("workspace_id", workspace.id).maybeSingle();
+  const { data } = await supabase.from("contacts").select("first_name, last_name, email, phone").eq("id", id).eq("workspace_id", workspace.id).maybeSingle();
   return { title: data ? contactName(data) : "" };
 }
 
@@ -87,6 +87,7 @@ export default async function ContactPage({ params }: PageProps<"/app/kontakter/
         <div className="space-y-6">
           <Card>
             <dl>
+              <InfoRow label={t.contacts.kind}>{k.kind === "b2c" ? t.contacts.kindB2c : t.contacts.kindB2b}</InfoRow>
               <InfoRow label={t.contacts.phone}>{k.phone && <a href={`tel:${k.phone}`} className="hover:underline">{k.phone}</a>}</InfoRow>
               <InfoRow label={t.contacts.email}>{k.email && <a href={`mailto:${k.email}`} className="hover:underline">{k.email}</a>}</InfoRow>
               {(k.address || k.postal_code || k.city) && (

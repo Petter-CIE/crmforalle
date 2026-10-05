@@ -8,6 +8,7 @@ export type ListFilters = {
   city: string;
   inactive: number; // days, 0 = off
   consent: boolean; // contacts only
+  kind: "" | "b2b" | "b2c"; // contacts only
 };
 
 type SP = Record<string, string | string[] | undefined>;
@@ -25,6 +26,7 @@ export function parseFilters(sp: SP): ListFilters {
     city: str(sp.sted, 60),
     inactive: (INACTIVE_DAYS as readonly number[]).includes(inactive) ? inactive : 0,
     consent: str(sp.samtykke) === "1",
+    kind: str(sp.type) === "b2b" ? "b2b" : str(sp.type) === "b2c" ? "b2c" : "",
   };
 }
 
@@ -37,6 +39,7 @@ export function filterQuery(f: ListFilters) {
   if (f.city) p.set("sted", f.city);
   if (f.inactive) p.set("inaktiv", String(f.inactive));
   if (f.consent) p.set("samtykke", "1");
+  if (f.kind) p.set("type", f.kind);
   return p.toString();
 }
 

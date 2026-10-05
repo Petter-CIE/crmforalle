@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Input } from "@/components/ui";
-import { SearchSelect } from "@/components/search-select";
 import { DuplicateWarning } from "@/components/crm/duplicate-warning";
+import { ContactKindFields, type ContactKind } from "./contact-kind-fields";
 import { Field, Textarea } from "@/components/ui-extra";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -19,6 +19,7 @@ export type ContactValues = {
   postal_code?: string | null;
   city?: string | null;
   marketing_consent?: boolean;
+  kind?: ContactKind;
   notes: string | null;
 };
 
@@ -62,43 +63,30 @@ export function ContactForm({
         <Field label={c.jobTitle} htmlFor="k_title">
           <Input id="k_title" name="title" defaultValue={initial.title ?? ""} />
         </Field>
-        <Field label={c.company} htmlFor="k_company">
-          <SearchSelect
-            kind="company"
-            id="k_company"
-            name="company_id"
-            defaultValue={company}
-            placeholder={t.crm.searchCompany}
-            noneLabel={c.noCompany}
-            emptyText={t.crm.noResults}
-            brreg
-          />
-        </Field>
       </div>
-      <fieldset className="space-y-3">
-        <legend className="mb-1 text-sm font-medium">
-          {c.address} <span className="font-normal text-muted">({c.addressHint})</span>
-        </legend>
-        <Input id="k_address" name="address" aria-label={c.street} placeholder={c.street} defaultValue={initial.address ?? ""} />
-        <div className="grid grid-cols-[8rem_1fr] gap-3">
-          <Input
-            id="k_postal"
-            name="postal_code"
-            inputMode="numeric"
-            aria-label={c.postalCode}
-            placeholder={c.postalCode}
-            defaultValue={initial.postal_code ?? ""}
-          />
-          <Input id="k_city" name="city" aria-label={c.city} placeholder={c.city} defaultValue={initial.city ?? ""} />
-        </div>
-      </fieldset>
-      <label className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm">
-        <input type="checkbox" name="marketing_consent" value="1" defaultChecked={initial.marketing_consent ?? false} className="mt-0.5" />
-        <span>
-          <span className="font-medium">{c.consent}</span>
-          <span className="block text-xs text-muted">{c.consentHelp}</span>
-        </span>
-      </label>
+      <ContactKindFields
+        company={company}
+        initialKind={initial.kind ?? (initial.company_id ? "b2b" : "b2c")}
+        address={{ address: initial.address ?? "", postal_code: initial.postal_code ?? "", city: initial.city ?? "" }}
+        consent={initial.marketing_consent ?? false}
+        isNew={!initial.id}
+        t={{
+          company: c.company,
+          searchCompany: t.crm.searchCompany,
+          noCompany: c.noCompany,
+          noResults: t.crm.noResults,
+          type: c.kind,
+          b2b: c.kindB2b,
+          b2c: c.kindB2c,
+          address: c.address,
+          street: c.street,
+          postalCode: c.postalCode,
+          city: c.city,
+          consent: c.consent,
+          consentHelp: c.consentHelp,
+          consentB2c: c.consentB2c,
+        }}
+      />
       {extra}
       <Field label={t.crm.notes} htmlFor="k_notes">
         <Textarea id="k_notes" name="notes" rows={3} defaultValue={initial.notes ?? ""} />
