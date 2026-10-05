@@ -80,6 +80,23 @@ export default async function InboundPage() {
               </div>
               <p className="border-t border-border px-4 py-3 text-sm font-medium text-brand">{i.guideNote}</p>
             </details>
+            <details id="gmail" className="group mt-3 scroll-mt-8 rounded-lg border border-border">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium">
+                {i.gmailTitle}
+                <span aria-hidden className="text-brand transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <div className="space-y-3 border-t border-border px-4 py-4 text-sm">
+                <p className="text-muted">{i.gmailIntro}</p>
+                <ol className="list-decimal space-y-1.5 pl-5 text-muted">
+                  {i.gmailSteps.map((st) => (
+                    <li key={st}>{st}</li>
+                  ))}
+                </ol>
+                <p className="text-xs text-muted">{i.gmailNote}</p>
+              </div>
+            </details>
             <p className="mt-3 text-xs text-muted">{i.secret}</p>
             {manager && (
               <div className="mt-4 flex flex-wrap gap-2">

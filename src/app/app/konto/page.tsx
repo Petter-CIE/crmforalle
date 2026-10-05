@@ -10,6 +10,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
 import { changePassword } from "@/app/nytt-passord/actions";
 import { addSharedMailbox, disconnectOutlook, saveOutlookOptions, updateIdleTimeout, updateProfile } from "./actions";
+import { googleEnabled } from "@/lib/google";
 import { microsoftEnabled } from "@/lib/microsoft";
 import { formatDateTime } from "@/lib/crm";
 import { Notice } from "@/components/ui";
@@ -30,14 +31,15 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
   const [{ data: mailboxes }, { data: projects }] = await Promise.all([
     supabase
       .from("mail_connections")
-      .select("id, account_email, mail_enabled, calendar_enabled, last_sync_at, last_error, project_id, parent_id")
+      .select("id, provider, account_email, mail_enabled, calendar_enabled, last_sync_at, last_error, project_id, parent_id")
       .eq("workspace_id", workspace.id)
       .eq("user_id", user.id)
       .order("created_at"),
     supabase.from("projects").select("id, name").eq("workspace_id", workspace.id).eq("archived", false).order("name"),
   ]);
   // Each main account followed by its shared mailboxes; the "add shared" form closes the group.
-  const all = mailboxes ?? [];
+  const all = (mailboxes ?? []).filter((m) => m.provider !== "google");
+  const googleCal = (mailboxes ?? []).find((m) => m.provider === "google");
   const ordered = all
     .filter((m) => !m.parent_id)
     .flatMap((p) => {
@@ -207,7 +209,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
                   <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
                   <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                 </svg>
-                {(mailboxes ?? []).length ? t.outlook.connectAnother : t.outlook.connect}
+                {all.length ? t.outlook.connectAnother : t.outlook.connect}
               </button>
             </form>
             <p className="text-xs text-muted">
@@ -215,6 +217,49 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
             </p>
           </div>
         )}
+      </Card>
+
+      <Card>
+        <h2 id="google" className="mb-1 scroll-mt-8 font-semibold">
+          📅 {t.google.title}
+        </h2>
+        <p className="mb-4 text-sm text-muted">{t.google.intro}</p>
+        {sp.g === "ok" && <Notice>{t.google.ok}</Notice>}
+        {sp.g === "feil" && <Notice tone="error">{t.google.failed}</Notice>}
+        {sp.g === "avbrutt" && <Notice>{t.google.cancelled}</Notice>}
+        {!googleEnabled() ? (
+          <p className="text-sm text-muted">{t.google.notAvailable}</p>
+        ) : googleCal ? (
+          <form action={disconnectOutlook} className="space-y-2 rounded-lg border border-border p-4 text-sm">
+            <input type="hidden" name="id" value={googleCal.id} />
+            <p className="font-medium">✓ {t.google.connected(googleCal.account_email ?? "Google")}</p>
+            <p className="text-xs text-muted">
+              {googleCal.last_sync_at ? t.google.lastSync(formatDateTime(googleCal.last_sync_at, dateLocale)) : t.google.waiting}
+            </p>
+            {googleCal.last_error && <Notice tone="error">{t.google.error(googleCal.last_error)}</Notice>}
+            <button type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm text-danger hover:bg-background">
+              {t.google.disconnect}
+            </button>
+          </form>
+        ) : (
+          <a
+            href="/app/konto/google/start"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background"
+          >
+            <svg aria-hidden viewBox="0 0 24 24" width="16" height="16">
+              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z" />
+              <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z" />
+              <path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8z" />
+              <path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z" />
+            </svg>
+            {t.google.connect}
+          </a>
+        )}
+        <p className="mt-3 text-xs">
+          <a href="/app/e-post#gmail" className="text-brand hover:underline">
+            {t.google.gmailLink} →
+          </a>
+        </p>
       </Card>
 
       <Card>

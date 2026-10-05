@@ -1,19 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/database.types";
+import * as google from "@/lib/google";
 import { busyTimes, messagesSince, me, microsoftEnabled, refreshAccess, type SyncedMessage } from "@/lib/microsoft";
 import { open, seal } from "@/lib/secret-box";
 
 // Every 15 minutes (pg_cron → ticket): reads new mail and calendar busy times for each connected
-// Outlook account. The database keeps only mail exchanged with existing contacts.
+// Outlook account, and busy times for each connected Google calendar. The database keeps only
+// mail exchanged with existing contacts.
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type Conn = { id: string; parent_id: string | null; mailbox: string | null; refresh_token: string; mail: boolean; calendar: boolean; synced_until: string; user_email: string | null };
+type Conn = { id: string; provider?: string; parent_id: string | null; mailbox: string | null; refresh_token: string; mail: boolean; calendar: boolean; synced_until: string; user_email: string | null };
 
 export async function GET(request: Request) {
   const ticket = new URL(request.url).searchParams.get("ticket") ?? "";
   if (!/^[0-9a-f]{48}$/.test(ticket)) return new Response(null, { status: 404 });
-  if (!microsoftEnabled()) return Response.json({ ok: false, reason: "not_configured" });
   const db = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
     auth: { persistSession: false },
   });
@@ -29,27 +30,35 @@ export async function GET(request: Request) {
     if (Date.now() - started > 45_000) break; // the rest waits for the next run
     const result: { refresh_token?: string; synced_until?: string; account_email?: string; error?: string; busy?: [string, string][]; messages?: SyncedMessage[] } = {};
     try {
-      let at: string;
-      if (c.parent_id) {
-        const parent = access.get(c.parent_id);
-        if (!parent) throw new Error("the main mailbox could not be synchronised");
-        at = parent;
-      } else {
-        const tokens = await refreshAccess(open(c.refresh_token));
+      if (c.provider === "google") {
+        if (!google.googleEnabled()) throw new Error("Google is not configured");
+        const tokens = await google.refreshAccess(open(c.refresh_token));
         if (tokens.refresh_token) result.refresh_token = seal(tokens.refresh_token);
-        at = tokens.access_token;
-        access.set(c.id, at);
+        if (c.calendar) result.busy = await google.busyTimes(tokens.access_token);
+      } else {
+        if (!microsoftEnabled()) throw new Error("Microsoft is not configured");
+        let at: string;
+        if (c.parent_id) {
+          const parent = access.get(c.parent_id);
+          if (!parent) throw new Error("the main mailbox could not be synchronised");
+          at = parent;
+        } else {
+          const tokens = await refreshAccess(open(c.refresh_token));
+          if (tokens.refresh_token) result.refresh_token = seal(tokens.refresh_token);
+          at = tokens.access_token;
+          access.set(c.id, at);
+        }
+        if (c.mail) {
+          // Overlap a little so nothing at the edge is missed; duplicates are skipped by message id.
+          const since = new Date(new Date(c.synced_until).getTime() - 10 * 60_000).toISOString();
+          const now = new Date().toISOString();
+          const [inbox, sent] = await Promise.all([messagesSince(at, "inbox", since, 200, c.mailbox), messagesSince(at, "sentitems", since, 200, c.mailbox)]);
+          result.messages = [...inbox, ...sent];
+          result.synced_until = now;
+          if (!c.user_email && !c.parent_id) result.account_email = await me(at).catch(() => "");
+        }
+        if (c.calendar && !c.parent_id) result.busy = await busyTimes(at);
       }
-      if (c.mail) {
-        // Overlap a little so nothing at the edge is missed; duplicates are skipped by message id.
-        const since = new Date(new Date(c.synced_until).getTime() - 10 * 60_000).toISOString();
-        const now = new Date().toISOString();
-        const [inbox, sent] = await Promise.all([messagesSince(at, "inbox", since, 200, c.mailbox), messagesSince(at, "sentitems", since, 200, c.mailbox)]);
-        result.messages = [...inbox, ...sent];
-        result.synced_until = now;
-        if (!c.user_email && !c.parent_id) result.account_email = await me(at).catch(() => "");
-      }
-      if (c.calendar && !c.parent_id) result.busy = await busyTimes(at);
     } catch (e) {
       result.error = e instanceof Error ? e.message : String(e);
       console.error("mail sync failed", c.id, result.error);
