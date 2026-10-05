@@ -388,6 +388,7 @@ export type Database = {
           marketing_consent: boolean;
           kind: "b2b" | "b2c";
           marketing_consent_at: string | null;
+          unsubscribed_at: string | null;
           notes: string | null;
           custom: Json;
           owner_id: string | null;
@@ -411,6 +412,7 @@ export type Database = {
           city?: string | null;
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
+          unsubscribed_at?: string | null;
           notes?: string | null;
           custom?: Json;
           owner_id?: string | null;
@@ -434,6 +436,7 @@ export type Database = {
           city?: string | null;
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
+          unsubscribed_at?: string | null;
           notes?: string | null;
           custom?: Json;
           owner_id?: string | null;
@@ -629,6 +632,66 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      campaigns: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          subject: string;
+          body: string;
+          audience: Json;
+          status: string;
+          recipients: number;
+          sent: number;
+          failed: number;
+          opened: number;
+          unsubscribed: number;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          queued_at: string | null;
+          finished_at: string | null;
+        };
+        Insert: {
+          workspace_id: string;
+          name: string;
+          subject?: string;
+          body?: string;
+          audience?: Json;
+          created_by?: string | null;
+        };
+        Update: {
+          name?: string;
+          subject?: string;
+          body?: string;
+          audience?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      campaign_recipients: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          workspace_id: string;
+          contact_id: string | null;
+          email: string;
+          first_name: string | null;
+          last_name: string | null;
+          company_name: string | null;
+          token: string;
+          status: string;
+          error: string | null;
+          claimed_at: string | null;
+          sent_at: string | null;
+          opened_at: string | null;
+          unsubscribed_at: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
       };
       email_templates: {
         Row: {
@@ -2138,6 +2201,14 @@ export type Database = {
       accept_invitation: { Args: { p_token: string }; Returns: string };
       create_workspace: { Args: { p_name: string; p_org_number?: string }; Returns: string };
       mail_claim: { Args: { p_ticket: string }; Returns: Json };
+      campaign_preview: { Args: { p_workspace: string; p_audience: Json }; Returns: Json };
+      campaign_send: { Args: { p_campaign: string }; Returns: Json };
+      campaign_cancel: { Args: { p_campaign: string }; Returns: undefined };
+      campaign_claim: { Args: { p_ticket: string; p_limit: number; p_daily_cap: number }; Returns: Json };
+      campaign_report: { Args: { p_ticket: string; p_results: Json }; Returns: number };
+      campaign_open: { Args: { p_token: string }; Returns: undefined };
+      campaign_unsubscribe_info: { Args: { p_token: string }; Returns: Json };
+      campaign_unsubscribe: { Args: { p_token: string }; Returns: boolean };
       mail_apply: { Args: { p_ticket: string; p_connection: string; p_result: Json }; Returns: number };
       booking_page_public: { Args: { p_slug: string }; Returns: Json };
       booking_create: { Args: { p_slug: string; p_start: string; p_data: Json; p_ip: string }; Returns: Json };

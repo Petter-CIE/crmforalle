@@ -43,7 +43,17 @@ export default async function InboundPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={i.title} subtitle={i.subtitle} />
+      <PageHeader
+        title={i.title}
+        subtitle={i.subtitle}
+        actions={
+          manager ? (
+            <ButtonLink href="/app/e-post/kampanjer" variant="secondary">
+              {t.campaigns.link}
+            </ButtonLink>
+          ) : undefined
+        }
+      />
 
       <Card>
         <h2 className="font-semibold">{i.addressTitle}</h2>

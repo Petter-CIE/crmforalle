@@ -330,6 +330,28 @@ const nb: Docs = {
           ],
         },
         {
+          id: "kampanjer",
+          title: "Kampanjer (nyhetsbrev)",
+          blocks: [
+            {
+              p: [
+                "Under E-post → Kampanjer kan eier og administratorer sende samme e-post til mange kontakter – for eksempel et nyhetsbrev til alle kunder i et prosjekt.",
+              ],
+              steps: [
+                "Trykk «Ny kampanje» og skriv emne og tekst. {fornavn}, {etternavn}, {navn} og {firma} fylles inn for hver mottaker.",
+                "Velg mottakere: type (B2B/B2C), prosjekt og ansvarlig. Antallet oppdateres med en gang.",
+                "Send en test til deg selv, og trykk «Send kampanjen».",
+              ],
+            },
+            {
+              p: [
+                "Privatkunder får bare kampanjer når de har samtykket til markedsføring. Kontakter som har meldt seg av, og bedrifter som er slettet eller konkurs, hoppes over. Hver e-post får bedriftens navn og adresse og en lenke for å melde seg av. Svar fra mottakerne kommer til den som opprettet kampanjen.",
+                "Du ser hvor mange som har fått, åpnet og meldt seg av, og utsendelsen lagres i historikken til hver kontakt. Start inkluderer 500 kampanje-e-poster i måneden og Bedrift 5 000.",
+              ],
+            },
+          ],
+        },
+        {
           id: "booking",
           title: "Bookinglenke",
           blocks: [
@@ -839,6 +861,28 @@ const en: Docs = {
               p: [
                 "Under Settings → Web forms you create a contact form and paste the code into your website (WordPress, Wix, Squarespace and others), or let your own form send to AllSeats.",
                 "Every enquiry becomes a contact, a deal and a follow-up task, and the owner is notified on their phone and by e-mail.",
+              ],
+            },
+          ],
+        },
+        {
+          id: "kampanjer",
+          title: "Campaigns (newsletters)",
+          blocks: [
+            {
+              p: [
+                "Under E-mail → Campaigns, owners and admins can send the same e-mail to many contacts – for example a newsletter to all customers in a project.",
+              ],
+              steps: [
+                "Press “New campaign” and write the subject and text. {first_name}, {last_name}, {name} and {company} are filled in for each recipient.",
+                "Choose the recipients: type (B2B/B2C), project and owner. The count updates right away.",
+                "Send a test to yourself, then press “Send the campaign”.",
+              ],
+            },
+            {
+              p: [
+                "Private customers only get campaigns if they have consented to marketing. Contacts who have unsubscribed, and companies that are deleted or bankrupt, are skipped. Every e-mail includes your company's name and address and an unsubscribe link. Replies go to the person who created the campaign.",
+                "You see how many received, opened and unsubscribed, and the mailing is saved in each contact's history. Start includes 500 campaign e-mails a month and Bedrift 5,000.",
               ],
             },
           ],
