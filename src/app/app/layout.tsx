@@ -18,6 +18,7 @@ import { BottomNav } from "./_components/bottom-nav";
 import { FeedbackLink } from "./_components/feedback-link";
 import { GlobalSearch } from "./_components/global-search";
 import { Nav } from "./_components/nav";
+import { NAV_HREF, NAV_ICON, orderedNav, parseNavPrefs } from "@/lib/nav-items";
 import { HashFocus, QuickAdd } from "./_components/quick-add";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
@@ -25,10 +26,19 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const { locale, t } = await getI18n();
   const daysLeft = trialDaysLeft(workspace.trial_ends_at);
   const [{ data: profile }, { data: adminRows }] = await Promise.all([
-    supabase.from("profiles").select("full_name, idle_timeout_minutes").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("full_name, idle_timeout_minutes, nav").eq("id", user.id).maybeSingle(),
     supabase.rpc("platform_admin_status"),
   ]);
   const isPlatformAdmin = !!adminRows?.[0]?.is_admin;
+  // The user's own menu: order and hidden sections. The phone tab bar shows the first four.
+  const menu = orderedNav(parseNavPrefs(profile?.nav)).map(({ key, hidden }) => ({
+    key,
+    href: NAV_HREF[key],
+    label: t.nav[key],
+    hidden,
+  }));
+  const visibleMenu = menu.filter((m) => !m.hidden);
+  const tabs = visibleMenu.slice(0, 4).map((m) => ({ href: m.href, label: m.label, d: NAV_ICON[m.key] }));
   const themeCookie = (await cookies()).get("theme")?.value;
   const theme: Theme = themeCookie === "dark" || themeCookie === "light" ? themeCookie : "auto";
   const logo = logoUrl(workspace.logo_path);
@@ -105,7 +115,21 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             </p>
           )}
           <GlobalSearch t={t.search} />
-          <Nav t={t.nav} />
+          <Nav
+            items={menu}
+            t={{
+              mainMenu: t.nav.mainMenu,
+              customize: t.nav.customize,
+              customizeHint: t.nav.customizeHint,
+              save: t.common.save,
+              saving: t.common.saving,
+              cancel: t.crm.cancel,
+              reset: t.nav.reset,
+              moveUp: t.nav.moveUp,
+              moveDown: t.nav.moveDown,
+              show: t.nav.show,
+            }}
+          />
           <div className="hidden md:block">
             <FeedbackLink label={t.feedback.nav} />
           </div>
@@ -175,10 +199,6 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
         </div>
         <BottomNav
           t={{
-            today: t.nav.today,
-            sales: t.nav.sales,
-            contacts: t.nav.contacts,
-            tasks: t.nav.tasks,
             more: t.mobile.more,
             mainMenu: t.nav.mainMenu,
             account: t.nav.account,
@@ -186,16 +206,10 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             close: t.mobile.dismiss,
           }}
           user={{ name: displayName, initials, email: user.email ?? "", workspace: workspace.name }}
+          tabs={tabs}
           more={[
-            { href: "/app/tilbud", label: t.nav.quotes },
-            { href: "/app/bedrifter", label: t.nav.companies },
-            { href: "/app/prosjekter", label: t.nav.projects },
-            { href: "/app/rapporter", label: t.nav.reports },
-            { href: "/app/e-post", label: t.nav.email },
-            { href: "/app/team", label: t.nav.team },
-            { href: "/app/innstillinger", label: t.nav.settings },
+            ...visibleMenu.slice(4).map((m) => ({ href: m.href, label: m.label })),
             { href: "/app/tilbakemelding", label: t.feedback.nav },
-            { href: "/faq", label: t.nav.help },
             ...(isPlatformAdmin ? [{ href: "/admin", label: t.admin.nav }] : []),
           ]}
         />

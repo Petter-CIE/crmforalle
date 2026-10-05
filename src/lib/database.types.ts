@@ -1314,6 +1314,7 @@ export type Database = {
           idle_timeout_minutes: number;
           digest_email: boolean;
           dashboard: Json | null;
+          nav: Json | null;
           created_at: string;
         };
         Insert: {
@@ -1325,6 +1326,7 @@ export type Database = {
           idle_timeout_minutes?: number;
           digest_email?: boolean;
           dashboard?: Json | null;
+          nav?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -1336,6 +1338,7 @@ export type Database = {
           idle_timeout_minutes?: number;
           digest_email?: boolean;
           dashboard?: Json | null;
+          nav?: Json | null;
           created_at?: string;
         };
         Relationships: [];
