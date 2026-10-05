@@ -322,6 +322,9 @@ export default async function Home() {
           <Link href="/faq" className="hover:text-foreground hover:underline">
             {t.help.nav}
           </Link>
+          <Link href="/tripletex" className="hover:text-foreground hover:underline">
+            Tripletex
+          </Link>
           <Link href="/vilkar" className="hover:text-foreground hover:underline">
             {t.legal.terms}
           </Link>

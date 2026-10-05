@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/personvern",
   "/databehandleravtale",
   "/faq",
+  "/tripletex",
   "/api/inbound",
   "/api/cron",
   "/tilbud",
