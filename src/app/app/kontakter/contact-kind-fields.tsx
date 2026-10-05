@@ -16,6 +16,7 @@ type Texts = {
   b2b: string;
   b2c: string;
   address: string;
+  addressHint: string;
   street: string;
   postalCode: string;
   city: string;
@@ -26,7 +27,7 @@ type Texts = {
 
 /**
  * Company, type (B2B / B2C), private address and marketing consent. Picking a company switches a
- * new contact to B2B. The address is only shown for B2C, but stays in the form so it isn't lost.
+ * new contact to B2B. For B2B the address is only needed when it differs from the company's.
  */
 export function ContactKindFields({
   company,
@@ -91,8 +92,11 @@ export function ContactKindFields({
           </div>
         </fieldset>
       </div>
-      <fieldset className={`space-y-3 ${kind === "b2c" ? "" : "hidden"}`}>
-        <legend className="mb-1 text-sm font-medium">{t.address}</legend>
+      <fieldset className="space-y-3">
+        <legend className="mb-1 text-sm font-medium">
+          {t.address}
+          {kind === "b2b" && <span className="font-normal text-muted"> ({t.addressHint})</span>}
+        </legend>
         <Input id="k_address" name="address" aria-label={t.street} placeholder={t.street} defaultValue={address.address} />
         <div className="grid grid-cols-[8rem_1fr] gap-3">
           <Input
