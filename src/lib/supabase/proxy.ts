@@ -16,6 +16,8 @@ const PUBLIC_PATHS = [
   "/faq",
   "/tripletex",
   "/dokumentasjon",
+  "/avmelding",
+  "/api/kampanje",
   "/api/inbound",
   "/api/cron",
   "/tilbud",
