@@ -225,7 +225,12 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
         </h2>
         <p className="mb-4 text-sm text-muted">{t.google.intro}</p>
         {sp.g === "ok" && <Notice>{t.google.ok}</Notice>}
-        {sp.g === "feil" && <Notice tone="error">{t.google.failed}</Notice>}
+        {sp.g === "feil" && (
+          <Notice tone="error">
+            {t.google.failed}
+            {typeof sp.gw === "string" && sp.gw ? ` (${sp.gw})` : ""}
+          </Notice>
+        )}
         {sp.g === "avbrutt" && <Notice>{t.google.cancelled}</Notice>}
         {!googleEnabled() ? (
           <p className="text-sm text-muted">{t.google.notAvailable}</p>
