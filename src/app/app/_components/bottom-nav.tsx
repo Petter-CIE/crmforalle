@@ -5,10 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export type BottomNavTexts = {
-  today: string;
-  sales: string;
-  contacts: string;
-  tasks: string;
   more: string;
   mainMenu: string;
   account: string;
@@ -16,6 +12,8 @@ export type BottomNavTexts = {
   close: string;
 };
 export type MoreLink = { href: string; label: string };
+/** A tab in the bar: the first sections of the user's menu, with an icon path. */
+export type TabLink = { href: string; label: string; d: string };
 
 const icon = (d: string) => (
   <svg aria-hidden viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -27,9 +25,11 @@ const icon = (d: string) => (
 export function BottomNav({
   t,
   user,
+  tabs,
   more,
 }: {
   t: BottomNavTexts;
+  tabs: TabLink[];
   user: { name: string; initials: string; email: string; workspace: string };
   more: MoreLink[];
 }) {
@@ -48,13 +48,9 @@ export function BottomNav({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const items = [
-    { href: "/app", label: t.today, d: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" },
-    { href: "/app/salg", label: t.sales, d: "M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v7h-4z" },
-    { href: "/app/kontakter", label: t.contacts, d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" },
-    { href: "/app/oppgaver", label: t.tasks, d: "M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-  ];
-  const moreActive = more.some((m) => pathname.startsWith(m.href)) || pathname.startsWith("/app/konto");
+  const items = tabs;
+  const isActive = (href: string) => (href === "/app" ? pathname === "/app" : pathname.startsWith(href));
+  const moreActive = more.some((m) => isActive(m.href)) || pathname.startsWith("/app/konto");
 
   return (
     <>
@@ -80,7 +76,7 @@ export function BottomNav({
                 <li key={m.href}>
                   <Link
                     href={m.href}
-                    className={`block rounded-lg px-3 py-3 text-sm ${pathname.startsWith(m.href) ? "bg-brand-soft font-medium text-brand" : "hover:bg-background"}`}
+                    className={`block rounded-lg px-3 py-3 text-sm ${isActive(m.href) ? "bg-brand-soft font-medium text-brand" : "hover:bg-background"}`}
                   >
                     {m.label}
                   </Link>
@@ -101,7 +97,7 @@ export function BottomNav({
       >
         <ul className="grid grid-cols-5">
           {items.map((it) => {
-            const active = !open && (it.href === "/app" ? pathname === "/app" : pathname.startsWith(it.href));
+            const active = !open && isActive(it.href);
             return (
               <li key={it.href}>
                 <Link
