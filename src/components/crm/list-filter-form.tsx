@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Input, Select } from "@/components/ui";
 import { INACTIVE_DAYS, type ListFilters } from "@/lib/list-filters";
+import { LiveFilter } from "./live-filter";
 
 type Texts = {
   search: string;
@@ -38,6 +39,7 @@ export function ListFilterForm({
   const any = f.q || f.project || f.owner || f.city || f.inactive || f.consent || f.kind;
   return (
     <form className="space-y-2">
+      <LiveFilter />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input name="q" defaultValue={f.q} placeholder={t.searchPlaceholder} aria-label={t.search} />
         <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover">
