@@ -82,7 +82,6 @@ export default async function Home() {
     <div className="landing flex flex-1 flex-col bg-[var(--paper)]">
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger -- static JSON built on the server
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(t.meta.homeDescription)).replace(/</g, "\\u003c") }}
       />
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 md:px-8">

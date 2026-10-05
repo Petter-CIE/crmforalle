@@ -24,6 +24,10 @@ const PUBLIC_PATHS = [
   "/api/lead",
   "/api/kalender",
   "/booking",
+  // for search engines and link previews
+  "/robots.txt",
+  "/sitemap.xml",
+  "/opengraph-image",
 ];
 
 function isPublic(pathname: string) {
