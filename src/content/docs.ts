@@ -304,6 +304,17 @@ const nb: Docs = {
                 "Under Konto og sikkerhet kan du koble til e-posten og kalenderen din (kun lesetilgang). E-post du sender til og får fra kontakter i CRM-et, havner da automatisk i historikken. Annen e-post leses ikke inn. Du kan også legge til delte postkasser og knytte en postkasse til et prosjekt.",
               ],
             },
+            {
+              h: "Gmail og Google Workspace",
+              p: [
+                "Gmail kan sende en kopi av all innkommende e-post til CRM-adressen. Bare e-post fra kontakter og bedrifter som finnes i CRM-et, blir lagret – resten ignoreres. E-post du sender selv, legger du i Bcc.",
+              ],
+              steps: [
+                "I Gmail på PC: tannhjulet → Se alle innstillingene → Videresending og POP/IMAP → «Legg til en videresendingsadresse», og lim inn CRM-adressen.",
+                "Bekreftelseskoden fra Google dukker opp under E-post → «Venter på kontakt» i AllSeats. Skriv den inn i Gmail.",
+                "Velg «Videresend en kopi av innkommende e-post til» CRM-adressen, behold Gmail-kopien i innboksen og lagre.",
+              ],
+            },
           ],
         },
         {
@@ -325,7 +336,7 @@ const nb: Docs = {
             {
               p: [
                 "Del en lenke der kunder selv velger en ledig tid for et møte med deg. Under Konto og sikkerhet → Bookinglenke velger du adresse, møtenavn, sted eller videolenke, varighet, dager og klokkeslett, pause mellom møter, minste varsel og hvor langt frem i tid det kan bookes.",
-                "Møtet blir en oppgave for deg, og kunden blir en kontakt. Har du koblet til Outlook, blir opptatte tider i kalenderen ikke tilbudt.",
+                "Møtet blir en oppgave for deg, og kunden blir en kontakt. Har du koblet til Outlook eller Google Kalender under Konto og sikkerhet, blir opptatte tider i kalenderen ikke tilbudt.",
               ],
             },
           ],
@@ -807,6 +818,17 @@ const en: Docs = {
                 "Under Account and security you can connect your e-mail and calendar (read only). E-mail you exchange with contacts in the CRM is then added to their history automatically. Other e-mail is not read. You can also add shared mailboxes and link a mailbox to a project.",
               ],
             },
+            {
+              h: "Gmail and Google Workspace",
+              p: [
+                "Gmail can send a copy of all incoming e-mail to the CRM address. Only e-mail from contacts and companies that exist in the CRM is saved – the rest is ignored. For e-mail you send yourself, use Bcc.",
+              ],
+              steps: [
+                "In Gmail on a computer: the gear → See all settings → Forwarding and POP/IMAP → “Add a forwarding address”, and paste the CRM address.",
+                "The confirmation code from Google shows up under E-mail → “Waiting for a contact” in AllSeats. Enter it in Gmail.",
+                "Choose “Forward a copy of incoming mail to” the CRM address, keep Gmail's copy in the Inbox and save.",
+              ],
+            },
           ],
         },
         {
@@ -828,7 +850,7 @@ const en: Docs = {
             {
               p: [
                 "Share a link where customers pick a free time for a meeting with you themselves. Under Account and security → Booking link you choose the address, meeting name, place or video link, duration, days and hours, break between meetings, minimum notice and how far ahead people can book.",
-                "The meeting becomes a task for you and the customer becomes a contact. With Outlook connected, busy times in your calendar are not offered.",
+                "The meeting becomes a task for you and the customer becomes a contact. With Outlook or Google Calendar connected under Account and security, busy times in your calendar are not offered.",
               ],
             },
           ],

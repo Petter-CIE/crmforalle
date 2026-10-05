@@ -2294,6 +2294,7 @@ export type Database = {
           p_subject: string | null;
           p_body: string | null;
           p_sent_at: string | null;
+          p_auto?: boolean;
         };
         Returns: string;
       };

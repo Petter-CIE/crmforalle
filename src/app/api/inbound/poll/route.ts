@@ -4,7 +4,7 @@ import { simpleParser } from "mailparser";
 import { addresses, DOMAIN, forwardedFrom, htmlToText, tokensOf } from "@/lib/inbound-mail";
 import type { Database } from "@/lib/database.types";
 
-// Reads the One.com catch-all mailbox and files mail sent to crm-<token>@allseats.no.
+// Reads the One.com catch-all mailbox and files mail sent (or auto-forwarded) to crm-<token>@allseats.no.
 // Called every minute by pg_cron. It needs no secret: anyone calling it only makes the CRM
 // check the mailbox sooner, and a database lock keeps it to one run per 40 seconds.
 
@@ -52,6 +52,8 @@ export async function GET() {
           continue;
         }
         const mail = await simpleParser(msg.source);
+        // Automatic forwarding (e.g. a Gmail filter) sends everything: keep only mail with known contacts.
+        const auto = mail.headers.has("x-forwarded-to") || mail.headers.has("x-forwarded-for");
         const from = addresses(mail.from)[0];
         const text = (mail.text?.trim() || (mail.html ? htmlToText(mail.html) : "")).slice(0, 20000);
         const attachments = mail.attachments.filter((a) => a.contentDisposition === "attachment").map((a) => a.filename || "?");
@@ -69,6 +71,7 @@ export async function GET() {
             p_subject: mail.subject ?? null,
             p_body: body,
             p_sent_at: (mail.date ?? new Date()).toISOString(),
+            p_auto: auto,
           });
           if (error) ok = false;
         }
