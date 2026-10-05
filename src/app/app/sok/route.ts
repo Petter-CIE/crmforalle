@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { searchBrreg } from "@/lib/brreg";
 import { contactName, formatMoney } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { requireWorkspace } from "@/lib/session";
@@ -8,7 +9,7 @@ const LIMIT = 20;
 /** Type-to-search for pickers (company, contact, deal, product) and the global search (all). */
 export async function GET(req: NextRequest) {
   const { supabase, workspace } = await requireWorkspace();
-  const { dateLocale } = await getI18n();
+  const { t, dateLocale } = await getI18n();
   const type = req.nextUrl.searchParams.get("type");
   // Characters with a meaning in PostgREST filters (and the % wildcard) are dropped.
   const q = (req.nextUrl.searchParams.get("q") ?? "")
@@ -23,7 +24,19 @@ export async function GET(req: NextRequest) {
     let query = supabase.from("companies").select("id, name, city, org_number").eq("workspace_id", ws).order("name").limit(LIMIT);
     if (q) query = /^\d{3,9}$/.test(q) ? query.like("org_number", `${q}%`) : query.ilike("name", like);
     const { data } = await query;
-    return Response.json((data ?? []).map((c) => ({ id: c.id, label: c.name, hint: [c.org_number, c.city].filter(Boolean).join(" · ") || null })));
+    const items = (data ?? []).map((c) => ({ id: c.id, label: c.name, hint: [c.org_number, c.city].filter(Boolean).join(" · ") || null }));
+    // Pickers that can add companies also offer matches from Brønnøysundregistrene ("brreg:<org nr>").
+    const digits = q.replace(/\s/g, "");
+    const lookUp = req.nextUrl.searchParams.get("brreg") === "1" && items.length < 5 && (/^\d{9}$/.test(digits) || (q.length >= 3 && !/^\d+$/.test(digits)));
+    if (lookUp) {
+      const known = new Set((data ?? []).map((c) => c.org_number).filter(Boolean));
+      const hits = await searchBrreg(q, 5).catch(() => []);
+      for (const b of hits) {
+        if (known.has(b.orgNumber)) continue;
+        items.push({ id: `brreg:${b.orgNumber}`, label: b.name, hint: [t.crm.fromBrreg(b.orgNumber), b.city].filter(Boolean).join(" · ") });
+      }
+    }
+    return Response.json(items);
   }
 
   if (type === "contact") {

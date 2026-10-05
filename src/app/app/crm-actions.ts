@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import { normalizeOrgNumber, searchBrreg } from "@/lib/brreg";
 import { parseProjectColor } from "@/lib/colors";
 import { dbErrorKey, opt } from "@/lib/crm";
 import { loadCustomFields, parseCustomValues, type CustomEntity } from "@/lib/custom-fields";
@@ -90,6 +91,59 @@ export async function updateCompany(_p: FormResult, formData: FormData): Promise
 }
 
 // ---------------------------------------------------------------- contacts
+type Ctx = Awaited<ReturnType<typeof requireWorkspace>>;
+
+/**
+ * The company picker submits a company id, or "brreg:<org number>" for a company found in
+ * Brønnøysundregistrene that isn't in the CRM yet. That one is added first (or the existing
+ * company with the same org number is reused).
+ */
+async function resolveCompanyRef(ctx: Ctx, raw: FormDataEntryValue | null): Promise<{ id: string | null; error?: string }> {
+  const value = typeof raw === "string" ? raw : "";
+  const direct = id(value);
+  if (direct || !value.startsWith("brreg:")) return { id: direct };
+  const org = normalizeOrgNumber(value.slice(6));
+  if (!org) return { id: null };
+  const { supabase, user, workspace } = ctx;
+  const { data: existing } = await supabase
+    .from("companies")
+    .select("id")
+    .eq("workspace_id", workspace.id)
+    .eq("org_number", org)
+    .limit(1)
+    .maybeSingle();
+  if (existing) return { id: existing.id };
+  const [b] = await searchBrreg(org, 1).catch(() => []);
+  if (!b) return { id: null };
+  const { data, error } = await supabase
+    .from("companies")
+    .insert({
+      workspace_id: workspace.id,
+      name: b.name.slice(0, 200),
+      org_number: b.orgNumber,
+      address: b.address,
+      postal_code: b.postalCode,
+      city: b.city,
+      nace_code: b.naceCode,
+      nace_description: b.naceDescription,
+      website: b.website,
+      email: b.email,
+      phone: b.phone,
+      owner_id: user.id,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+  if (error) return { id: null, error: await errorText(error) };
+  revalidatePath("/app/bedrifter");
+  return { id: data.id };
+}
+
+/** A contact needs no particular field, but at least one thing to recognise it by. */
+function hasIdentity(f: { first_name: string; last_name: string | null; email: string | null; phone: string | null; company_id: string | null }) {
+  return !!(f.first_name || f.last_name || f.email || f.phone || f.company_id);
+}
+
 function contactFields(formData: FormData) {
   return {
     first_name: String(formData.get("first_name") ?? "").trim().slice(0, 100),
@@ -111,7 +165,10 @@ export async function createContact(_p: FormResult, formData: FormData): Promise
   const { supabase, user, workspace } = ctx;
   const { t } = await getI18n();
   const fields = { ...contactFields(formData), custom: await customFrom(ctx, "contact", formData) };
-  if (!fields.first_name) return { error: t.crm.required };
+  const company = await resolveCompanyRef(ctx, formData.get("company_id"));
+  if (company.error) return { error: company.error };
+  fields.company_id = company.id;
+  if (!hasIdentity(fields)) return { error: t.contacts.needSomething };
   const { data, error } = await supabase
     .from("contacts")
     .insert({ ...fields, workspace_id: workspace.id, owner_id: user.id, created_by: user.id })
@@ -133,7 +190,11 @@ export async function updateContact(_p: FormResult, formData: FormData): Promise
   const { t } = await getI18n();
   const contactId = id(formData.get("id"));
   const fields = { ...contactFields(formData), custom: await customFrom(ctx, "contact", formData) };
-  if (!contactId || !fields.first_name) return { error: t.crm.required };
+  if (!contactId) return { error: t.crm.required };
+  const company = await resolveCompanyRef(ctx, formData.get("company_id"));
+  if (company.error) return { error: company.error };
+  fields.company_id = company.id;
+  if (!hasIdentity(fields)) return { error: t.contacts.needSomething };
   const { error } = await supabase.from("contacts").update(fields).eq("id", contactId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error) };
   revalidatePath(`/app/kontakter/${contactId}`);

@@ -47,8 +47,8 @@ export function ContactForm({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={`${c.firstName} *`} htmlFor="k_first">
-          <Input id="k_first" name="first_name" required defaultValue={initial.first_name} autoFocus />
+        <Field label={c.firstName} htmlFor="k_first">
+          <Input id="k_first" name="first_name" defaultValue={initial.first_name} autoFocus />
         </Field>
         <Field label={c.lastName} htmlFor="k_last">
           <Input id="k_last" name="last_name" defaultValue={initial.last_name ?? ""} />
@@ -71,6 +71,7 @@ export function ContactForm({
             placeholder={t.crm.searchCompany}
             noneLabel={c.noCompany}
             emptyText={t.crm.noResults}
+            brreg
           />
         </Field>
       </div>
