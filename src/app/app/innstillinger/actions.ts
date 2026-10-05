@@ -66,7 +66,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
       error: error.code === "23505" ? t.settings.alreadyInvited : t.settings.inviteFailed,
     };
   }
-  revalidatePath("/app/innstillinger");
+  revalidatePath("/app/team");
 
   const link = `${siteUrl()}/invitasjon/${data.token}`;
   // Send a login e-mail that lands on the invitation page. Uses Supabase Auth e-mail.
@@ -95,7 +95,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
 export async function revokeInvitation(formData: FormData) {
   const { supabase, workspace } = await managerContext();
   await supabase.from("invitations").delete().eq("id", String(formData.get("id"))).eq("workspace_id", workspace.id);
-  revalidatePath("/app/innstillinger");
+  revalidatePath("/app/team");
 }
 
 export async function changeRole(formData: FormData) {
@@ -104,7 +104,7 @@ export async function changeRole(formData: FormData) {
   const role = String(formData.get("role")) as MemberRole;
   if (!ASSIGNABLE.includes(role) || userId === user.id) return;
   await supabase.from("members").update({ role }).eq("workspace_id", workspace.id).eq("user_id", userId);
-  revalidatePath("/app/innstillinger");
+  revalidatePath("/app/team");
 }
 
 /** Limits a user to the chosen projects, or with none chosen gives access to the whole company. */
@@ -141,7 +141,7 @@ export async function removeMember(formData: FormData) {
   const userId = String(formData.get("user_id"));
   if (userId === user.id) return;
   await supabase.from("members").delete().eq("workspace_id", workspace.id).eq("user_id", userId);
-  revalidatePath("/app/innstillinger");
+  revalidatePath("/app/team");
 }
 
 const LOGO_PATH = /^[0-9a-f-]{36}\/logo-\d+\.(png|jpg)$/;
