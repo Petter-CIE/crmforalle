@@ -165,7 +165,7 @@ export default async function TeamPage() {
                         <span className="max-w-[12rem] truncate text-xs text-muted">{accessLabel(inv.project_ids)}</span>
                       )}
                       <span className="text-xs text-muted">
-                        {s.expires} {new Date(inv.expires_at).toLocaleDateString(dateLocale)}
+                        {s.expires} {new Date(inv.expires_at).toLocaleDateString(dateLocale, { timeZone: "Europe/Oslo" })}
                       </span>
                       <form action={revokeInvitation}>
                         <input type="hidden" name="id" value={inv.id} />

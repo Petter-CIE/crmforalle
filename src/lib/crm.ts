@@ -7,13 +7,16 @@ export function formatMoney(value: number, dateLocale: string) {
   return new Intl.NumberFormat(dateLocale, { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(value);
 }
 
+/** Times are always shown in Norwegian time – the server runs in UTC. */
+export const APP_TIME_ZONE = "Europe/Oslo";
+
 export function formatDate(value: string | null | undefined, dateLocale: string) {
   if (!value) return "";
-  return new Date(value).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" });
+  return new Date(value).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric", timeZone: APP_TIME_ZONE });
 }
 
 export function formatDateTime(value: string, dateLocale: string) {
-  return new Date(value).toLocaleString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(value).toLocaleString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: APP_TIME_ZONE });
 }
 
 /**
