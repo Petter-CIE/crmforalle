@@ -600,6 +600,16 @@ const nb = {
       `Invitasjonen er opprettet, men e-post kunne ikke sendes akkurat nå (for mange e-poster). Send lenken til ${email} selv:`,
     inviteMailFailed: (email: string) =>
       `Invitasjonen er opprettet, men e-post kunne ikke sendes. Send lenken til ${email} selv:`,
+    access: "Tilgang",
+    accessTitle: "Tilgang til prosjekter",
+    accessHelp: "Velg ingen prosjekter for tilgang til hele bedriften. Velger du prosjekter, ser brukeren bare dem. Administratorer ser alltid alt.",
+    accessAll: "Hele bedriften",
+    accessOnly: (names: string) => `Bare: ${names}`,
+    accessNone: "Bare: (ingen prosjekter igjen)",
+    accessEdit: "Endre tilgang",
+    accessSave: "Lagre tilgang",
+    accessAdminNote: "Administratorer ser alltid hele bedriften.",
+    noProjects: "Bedriften har ingen prosjekter ennå.",
   },
   invitation: {
     title: "Du er invitert",
@@ -2278,6 +2288,16 @@ const en: Dictionary = {
       `The invitation was created, but the e-mail couldn't be sent right now (too many e-mails). Send the link to ${email} yourself:`,
     inviteMailFailed: (email: string) =>
       `The invitation was created, but the e-mail couldn't be sent. Send the link to ${email} yourself:`,
+    access: "Access",
+    accessTitle: "Access to projects",
+    accessHelp: "Choose no projects for access to the whole company. If you choose projects, the user only sees those. Admins always see everything.",
+    accessAll: "Whole company",
+    accessOnly: (names: string) => `Only: ${names}`,
+    accessNone: "Only: (no projects left)",
+    accessEdit: "Change access",
+    accessSave: "Save access",
+    accessAdminNote: "Admins always see the whole company.",
+    noProjects: "The company has no projects yet.",
   },
   invitation: {
     title: "You're invited",

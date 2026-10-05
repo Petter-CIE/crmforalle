@@ -9,6 +9,19 @@ import type { MemberRole } from "@/lib/database.types";
 export type FormState = { ok?: boolean; error?: string; message?: string; link?: string };
 
 const ASSIGNABLE: MemberRole[] = ["admin", "user"];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/** Project ids from the form that really are projects of this company. */
+async function validProjectIds(
+  supabase: Awaited<ReturnType<typeof managerContext>>["supabase"],
+  workspaceId: string,
+  formData: FormData,
+) {
+  const wanted = [...new Set(formData.getAll("project_ids").map(String).filter((v) => UUID.test(v)))];
+  if (wanted.length === 0) return [];
+  const { data } = await supabase.from("projects").select("id").eq("workspace_id", workspaceId).in("id", wanted);
+  return (data ?? []).map((p) => p.id);
+}
 
 async function managerContext() {
   const ctx = await requireWorkspace();
@@ -40,10 +53,12 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   const role = String(formData.get("role") ?? "user") as MemberRole;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail };
   if (!ASSIGNABLE.includes(role)) return { error: t.settings.invalidRole };
+  // Admins always see everything, so only plain users can be limited to projects.
+  const projectIds = role === "user" ? await validProjectIds(supabase, workspace.id, formData) : [];
 
   const { data, error } = await supabase
     .from("invitations")
-    .insert({ workspace_id: workspace.id, email, role, invited_by: user.id })
+    .insert({ workspace_id: workspace.id, email, role, invited_by: user.id, project_ids: projectIds })
     .select("token")
     .single();
   if (error) {
@@ -90,6 +105,35 @@ export async function changeRole(formData: FormData) {
   if (!ASSIGNABLE.includes(role) || userId === user.id) return;
   await supabase.from("members").update({ role }).eq("workspace_id", workspace.id).eq("user_id", userId);
   revalidatePath("/app/innstillinger");
+}
+
+/** Limits a user to the chosen projects, or with none chosen gives access to the whole company. */
+export async function setMemberProjects(formData: FormData) {
+  const { supabase, user, workspace } = await managerContext();
+  const userId = String(formData.get("user_id"));
+  if (!UUID.test(userId) || userId === user.id) return;
+  const projectIds = await validProjectIds(supabase, workspace.id, formData);
+
+  const { error: delError } = await supabase
+    .from("project_members")
+    .delete()
+    .eq("workspace_id", workspace.id)
+    .eq("user_id", userId);
+  if (delError) throw delError;
+  if (projectIds.length > 0) {
+    const { error } = await supabase
+      .from("project_members")
+      .insert(projectIds.map((pid) => ({ workspace_id: workspace.id, project_id: pid, user_id: userId, added_by: user.id })));
+    if (error) throw error;
+  }
+  const { error } = await supabase
+    .from("members")
+    .update({ restricted: projectIds.length > 0 })
+    .eq("workspace_id", workspace.id)
+    .eq("user_id", userId)
+    .neq("role", "owner");
+  if (error) throw error;
+  revalidatePath("/app", "layout");
 }
 
 export async function removeMember(formData: FormData) {

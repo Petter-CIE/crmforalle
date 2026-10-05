@@ -7,7 +7,7 @@ import { EmptyHero, PageHeader } from "@/components/ui-extra";
 import { createProject } from "@/app/app/crm-actions";
 import { listMembers } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
-import { requireWorkspace } from "@/lib/session";
+import { isProjectLimited, requireWorkspace } from "@/lib/session";
 import { ProjectFields } from "./project-fields";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -97,7 +97,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/app/pro
             </div>
           )}
         </div>
-        {!showArchived && (
+        {!showArchived && !isProjectLimited(workspace) && (
           <Card>
             <h2 className="mb-3 font-semibold">{t.projects.new}</h2>
             <ActionForm action={createProject} submitLabel={t.projects.new} pendingLabel={t.crm.saving}>

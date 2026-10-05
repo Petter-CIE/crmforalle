@@ -19,7 +19,48 @@ export type SettingsTexts = {
   copy: string;
   copied: string;
   inviteLink: string;
+  accessTitle: string;
+  accessHelp: string;
+  noProjects: string;
 };
+
+export type ProjectOption = { id: string; name: string };
+
+/** Checkboxes for the projects a user may see. None ticked = the whole company. */
+export function ProjectAccessFields({
+  projects,
+  selected = [],
+  t,
+}: {
+  projects: ProjectOption[];
+  selected?: string[];
+  t: Pick<SettingsTexts, "accessTitle" | "accessHelp" | "noProjects">;
+}) {
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-medium">{t.accessTitle}</legend>
+      <p className="text-xs text-muted">{t.accessHelp}</p>
+      {projects.length === 0 ? (
+        <p className="text-xs text-muted">{t.noProjects}</p>
+      ) : (
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          {projects.map((p) => (
+            <label key={p.id} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="project_ids"
+                value={p.id}
+                defaultChecked={selected.includes(p.id)}
+                className="h-4 w-4 accent-[var(--brand)]"
+              />
+              {p.name}
+            </label>
+          ))}
+        </div>
+      )}
+    </fieldset>
+  );
+}
 
 export function WorkspaceForm({ name, orgNumber, t }: { name: string; orgNumber: string; t: SettingsTexts }) {
   const [state, action, pending] = useActionState<FormState, FormData>(updateWorkspace, {});
@@ -44,9 +85,10 @@ export function WorkspaceForm({ name, orgNumber, t }: { name: string; orgNumber:
   );
 }
 
-export function InviteForm({ t }: { t: SettingsTexts }) {
+export function InviteForm({ t, projects }: { t: SettingsTexts; projects: ProjectOption[] }) {
   const [state, action, pending] = useActionState<FormState, FormData>(inviteMember, {});
   const [copied, setCopied] = useState(false);
+  const [role, setRole] = useState("user");
   return (
     <form action={action} className="space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
@@ -56,7 +98,13 @@ export function InviteForm({ t }: { t: SettingsTexts }) {
         </div>
         <div>
           <Label htmlFor="invite_role">{t.role}</Label>
-          <Select id="invite_role" name="role" defaultValue="user" className="w-full sm:w-auto">
+          <Select
+            id="invite_role"
+            name="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full sm:w-auto"
+          >
             <option value="user">{t.roleUser}</option>
             <option value="admin">{t.roleAdmin}</option>
           </Select>
@@ -65,6 +113,7 @@ export function InviteForm({ t }: { t: SettingsTexts }) {
           {pending ? t.inviting : t.invite}
         </Button>
       </div>
+      {role === "user" && <ProjectAccessFields projects={projects} t={t} />}
       {state.error && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.link && (
         <div className="space-y-2">
