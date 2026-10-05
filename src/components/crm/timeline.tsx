@@ -11,6 +11,24 @@ import { requireWorkspace } from "@/lib/session";
 /** Emoji per activity type, also used on the "Today" page. */
 export const ACTIVITY_ICON: Record<string, string> = { note: "📝", call: "📞", meeting: "🤝", email: "✉️", created: "✨", stage_change: "➡️", won: "🏆", lost: "✖️", lead: "🌐", brreg: "🏛️", email_sent: "📤" };
 
+const EMAIL_TYPES = ["email", "email_sent"];
+
+/** E-mails start with the subject line; the rest opens on click so long mails don't flood the timeline. */
+function EmailBody({ body }: { body: string }) {
+  const [subject, ...rest] = body.split("\n");
+  const content = rest.join("\n").trim();
+  if (!content) return <p className="mt-1 text-sm font-medium">{subject}</p>;
+  return (
+    <details className="group mt-1">
+      <summary className="flex cursor-pointer list-none items-start gap-1.5 text-sm font-medium hover:text-brand [&::-webkit-details-marker]:hidden">
+        <span aria-hidden className="mt-0.5 text-xs text-muted transition-transform group-open:rotate-90">▶</span>
+        <span>{subject}</span>
+      </summary>
+      <p className="mt-2 whitespace-pre-wrap border-l-2 border-border pl-3 text-sm">{content}</p>
+    </details>
+  );
+}
+
 type Scope = { company_id?: string | null; contact_id?: string | null; deal_id?: string | null };
 
 /** Notes + system events for a company, contact or deal, with a form to add a note. */
@@ -97,7 +115,7 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
                   </DeleteButton>
                 )}
               </div>
-              {!system(a.type) && a.body && <p className="mt-1 whitespace-pre-wrap text-sm">{a.body}</p>}
+              {!system(a.type) && a.body && (EMAIL_TYPES.includes(a.type) ? <EmailBody body={a.body} /> : <p className="mt-1 whitespace-pre-wrap text-sm">{a.body}</p>)}
             </li>
           ))}
         </ol>
