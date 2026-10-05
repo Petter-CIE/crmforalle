@@ -34,6 +34,11 @@ export default async function FaqPage() {
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-20">
         <h1 className="font-display text-4xl font-bold tracking-[-0.02em] text-[var(--ink)]">{f.title}</h1>
         <p className="mt-3 max-w-[60ch] text-muted">{f.lead}</p>
+        <p className="mt-2 text-sm">
+          <Link href="/dokumentasjon" className="font-medium text-brand hover:underline">
+            {locale === "en" ? "Read the full documentation" : "Les hele dokumentasjonen"} →
+          </Link>
+        </p>
 
         <nav aria-label={t.help.contents} className="mt-6 flex flex-wrap gap-2 text-sm">
           {f.groups.map((g) => (
