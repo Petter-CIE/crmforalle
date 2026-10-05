@@ -438,7 +438,7 @@ const nb = {
   },
   contacts: {
     address: "Adresse",
-    addressHint: "for privatpersoner",
+    addressHint: "hvis annen enn bedriftens",
     street: "Gateadresse",
     postalCode: "Postnr.",
     city: "Poststed",
@@ -2141,7 +2141,7 @@ const en: Dictionary = {
   },
   contacts: {
     address: "Address",
-    addressHint: "for private persons",
+    addressHint: "if different from the company's",
     street: "Street address",
     postalCode: "Postcode",
     city: "City",

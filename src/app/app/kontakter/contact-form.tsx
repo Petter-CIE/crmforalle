@@ -79,6 +79,7 @@ export function ContactForm({
           b2b: c.kindB2b,
           b2c: c.kindB2c,
           address: c.address,
+          addressHint: c.addressHint,
           street: c.street,
           postalCode: c.postalCode,
           city: c.city,
