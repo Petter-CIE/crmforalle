@@ -3,6 +3,7 @@ import { ActionForm } from "@/components/action-form";
 import { Input } from "@/components/ui";
 import { DuplicateWarning } from "@/components/crm/duplicate-warning";
 import { ContactKindFields, type ContactKind } from "./contact-kind-fields";
+import { ProjectDot } from "@/components/crm/project-dot";
 import { Field, Textarea } from "@/components/ui-extra";
 import type { FormResult } from "@/app/app/crm-actions";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -30,6 +31,8 @@ export function ContactForm({
   t,
   hidden = {},
   extra,
+  projects = [],
+  selectedProjects = [],
 }: {
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: ContactValues;
@@ -39,6 +42,9 @@ export function ContactForm({
   hidden?: Record<string, string>;
   /** Extra inputs (custom fields), rendered before the notes. */
   extra?: ReactNode;
+  /** Projects to choose from, and the ones ticked. */
+  projects?: { id: string; name: string; color: string | null }[];
+  selectedProjects?: string[];
 }) {
   const c = t.contacts;
   return (
@@ -88,6 +94,30 @@ export function ContactForm({
           consentB2c: c.consentB2c,
         }}
       />
+      {projects.length > 0 && (
+        <fieldset>
+          <input type="hidden" name="projects_field" value="1" />
+          <legend className="mb-1 text-sm font-medium">{t.projects.title}</legend>
+          <div className="flex flex-wrap gap-2">
+            {projects.map((p) => (
+              <label
+                key={p.id}
+                className="flex cursor-pointer items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
+              >
+                <input
+                  type="checkbox"
+                  name="project_ids"
+                  value={p.id}
+                  defaultChecked={selectedProjects.includes(p.id)}
+                  className="h-4 w-4 accent-[var(--brand)]"
+                />
+                <ProjectDot color={p.color} />
+                {p.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       {extra}
       <Field label={t.crm.notes} htmlFor="k_notes">
         <Textarea id="k_notes" name="notes" rows={3} defaultValue={initial.notes ?? ""} />

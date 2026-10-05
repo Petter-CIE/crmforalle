@@ -144,6 +144,12 @@ function hasIdentity(f: { first_name: string; last_name: string | null; email: s
   return !!(f.first_name || f.last_name || f.email || f.phone || f.company_id);
 }
 
+/** Projects ticked in the contact form (plus the older single project_id field). */
+function chosenProjects(formData: FormData) {
+  const ids = [...formData.getAll("project_ids"), formData.get("project_id")].map((v) => id(v)).filter((v): v is string => !!v);
+  return [...new Set(ids)];
+}
+
 function contactFields(formData: FormData) {
   return {
     first_name: String(formData.get("first_name") ?? "").trim().slice(0, 100),
@@ -176,9 +182,11 @@ export async function createContact(_p: FormResult, formData: FormData): Promise
     .select("id")
     .single();
   if (error) return { error: await errorText(error) };
-  const projectId = id(formData.get("project_id"));
-  if (projectId) {
-    await supabase.from("project_contacts").insert({ workspace_id: workspace.id, project_id: projectId, contact_id: data.id });
+  const projectIds = chosenProjects(formData);
+  if (projectIds.length > 0) {
+    await supabase
+      .from("project_contacts")
+      .insert(projectIds.map((pid) => ({ workspace_id: workspace.id, project_id: pid, contact_id: data.id })));
   }
   revalidatePath("/app/kontakter");
   await flash("created");
@@ -198,6 +206,21 @@ export async function updateContact(_p: FormResult, formData: FormData): Promise
   if (!hasIdentity(fields)) return { error: t.contacts.needSomething };
   const { error } = await supabase.from("contacts").update(fields).eq("id", contactId).eq("workspace_id", workspace.id);
   if (error) return { error: await errorText(error) };
+  if (formData.get("projects_field") === "1") {
+    const wanted = chosenProjects(formData);
+    const { data: current } = await supabase.from("project_contacts").select("project_id").eq("contact_id", contactId);
+    const have = (current ?? []).map((r) => r.project_id);
+    const remove = have.filter((pid) => !wanted.includes(pid));
+    const add = wanted.filter((pid) => !have.includes(pid));
+    if (remove.length > 0) {
+      await supabase.from("project_contacts").delete().eq("contact_id", contactId).in("project_id", remove);
+    }
+    if (add.length > 0) {
+      await supabase
+        .from("project_contacts")
+        .insert(add.map((pid) => ({ workspace_id: workspace.id, project_id: pid, contact_id: contactId })));
+    }
+  }
   revalidatePath(`/app/kontakter/${contactId}`);
   await flash("saved");
   redirect(`/app/kontakter/${contactId}`);
