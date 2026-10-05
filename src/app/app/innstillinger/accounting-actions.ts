@@ -54,8 +54,12 @@ export async function connectTripletex(_prev: AccountingState, formData: FormDat
   let company: string;
   try {
     company = await verifyTripletex(token);
-  } catch {
-    return { error: a.badToken };
+  } catch (e) {
+    const code = e instanceof Error ? e.message : String(e);
+    console.error("tripletex connect failed", code);
+    // 401/403 when creating the session = Tripletex rejected the key itself.
+    if (/^tripletex_session_(401|403)$/.test(code)) return { error: a.badToken };
+    return { error: a.serviceError.replace("{code}", code.replace(/^tripletex_/, "")) };
   }
   const { error } = await ctx.supabase.rpc("save_integration", {
     p_workspace: ctx.workspace.id,
