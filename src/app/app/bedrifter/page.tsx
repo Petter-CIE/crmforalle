@@ -40,8 +40,11 @@ export default async function CompaniesPage({ searchParams }: PageProps<"/app/be
   if (f.city) req = req.ilike("city", `%${safeLike(f.city)}%`);
   if (f.inactive) req = req.or(`last_activity_at.is.null,last_activity_at.lt.${inactiveSince(f.inactive)}`);
   if (query) {
-    const safe = query.replace(/[%,()]/g, " ");
-    req = req.or(`name.ilike.%${safe}%,org_number.ilike.%${safe.replace(/\s/g, "")}%,city.ilike.%${safe}%`);
+    // Name or org. number only (the city has its own filter). Every word must be in the name, so
+    // "bergen lastebil" finds "Bergen Lastebilkontor AS" but not every company located in Bergen.
+    const digits = query.replace(/\s/g, "");
+    if (/^\d{3,9}$/.test(digits)) req = req.like("org_number", `${digits}%`);
+    else for (const word of safeLike(query).split(/\s+/).filter(Boolean)) req = req.ilike("name", `%${word}%`);
   }
   const [{ data: companies }, { data: projects }, members, { data: views }] = await Promise.all([
     req,
