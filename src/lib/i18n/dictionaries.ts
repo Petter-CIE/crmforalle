@@ -131,7 +131,7 @@ const nb = {
       },
       {
         name: "Bedrift",
-        price: 590,
+        price: 990,
         text: "For bedrifter med mange kunder.",
         items: ["Ubegrenset antall brukere", "Opptil 25 000 bedrifter og kontakter", "Alt i Start", "Tripletex og Fiken inkludert (kommer)"],
         addons: ["Flere kontakter: +25 000 for 250 kr/mnd"],
@@ -1838,7 +1838,7 @@ const en: Dictionary = {
       },
       {
         name: "Business",
-        price: 590,
+        price: 990,
         text: "For companies with many customers.",
         items: ["Unlimited users", "Up to 25,000 companies and contacts", "Everything in Start", "Tripletex and Fiken included (coming)"],
         addons: ["More contacts: +25,000 for NOK 250/mo"],

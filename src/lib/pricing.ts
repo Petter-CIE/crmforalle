@@ -1,7 +1,7 @@
 import type { PlanType } from "@/lib/database.types";
 
 /** List prices in NOK per month (ex. VAT). */
-export const PLAN_PRICE: Record<PlanType, number> = { trial: 0, free: 0, start: 249, bedrift: 590 };
+export const PLAN_PRICE: Record<PlanType, number> = { trial: 0, free: 0, start: 249, bedrift: 990 };
 
 /** Tripletex/Fiken add-on for the Start plan (included in Bedrift). */
 export const ACCOUNTING_ADDON_PRICE = 50;

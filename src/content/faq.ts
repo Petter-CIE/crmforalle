@@ -15,7 +15,7 @@ const nb: Faq = {
         {
           q: "Hva koster AllSeats CRM?",
           a: [
-            "Start koster 249 kr/mnd og Bedrift 590 kr/mnd, eks. mva. Prisen gjelder for hele bedriften – alle brukere er inkludert.",
+            "Start koster 249 kr/mnd og Bedrift 990 kr/mnd, eks. mva. Prisen gjelder for hele bedriften – alle brukere er inkludert.",
             "Betaler dere årlig, får dere 2 måneder gratis (dere betaler for 10 av 12 måneder).",
           ],
           link: { href: "/#pris", label: "Se prisene" },
@@ -347,7 +347,7 @@ const en: Faq = {
         {
           q: "How much does AllSeats CRM cost?",
           a: [
-            "Start costs NOK 249/month and Bedrift NOK 590/month, excl. VAT. The price covers the whole company – every user is included.",
+            "Start costs NOK 249/month and Bedrift NOK 990/month, excl. VAT. The price covers the whole company – every user is included.",
             "Pay yearly and you get 2 months free (you pay for 10 of 12 months).",
           ],
           link: { href: "/#pris", label: "See pricing" },
