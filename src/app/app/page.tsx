@@ -317,7 +317,7 @@ export default async function TodayPage() {
                   {a.body && !["stage_change", "created", "won", "lost"].includes(a.type) && <p className="line-clamp-2 text-xs text-muted">{a.body}</p>}
                   <p className="text-xs text-muted">
                     {who && `${who} · `}
-                    {new Date(a.occurred_at).toLocaleString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(a.occurred_at).toLocaleString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Oslo" })}
                   </p>
                 </div>
               </li>
