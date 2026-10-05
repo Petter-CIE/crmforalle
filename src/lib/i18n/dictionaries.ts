@@ -10,6 +10,10 @@ export function isLocale(v: unknown): v is Locale {
 const nb = {
   meta: {
     description: "CRM for hele bedriften – én fast pris, alle brukere inkludert.",
+    homeTitle: "AllSeats CRM – enkelt CRM for små bedrifter til én fast pris",
+    homeDescription:
+      "Norsk CRM for små og mellomstore bedrifter: kunder, kontakter, salg, tilbud og oppgaver på ett sted. Én fast månedspris for hele bedriften – ubegrenset antall brukere, data lagret i EU. Prøv gratis.",
+    registerDescription: "Opprett en gratis prøvekonto i AllSeats CRM. Ingen kortinformasjon, ubegrenset antall brukere og én fast pris etterpå.",
   },
   common: {
     language: "Språk",
@@ -1713,6 +1717,10 @@ export type Dictionary = typeof nb;
 const en: Dictionary = {
   meta: {
     description: "CRM for the whole company – one flat price, every user included.",
+    homeTitle: "AllSeats CRM – simple CRM for small businesses at one flat price",
+    homeDescription:
+      "Norwegian CRM for small and medium-sized businesses: customers, contacts, sales, quotes and tasks in one place. One flat monthly price for the whole company – unlimited users, data stored in the EU. Try it free.",
+    registerDescription: "Create a free trial account in AllSeats CRM. No card details, unlimited users and one flat price afterwards.",
   },
   common: {
     language: "Language",

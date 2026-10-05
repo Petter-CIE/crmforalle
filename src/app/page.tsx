@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -5,6 +6,8 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
+import { PLAN_PRICE } from "@/lib/pricing";
+import { SITE_URL } from "@/lib/site-url";
 import { PricingPlans } from "./pricing-plans";
 import { SeatCalculator } from "./seat-calculator";
 
@@ -21,6 +24,50 @@ function CtaLink({ href, children, tone = "brand" }: { href: string; children: R
   );
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: { absolute: t.meta.homeTitle },
+    description: t.meta.homeDescription,
+    alternates: { canonical: "/" },
+  };
+}
+
+/** Structured data so search engines know this is business software with a price. */
+function jsonLd(description: string) {
+  const offer = (name: string, price: number) => ({
+    "@type": "Offer",
+    name,
+    price,
+    priceCurrency: "NOK",
+    priceSpecification: { "@type": "UnitPriceSpecification", price, priceCurrency: "NOK", unitText: "MONTH", valueAddedTaxIncluded: false },
+  });
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        name: "AllSeats CRM",
+        url: `${SITE_URL}/`,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web, iOS, Android",
+        inLanguage: ["nb", "en"],
+        description,
+        offers: [offer("Start", PLAN_PRICE.start), offer("Bedrift", PLAN_PRICE.bedrift)],
+        publisher: { "@id": `${SITE_URL}/#org` },
+      },
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#org`,
+        name: "CIE AS",
+        url: `${SITE_URL}/`,
+        email: "post@allseats.no",
+        address: { "@type": "PostalAddress", streetAddress: "Bjørøyvegen 332", postalCode: "5177", addressLocality: "Bjørøyhamn", addressCountry: "NO" },
+      },
+    ],
+  };
+}
+
 export default async function Home() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
@@ -33,6 +80,10 @@ export default async function Home() {
 
   return (
     <div className="landing flex flex-1 flex-col bg-[var(--paper)]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(t.meta.homeDescription)).replace(/</g, "\\u003c") }}
+      />
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 md:px-8">
         <Link href="/" aria-label="AllSeats CRM">
           <Logo />

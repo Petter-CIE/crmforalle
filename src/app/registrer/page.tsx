@@ -9,7 +9,7 @@ import { OAuthButtons } from "@/components/oauth-buttons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.register.title };
+  return { title: t.register.title, description: t.meta.registerDescription, alternates: { canonical: "/registrer" } };
 }
 
 export default async function RegisterPage() {
