@@ -15,6 +15,8 @@ export type WorkspaceSummary = {
   suspended_at: string | null;
   logo_path: string | null;
   role: MemberRole;
+  /** Limited to the projects they are added to (only applies to the "user" role). */
+  restricted: boolean;
 };
 
 type GuardOptions = {
@@ -69,13 +71,13 @@ export async function listWorkspaces(
   const { supabase, user } = ctx ?? (await requireUser());
   const { data, error } = await supabase
     .from("members")
-    .select("role, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at, logo_path)")
+    .select("role, restricted, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at, logo_path)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
   if (error) throw error;
   return (data ?? [])
     .filter((m) => m.workspaces)
-    .map((m) => ({ ...m.workspaces!, role: m.role }));
+    .map((m) => ({ ...m.workspaces!, role: m.role, restricted: m.restricted }));
 }
 
 /** Current workspace (from cookie, else the first one) or redirect to onboarding. */
@@ -93,6 +95,11 @@ export async function requireWorkspace() {
 
 export function canManage(role: MemberRole) {
   return role === "owner" || role === "admin";
+}
+
+/** A user who only sees the projects they are added to (owners and admins always see everything). */
+export function isProjectLimited(workspace: Pick<WorkspaceSummary, "role" | "restricted">) {
+  return workspace.role === "user" && workspace.restricted;
 }
 
 

@@ -937,6 +937,7 @@ export type Database = {
           created_at: string;
           expires_at: string;
           accepted_at: string | null;
+          project_ids: string[];
         };
         Insert: {
           id?: string;
@@ -948,6 +949,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string;
           accepted_at?: string | null;
+          project_ids?: string[];
         };
         Update: {
           id?: string;
@@ -959,6 +961,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string;
           accepted_at?: string | null;
+          project_ids?: string[];
         };
         Relationships: [
           {
@@ -1149,18 +1152,21 @@ export type Database = {
           workspace_id: string;
           user_id: string;
           role: Database["public"]["Enums"]["member_role"];
+          restricted: boolean;
           created_at: string;
         };
         Insert: {
           workspace_id: string;
           user_id: string;
           role?: Database["public"]["Enums"]["member_role"];
+          restricted?: boolean;
           created_at?: string;
         };
         Update: {
           workspace_id?: string;
           user_id?: string;
           role?: Database["public"]["Enums"]["member_role"];
+          restricted?: boolean;
           created_at?: string;
         };
         Relationships: [
@@ -1355,6 +1361,20 @@ export type Database = {
             columns: ["workspace_id"];
             isOneToOne: false;
             referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_members: {
+        Row: { workspace_id: string; project_id: string; user_id: string; added_by: string | null; created_at: string };
+        Insert: { workspace_id: string; project_id: string; user_id: string; added_by?: string | null; created_at?: string };
+        Update: { workspace_id?: string; project_id?: string; user_id?: string; added_by?: string | null; created_at?: string };
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
