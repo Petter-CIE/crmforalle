@@ -58,9 +58,10 @@ const nb: Faq = {
         {
           q: "Hva er tillegget for Tripletex og Fiken?",
           a: [
-            "En kobling til regnskapsprogrammet, slik at kunder og fakturaer henger sammen med CRM-et. Den er under utvikling.",
+            "En kobling til regnskapsprogrammet, slik at kunder, kontaktpersoner og fakturaer hentes automatisk inn i CRM-et. Tripletex er klar – Fiken kommer.",
             "Tillegget koster 50 kr/mnd på Start og er inkludert i Bedrift.",
           ],
+          link: { href: "/tripletex", label: "Les om Tripletex-koblingen" },
         },
         {
           q: "Hvordan sier vi opp?",
@@ -78,7 +79,7 @@ const nb: Faq = {
       items: [
         {
           q: "Hvordan inviterer jeg kollegene?",
-          a: ["Gå til Innstillinger og skriv inn e-postadressen. Kollegaen får en e-post med lenke og blir med i bedriften når hen har logget inn eller opprettet konto."],
+          a: ["Gå til Team i menyen og skriv inn e-postadressen. Kollegaen får en e-post med lenke og blir med i bedriften når hen har logget inn eller opprettet konto."],
         },
         {
           q: "Hva er forskjellen på eier, administrator og bruker?",
@@ -390,9 +391,10 @@ const en: Faq = {
         {
           q: "What is the Tripletex and Fiken add-on?",
           a: [
-            "A link to your accounting software so customers and invoices tie in with the CRM. It is in development.",
+            "A connection to your accounting software, so customers, contact persons and invoices are fetched into the CRM automatically. Tripletex is ready – Fiken is coming.",
             "The add-on costs NOK 50/month on Start and is included in Bedrift.",
           ],
+          link: { href: "/tripletex", label: "Read about the Tripletex connection" },
         },
         {
           q: "How do we cancel?",
@@ -410,7 +412,7 @@ const en: Faq = {
       items: [
         {
           q: "How do I invite my colleagues?",
-          a: ["Go to Settings and enter their e-mail address. They get an e-mail with a link and join the company once they have logged in or created an account."],
+          a: ["Go to Team in the menu and enter their e-mail address. They get an e-mail with a link and join the company once they have logged in or created an account."],
         },
         {
           q: "What's the difference between owner, admin and user?",
