@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/", 1, "weekly"),
     page("/registrer", 0.9, "monthly"),
     page("/faq", 0.8, "monthly"),
+    page("/tripletex", 0.8, "monthly"),
     page("/logg-inn", 0.4, "yearly"),
     page("/personvern", 0.3, "yearly"),
     page("/vilkar", 0.3, "yearly"),
