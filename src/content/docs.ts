@@ -81,8 +81,15 @@ const nb: Docs = {
             {
               steps: [
                 "Åpne Team i menyen.",
-                "Skriv inn kollegaens e-postadresse og velg rolle.",
-                "Kollegaen får en e-post med lenke og blir med i bedriften etter innlogging.",
+                "Skriv inn kollegaens navn og e-postadresse, gjerne også telefonnummer, og velg rolle.",
+                "Kollegaen får en e-post med lenke, kan rette navnet og telefonnummeret og blir med i bedriften etter innlogging.",
+              ],
+            },
+            {
+              h: "Navn og telefon",
+              p: [
+                "I CRM-et vises kollegene med navn – på oppgaver, salg, i historikken og i lister – ikke med e-postadresse.",
+                "Eier og administratorer kan endre navn og telefonnummer på kollegene under Team → Rediger. Hver bruker kan selv endre sine under Konto og sikkerhet. Mangler navnet ditt, ber AllSeats deg om å fylle det inn øverst på siden.",
               ],
             },
             {
@@ -268,6 +275,20 @@ const nb: Docs = {
               ],
             },
             {
+              h: "Koble oppgaven til bedrift og kontakt",
+              p: [
+                "Når du lager en oppgave under Oppgaver, eller åpner en eksisterende, kan du velge bedrift og kontakt. Har du valgt en bedrift, viser kontaktfeltet bare kontaktene i den bedriften. Velger du bare en kontakt, kobles oppgaven også til bedriften kontakten hører til.",
+                "Oppgaven vises da også under Oppgaver på kortet til bedriften og kontakten.",
+              ],
+            },
+            {
+              h: "Vedlegg",
+              p: [
+                "Du kan legge ved filer på opptil 25 MB: PDF, bilder (JPG, PNG, WebP, GIF, HEIC), Word, Excel, PowerPoint, OpenDocument, TXT, CSV og ZIP. Andre filtyper, for eksempel programfiler, kan ikke lastes opp.",
+                "PDF og bilder åpnes i nettleseren. Andre filer lastes alltid ned. Bare de som har tilgang til oppgaven, kan åpne vedleggene.",
+              ],
+            },
+            {
               h: "Oppgaver i kalenderen",
               p: [
                 "Under Konto og sikkerhet → Kalender lager du en personlig lenke som du legger inn i Google Kalender, Outlook eller på iPhone. Oppgavene dine med frist dukker da opp i kalenderen og oppdateres av seg selv.",
@@ -293,7 +314,8 @@ const nb: Docs = {
             {
               h: "Lagre e-post med blindkopi (Bcc)",
               p: [
-                "Bedriften deres får en egen CRM-adresse – du finner den under E-post. Legg den i Bcc når du skriver til en kunde, eller videresend e-post du har fått. Det virker fra Outlook, Gmail og mobilen.",
+                "Bedriften deres får en egen CRM-adresse som slutter på @inn.allseats.no – du finner den under E-post. Legg den i Bcc når du skriver til en kunde, eller videresend e-post du har fått. Det virker fra Outlook, Gmail og mobilen.",
+                "Har du lagret en eldre CRM-adresse som slutter på @allseats.no (uten «inn»), bytt den ut med den nye i kontaktlisten, videresendingen og e-postreglene dine.",
                 "E-posten lagres på kontakten med samme e-postadresse eller på bedriften med samme domene, og får med seg prosjektene til kontakten. Finner vi ingen, venter den i en liste til du har opprettet kontakten.",
                 "I historikken vises e-posten sammenslått med emnet – trykk på den for å lese hele.",
               ],
@@ -524,7 +546,9 @@ const nb: Docs = {
               bullets: [
                 "Logg inn med e-post og passord, en engangslenke på e-post eller en passkey (Windows Hello, Face ID, Touch ID eller fingeravtrykk).",
                 "To-trinnsverifisering med autentiseringsapp slår du på under Konto og sikkerhet. Passkey regnes allerede som to trinn.",
-                "Dataene lagres i EU (Frankfurt), og hver bedrift er skilt fra de andre i databasen.",
+                "Passord som er kjent fra datalekkasjer, blir avvist, så ingen kan bruke et passord som allerede er på avveie.",
+                "Dataene lagres i EU (Frankfurt), og hver bedrift er skilt fra de andre i databasen. Vi tester at en bruker i én bedrift verken kan lese, endre, slette eller legge til data i en annen.",
+                "Vedlegg kan bare lastes opp i vanlige dokument- og bildeformater, og bare de med tilgang til oppgaven kan åpne dem.",
                 "Vi bruker ikke dataene til reklame, selger dem ikke og bruker dem ikke til å trene kunstig intelligens.",
                 "Databehandleravtalen er en del av vilkårene og gjelder automatisk (GDPR art. 28).",
               ],
@@ -619,8 +643,15 @@ const en: Docs = {
             {
               steps: [
                 "Open Team in the menu.",
-                "Enter your colleague's e-mail address and choose a role.",
-                "Your colleague gets an e-mail with a link and joins the company after logging in.",
+                "Enter your colleague's name and e-mail address, ideally also a phone number, and choose a role.",
+                "Your colleague gets an e-mail with a link, can correct their name and phone number, and joins the company after logging in.",
+              ],
+            },
+            {
+              h: "Name and phone",
+              p: [
+                "In the CRM, colleagues are shown by name – on tasks, deals, the timeline and in lists – not by e-mail address.",
+                "The owner and admins can change colleagues' names and phone numbers under Team → Edit. Each user can change their own under Account and security. If your name is missing, AllSeats asks you to fill it in at the top of the page.",
               ],
             },
             {
@@ -804,6 +835,20 @@ const en: Docs = {
               ],
             },
             {
+              h: "Link a task to a company and contact",
+              p: [
+                "When you create a task under Tasks, or open an existing one, you can choose a company and a contact. Once a company is chosen, the contact field only lists that company's contacts. If you only choose a contact, the task is also linked to the contact's company.",
+                "The task then also appears under Tasks on the company's and the contact's page.",
+              ],
+            },
+            {
+              h: "Attachments",
+              p: [
+                "You can attach files of up to 25 MB: PDF, images (JPG, PNG, WebP, GIF, HEIC), Word, Excel, PowerPoint, OpenDocument, TXT, CSV and ZIP. Other file types, such as programs, can't be uploaded.",
+                "PDFs and images open in the browser. Other files are always downloaded. Only people with access to the task can open its attachments.",
+              ],
+            },
+            {
               h: "Tasks in your calendar",
               p: [
                 "Under Account and security → Calendar, create a personal link and add it to Google Calendar, Outlook or your iPhone. Your tasks with a due date then appear in your calendar and update automatically.",
@@ -829,7 +874,8 @@ const en: Docs = {
             {
               h: "Save e-mail with blind copy (Bcc)",
               p: [
-                "Your company gets its own CRM address – find it under E-mail. Add it as Bcc when you write to a customer, or forward e-mail you have received. It works from Outlook, Gmail and your phone.",
+                "Your company gets its own CRM address ending in @inn.allseats.no – find it under E-mail. Add it as Bcc when you write to a customer, or forward e-mail you have received. It works from Outlook, Gmail and your phone.",
+                "If you saved an older CRM address ending in @allseats.no (without “inn”), replace it with the new one in your contacts, forwarding and e-mail rules.",
                 "The e-mail is saved on the contact with the same e-mail address or on the company with the same domain, and is tagged with the contact's projects. If no match is found, it waits in a list until you create the contact.",
                 "On the timeline, e-mails are collapsed to their subject – click one to read it in full.",
               ],
@@ -1056,7 +1102,9 @@ const en: Docs = {
               bullets: [
                 "Log in with e-mail and password, a one-time link by e-mail, or a passkey (Windows Hello, Face ID, Touch ID or fingerprint).",
                 "Turn on two-step verification with an authenticator app under Account and security. A passkey already counts as two steps.",
-                "Data is stored in the EU (Frankfurt), and each company is kept separate from the others in the database.",
+                "Passwords known from data breaches are rejected, so nobody can use a password that is already out there.",
+                "Data is stored in the EU (Frankfurt), and each company is kept separate from the others in the database. We test that a user in one company can't read, change, delete or add data in another.",
+                "Attachments can only be uploaded in common document and image formats, and only people with access to the task can open them.",
                 "We don't use your data for advertising, don't sell it and don't use it to train artificial intelligence.",
                 "The data processing agreement is part of the terms and applies automatically (GDPR Art. 28).",
               ],

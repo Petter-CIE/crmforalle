@@ -79,7 +79,16 @@ const nb: Faq = {
       items: [
         {
           q: "Hvordan inviterer jeg kollegene?",
-          a: ["Gå til Team i menyen og skriv inn e-postadressen. Kollegaen får en e-post med lenke og blir med i bedriften når hen har logget inn eller opprettet konto."],
+          a: [
+            "Gå til Team i menyen og skriv inn navnet og e-postadressen, gjerne også telefonnummeret. Kollegaen får en e-post med lenke og blir med i bedriften når hen har logget inn eller opprettet konto.",
+            "I CRM-et vises kollegene med navn, ikke med e-postadresse.",
+          ],
+        },
+        {
+          q: "Kan jeg endre navn og telefonnummer på kollegene?",
+          a: [
+            "Ja. Eier og administratorer kan endre navn og telefonnummer under Team → Rediger. Hver bruker kan også endre sine egne under Konto og sikkerhet.",
+          ],
         },
         {
           q: "Hva er forskjellen på eier, administrator og bruker?",
@@ -223,12 +232,20 @@ const nb: Faq = {
           a: [
             "En oppgave har en ansvarlig og kan ha flere som jobber med den. Den kan være åpen, pågår eller ferdig, og du kan skrive notater og legge ved filer.",
             "Administratorer ser alle oppgaver først, andre ser sine egne. Du kan filtrere på person og prosjekt.",
+            "En oppgave kan kobles til en bedrift og en kontakt. Velger du bedrift først, viser kontaktfeltet bare kontaktene i den bedriften.",
+          ],
+        },
+        {
+          q: "Hvilke filer kan vi legge ved?",
+          a: [
+            "PDF, bilder (JPG, PNG, WebP, GIF, HEIC), Word, Excel, PowerPoint, OpenDocument, TXT, CSV og ZIP, opptil 25 MB per fil. Andre filtyper, for eksempel programfiler, kan ikke lastes opp – det beskytter både dere og kollegene.",
+            "PDF og bilder åpnes i nettleseren, andre filer lastes ned. Bare de som har tilgang til oppgaven, kan åpne vedleggene.",
           ],
         },
         {
           q: "Kan jeg lagre e-poster i CRM-et?",
           a: [
-            "Ja. Hver bedrift får automatisk en egen CRM-adresse – du finner den under E-post. Legg den i blindkopi (Bcc) når du skriver til en kunde, eller videresend e-poster du har fått. Det virker fra Outlook, Gmail og mobilen, og under E-post finner du en steg-for-steg-veiledning.",
+            "Ja. Hver bedrift får automatisk en egen CRM-adresse som slutter på @inn.allseats.no – du finner den under E-post. Legg den i blindkopi (Bcc) når du skriver til en kunde, eller videresend e-poster du har fått. Det virker fra Outlook, Gmail og mobilen, og under E-post finner du en steg-for-steg-veiledning.",
             "E-posten lagres på kontakten med samme e-postadresse eller på bedriften med samme domene. Finner vi ingen, venter den i en liste til du har opprettet kontakten.",
           ],
         },
@@ -305,6 +322,7 @@ const nb: Faq = {
           a: [
             "Med e-post og passord, med en innloggingslenke på e-post eller med en passkey (Windows Hello, Face ID, Touch ID eller fingeravtrykk på mobilen). Hver bruker velger selv.",
             "Innloggingslenken krever ingen oppsett. En passkey legger du til under Konto og sikkerhet.",
+            "Passord som er kjent fra datalekkasjer, blir avvist, så ingen kan bruke et passord som allerede er på avveie.",
           ],
         },
         {
@@ -320,7 +338,7 @@ const nb: Faq = {
         {
           q: "Hvor lagres dataene?",
           a: [
-            "I EU – databasen ligger i Frankfurt. Hver bedrift er skilt fra de andre i databasen, så ingen andre bedrifter kan se dataene deres.",
+            "I EU – databasen ligger i Frankfurt. Hver bedrift er skilt fra de andre i databasen, så ingen andre bedrifter kan se dataene deres. Vi tester at en bruker i én bedrift verken kan lese, endre, slette eller legge til data i en annen.",
             "Vi bruker ikke dataene til reklame, selger dem ikke og bruker dem ikke til å trene kunstig intelligens.",
           ],
           link: { href: "/personvern", label: "Les personvernerklæringen" },
@@ -412,7 +430,16 @@ const en: Faq = {
       items: [
         {
           q: "How do I invite my colleagues?",
-          a: ["Go to Team in the menu and enter their e-mail address. They get an e-mail with a link and join the company once they have logged in or created an account."],
+          a: [
+            "Go to Team in the menu and enter their name and e-mail address, ideally also a phone number. They get an e-mail with a link and join the company once they have logged in or created an account.",
+            "In the CRM, colleagues are shown by name, not by e-mail address.",
+          ],
+        },
+        {
+          q: "Can I change my colleagues' names and phone numbers?",
+          a: [
+            "Yes. The owner and admins can change names and phone numbers under Team → Edit. Each user can also change their own under Account and security.",
+          ],
         },
         {
           q: "What's the difference between owner, admin and user?",
@@ -556,12 +583,20 @@ const en: Faq = {
           a: [
             "A task has an assignee and can have several people working on it. It can be open, in progress or done, and you can write notes and attach files.",
             "Admins see all tasks first; others see their own. You can filter by person and project.",
+            "A task can be linked to a company and a contact. If you choose the company first, the contact field only lists that company's contacts.",
+          ],
+        },
+        {
+          q: "Which files can we attach?",
+          a: [
+            "PDF, images (JPG, PNG, WebP, GIF, HEIC), Word, Excel, PowerPoint, OpenDocument, TXT, CSV and ZIP, up to 25 MB per file. Other file types, such as programs, can't be uploaded – this protects both you and your colleagues.",
+            "PDFs and images open in the browser; other files are downloaded. Only people with access to the task can open its attachments.",
           ],
         },
         {
           q: "Can I save e-mails in the CRM?",
           a: [
-            "Yes. Every company automatically gets its own CRM address – you'll find it under E-mail. Put it in Bcc when you write to a customer, or forward e-mails you've received. It works from Outlook, Gmail and your phone, and there's a step-by-step guide under E-mail.",
+            "Yes. Every company automatically gets its own CRM address ending in @inn.allseats.no – you'll find it under E-mail. Put it in Bcc when you write to a customer, or forward e-mails you've received. It works from Outlook, Gmail and your phone, and there's a step-by-step guide under E-mail.",
             "The e-mail is saved on the contact with the same e-mail address or on the company with the same domain. If we find none, it waits in a list until you've created the contact.",
           ],
         },
@@ -638,6 +673,7 @@ const en: Faq = {
           a: [
             "With e-mail and password, with a login link sent by e-mail, or with a passkey (Windows Hello, Face ID, Touch ID or the fingerprint on your phone). Each user chooses.",
             "The login link needs no setup. You add a passkey under Account and security.",
+            "Passwords known from data breaches are rejected, so nobody can use a password that is already out there.",
           ],
         },
         {
@@ -653,7 +689,7 @@ const en: Faq = {
         {
           q: "Where is the data stored?",
           a: [
-            "In the EU – the database is in Frankfurt. Each company is separated from the others in the database, so no other company can see your data.",
+            "In the EU – the database is in Frankfurt. Each company is separated from the others in the database, so no other company can see your data. We test that a user in one company can't read, change, delete or add data in another.",
             "We do not use the data for advertising, do not sell it and do not use it to train artificial intelligence.",
           ],
           link: { href: "/personvern", label: "Read the privacy policy" },
