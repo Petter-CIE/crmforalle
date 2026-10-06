@@ -34,6 +34,7 @@ export function CampaignEditor({
   });
   const [numbers, setNumbers] = useState<{ count: number; quota: number; used: number } | null>(null);
   const [, startCounting] = useTransition();
+  const [, startSubmit] = useTransition();
   const [saveState, saveAction, saving] = useActionState<CampaignState, FormData>(saveCampaign, {});
   const [testState, testAction, testing] = useActionState<CampaignState, FormData>(sendTestCampaign, {});
   const [sendState, sendAction, sending] = useActionState<CampaignState, FormData>(sendCampaign, {});
@@ -59,8 +60,18 @@ export function CampaignEditor({
   const state = sendState.error ? sendState : testState.error || testState.message ? testState : saveState;
   const busy = saving || testing || sending;
 
+  // Submitted by hand instead of through form actions: React resets a form after a form action, which put the
+  // controlled recipient selects back to "Alle" on screen while the saved choice was different.
+  function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const fd = new FormData(e.currentTarget, submitter);
+    const intent = submitter?.value;
+    startSubmit(() => (intent === "test" ? testAction : intent === "send" ? sendAction : saveAction)(fd));
+  }
+
   return (
-    <form className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <input type="hidden" name="id" value={campaign.id} />
       <div className="space-y-4">
         <label className="block">
@@ -132,15 +143,16 @@ export function CampaignEditor({
         {!state.error && state.message && <Notice>{state.message}</Notice>}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" formAction={saveAction} variant="secondary" disabled={busy}>
+          <Button type="submit" name="intent" value="save" variant="secondary" disabled={busy}>
             {t.save}
           </Button>
-          <Button type="submit" formAction={testAction} variant="secondary" disabled={busy}>
+          <Button type="submit" name="intent" value="test" variant="secondary" disabled={busy}>
             {t.sendTest}
           </Button>
           <Button
             type="submit"
-            formAction={sendAction}
+            name="intent"
+            value="send"
             disabled={busy || !numbers || numbers.count === 0}
             onClick={(e) => {
               if (!confirm(t.confirmSend(numbers?.count ?? 0))) e.preventDefault();
