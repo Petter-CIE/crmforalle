@@ -5,6 +5,8 @@ import { getI18n } from "@/lib/i18n/server";
 import { canManage, logoUrl, requireWorkspace } from "@/lib/session";
 import { hasAccountingAccess } from "@/lib/accounting/access";
 import { formatDateTime } from "@/lib/crm";
+import { fikenCredentials } from "@/lib/accounting/fiken-sync";
+import { fikenCompanies, fikenEnabled } from "@/lib/fiken";
 import { AccountingCard } from "./accounting-card";
 import { WorkspaceForm, type SettingsTexts } from "./forms";
 import { LogoForm } from "./logo-form";
@@ -14,7 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.settings.title };
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: PageProps<"/app/innstillinger">) {
+  const sp = await searchParams;
   const { supabase, workspace } = await requireWorkspace();
   const { t, dateLocale } = await getI18n();
   const manager = canManage(workspace.role);
@@ -41,15 +44,30 @@ export default async function SettingsPage() {
     noProjects: s.noProjects,
   };
 
-  const [{ data: billing }, { data: integration }] = await Promise.all([
+  const [{ data: billing }, { data: integrations }] = await Promise.all([
     supabase.from("workspaces").select("plan, accounting_addon").eq("id", workspace.id).single(),
-    supabase
-      .from("integrations")
-      .select("external_company, last_sync_at, last_error")
-      .eq("workspace_id", workspace.id)
-      .eq("provider", "tripletex")
-      .maybeSingle(),
+    supabase.from("integrations").select("provider, external_company, last_sync_at, last_error").eq("workspace_id", workspace.id),
   ]);
+  const conn = (provider: string) => {
+    const i = (integrations ?? []).find((r) => r.provider === provider);
+    return i
+      ? { company: i.external_company || null, lastSync: i.last_sync_at ? formatDateTime(i.last_sync_at, dateLocale) : null, error: i.last_error }
+      : null;
+  };
+  const tripletex = conn("tripletex");
+  const fiken = conn("fiken");
+  // Fiken connected but no company chosen yet: the owner/admin picks one from their Fiken user.
+  let fikenChoices: { slug: string; name: string; hasApi: boolean }[] | null = null;
+  if (fiken && manager) {
+    try {
+      const creds = await fikenCredentials(supabase, workspace.id);
+      if (!creds.slug) {
+        fikenChoices = (await fikenCompanies(creds.access)).map((c) => ({ slug: c.slug, name: c.name, hasApi: c.hasApiAccess !== false }));
+      }
+    } catch (e) {
+      console.error("fiken companies failed", e instanceof Error ? e.message : e);
+    }
+  }
   const ac = t.accounting;
 
   return (
@@ -121,7 +139,9 @@ export default async function SettingsPage() {
       </Card>
 
       <Card>
-        <h2 className="mb-3 font-semibold">{ac.title}</h2>
+        <h2 id="regnskap" className="mb-3 scroll-mt-20 font-semibold">
+          {ac.title}
+        </h2>
         <AccountingCard
           t={{
             intro: ac.intro,
@@ -143,15 +163,33 @@ export default async function SettingsPage() {
             overdueNote: ac.overdueNote,
             notIncluded: ac.notIncluded,
             onlyAdmins: ac.onlyAdmins,
+            fiken: ac.fiken,
+            fikenIntro: ac.fikenIntro,
+            fikenConnect: ac.fikenConnect,
+            fikenChoose: ac.fikenChoose,
+            fikenChooseButton: ac.fikenChooseButton,
+            fikenNoApiTag: ac.fikenNoApiTag,
+            fikenNoApi: ac.fikenNoApi,
+            confirmDisconnectFiken: ac.confirmDisconnectFiken,
+            fikenAccessNote: ac.fikenAccessNote,
+            fikenNotReady: ac.fikenNotReady,
           }}
-          connected={
-            integration
-              ? {
-                  company: integration.external_company,
-                  lastSync: integration.last_sync_at ? formatDateTime(integration.last_sync_at, dateLocale) : null,
-                  error: !!integration.last_error,
-                }
-              : null
+          tripletex={tripletex}
+          fiken={fiken}
+          fikenCompanies={fikenChoices}
+          fikenReady={fikenEnabled()}
+          flash={
+            (
+              {
+                ok: { tone: "success", text: ac.fikenOk },
+                velg: null,
+                api: { tone: "error", text: ac.fikenNoApi },
+                ingen: { tone: "error", text: ac.fikenNone },
+                avbrutt: { tone: "error", text: ac.fikenCancelled },
+                synkfeil: { tone: "error", text: ac.fikenSyncFailed },
+                feil: { tone: "error", text: ac.fikenFailed },
+              } as Record<string, { tone: "success" | "error"; text: string } | null>
+            )[String(sp.fiken ?? "")] ?? null
           }
           manager={manager}
           allowed={!!billing && hasAccountingAccess(billing)}

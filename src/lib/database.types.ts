@@ -2355,6 +2355,10 @@ export type Database = {
         Returns: undefined;
       };
       integration_claim_sync: { Args: { p_workspace: string; p_provider: string }; Returns: boolean };
+      integration_update_credentials: {
+        Args: { p_workspace: string; p_provider: string; p_credentials: string; p_company?: string | null };
+        Returns: undefined;
+      };
       integration_synced: {
         Args: { p_workspace: string; p_provider: string; p_error: string | null };
         Returns: undefined;

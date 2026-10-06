@@ -5,5 +5,5 @@ export function hasAccountingAccess(w: { plan: PlanType; accounting_addon?: bool
   return w.plan === "bedrift" || w.plan === "trial" || w.plan === "free" || (w.plan === "start" && !!w.accounting_addon);
 }
 
-export const PROVIDERS = ["tripletex"] as const;
+export const PROVIDERS = ["tripletex", "fiken"] as const;
 export type Provider = (typeof PROVIDERS)[number];

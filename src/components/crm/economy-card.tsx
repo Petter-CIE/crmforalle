@@ -16,7 +16,13 @@ export async function EconomyCard({ companyId }: { companyId: string }) {
   const { t, dateLocale } = await getI18n();
   const a = t.accounting;
   const [{ data: integration }, { data: invoices }] = await Promise.all([
-    supabase.from("integrations").select("last_sync_at").eq("workspace_id", workspace.id).eq("provider", "tripletex").maybeSingle(),
+    supabase
+      .from("integrations")
+      .select("provider, last_sync_at")
+      .eq("workspace_id", workspace.id)
+      .order("last_sync_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle(),
     supabase
       .from("external_invoices")
       .select("external_id, invoice_number, invoice_date, due_date, amount, amount_ex_vat, outstanding, currency, is_credit_note")
@@ -89,7 +95,9 @@ export async function EconomyCard({ companyId }: { companyId: string }) {
         </>
       )}
       {integration?.last_sync_at && (
-        <p className="mt-3 text-xs text-muted">{a.fromProvider.replace("{when}", formatDateTime(integration.last_sync_at, dateLocale))}</p>
+        <p className="mt-3 text-xs text-muted">{a.fromProvider
+            .replace("{provider}", integration.provider === "fiken" ? "Fiken" : "Tripletex")
+            .replace("{when}", formatDateTime(integration.last_sync_at, dateLocale))}</p>
       )}
     </Card>
   );
