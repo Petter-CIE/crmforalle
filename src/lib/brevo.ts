@@ -81,7 +81,8 @@ export async function listInboundWebhooks() {
     return r.webhooks ?? [];
   } catch (e) {
     // Brevo answers 404 "Webhook record does not exist" instead of an empty list.
-    if (e instanceof BrevoError && e.status === 404) return [];
+    // (Seen with other status codes too, so the message decides.)
+    if (e instanceof BrevoError && (e.status === 404 || /does not exist/i.test(e.message))) return [];
     throw e;
   }
 }
