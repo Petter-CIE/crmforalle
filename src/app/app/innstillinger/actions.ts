@@ -52,6 +52,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "user") as MemberRole;
   const fullName = String(formData.get("full_name") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+  const phone = String(formData.get("phone") ?? "").trim().slice(0, 40);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail };
   if (!ASSIGNABLE.includes(role)) return { error: t.settings.invalidRole };
   // Admins always see everything, so only plain users can be limited to projects.
@@ -59,7 +60,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
 
   const { data, error } = await supabase
     .from("invitations")
-    .insert({ workspace_id: workspace.id, email, full_name: fullName || null, role, invited_by: user.id, project_ids: projectIds })
+    .insert({ workspace_id: workspace.id, email, full_name: fullName || null, phone: phone || null, role, invited_by: user.id, project_ids: projectIds })
     .select("token")
     .single();
   if (error) {
@@ -157,4 +158,22 @@ export async function setWorkspaceLogo(path: string | null): Promise<{ ok: boole
   if (before?.logo_path && before.logo_path !== path) await supabase.storage.from("logos").remove([before.logo_path]);
   revalidatePath("/app", "layout");
   return { ok: true };
+}
+
+/** Owner/admin corrects a colleague's name and phone (the owner's own details only by the owner). */
+export async function updateMember(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { supabase, workspace } = await managerContext();
+  const { t } = await getI18n();
+  const userId = String(formData.get("user_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(userId)) return { error: t.crm.error };
+  const { error } = await supabase.rpc("update_member_profile", {
+    p_workspace: workspace.id,
+    p_user: userId,
+    p_full_name: String(formData.get("full_name") ?? "").replace(/\s+/g, " "),
+    p_phone: String(formData.get("phone") ?? ""),
+  });
+  if (error) return { error: t.crm.error };
+  revalidatePath("/app/team");
+  revalidatePath("/app", "layout");
+  return { ok: true, message: t.settings.memberSaved };
 }

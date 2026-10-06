@@ -994,6 +994,7 @@ export type Database = {
       };
       invitations: {
         Row: {
+          phone: string | null;
           id: string;
           workspace_id: string;
           email: string;
@@ -1007,6 +1008,7 @@ export type Database = {
           project_ids: string[];
         };
         Insert: {
+          phone?: string | null;
           id?: string;
           workspace_id: string;
           email: string;
@@ -1020,6 +1022,7 @@ export type Database = {
           project_ids?: string[];
         };
         Update: {
+          phone?: string | null;
           id?: string;
           workspace_id?: string;
           email?: string;
@@ -1372,6 +1375,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          phone: string | null;
           id: string;
           email: string;
           full_name: string | null;
@@ -1384,6 +1388,7 @@ export type Database = {
           created_at: string;
         };
         Insert: {
+          phone?: string | null;
           id: string;
           email: string;
           full_name?: string | null;
@@ -1396,6 +1401,7 @@ export type Database = {
           created_at?: string;
         };
         Update: {
+          phone?: string | null;
           id?: string;
           email?: string;
           full_name?: string | null;
@@ -2362,9 +2368,14 @@ export type Database = {
         Args: { p_workspace: string; p_provider: string; p_credentials: string; p_company?: string | null };
         Returns: undefined;
       };
+      invitation_phone: { Args: { p_token: string }; Returns: string | null };
       invitation_preview: {
         Args: { p_token: string };
         Returns: { workspace_name: string; full_name: string | null }[];
+      };
+      update_member_profile: {
+        Args: { p_workspace: string; p_user: string; p_full_name: string; p_phone: string };
+        Returns: undefined;
       };
       integration_synced: {
         Args: { p_workspace: string; p_provider: string; p_error: string | null };

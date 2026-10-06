@@ -33,6 +33,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
     invitePlaceholder: s.invitePlaceholder,
     inviteName: s.inviteName,
     inviteNamePlaceholder: s.inviteNamePlaceholder,
+    phoneOptional: s.phoneOptional,
     role: s.role,
     roleUser: roles.user,
     roleAdmin: roles.admin,

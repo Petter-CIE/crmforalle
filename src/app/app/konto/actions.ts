@@ -13,6 +13,7 @@ export async function updateProfile(_p: FormResult, formData: FormData): Promise
     .from("profiles")
     .update({
       full_name: fullName || null,
+      phone: String(formData.get("phone") ?? "").trim().slice(0, 40) || null,
       notify_email: formData.get("notify_email") === "1",
       digest_email: formData.get("digest_email") === "1",
     })

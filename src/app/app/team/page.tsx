@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { changeRole, removeMember, revokeInvitation, setMemberProjects } from "@/app/app/innstillinger/actions";
-import { InviteForm, ProjectAccessFields, type SettingsTexts } from "@/app/app/innstillinger/forms";
+import { InviteForm, MemberEditForm, ProjectAccessFields, type SettingsTexts } from "@/app/app/innstillinger/forms";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -28,6 +28,7 @@ export default async function TeamPage() {
     invitePlaceholder: s.invitePlaceholder,
     inviteName: s.inviteName,
     inviteNamePlaceholder: s.inviteNamePlaceholder,
+    phoneOptional: s.phoneOptional,
     role: s.role,
     roleUser: roles.user,
     roleAdmin: roles.admin,
@@ -44,7 +45,7 @@ export default async function TeamPage() {
   const [{ data: members }, { data: invitations }, { data: projectRows }, { data: projectMembers }] = await Promise.all([
     supabase
       .from("members")
-      .select("user_id, role, restricted, created_at, profiles(full_name, email)")
+      .select("user_id, role, restricted, created_at, profiles(full_name, email, phone)")
       .eq("workspace_id", workspace.id)
       .order("created_at"),
     manager
@@ -94,7 +95,11 @@ export default async function TeamPage() {
                     {m.profiles?.full_name || m.profiles?.email}
                     {isMe && <span className="ml-2 text-xs text-muted">({t.common.you})</span>}
                   </p>
-                  {m.profiles?.full_name && <p className="truncate text-xs text-muted">{m.profiles.email}</p>}
+                  {(m.profiles?.full_name || m.profiles?.phone) && (
+                    <p className="truncate text-xs text-muted">
+                      {[m.profiles?.full_name ? m.profiles.email : null, m.profiles?.phone].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   {manager && (
                     <p className="truncate text-xs text-muted">
                       {s.access}:{" "}
@@ -125,6 +130,17 @@ export default async function TeamPage() {
                   </>
                 ) : (
                   <span className="rounded-full bg-background px-2.5 py-1 text-xs text-muted">{roles[m.role]}</span>
+                )}
+                {manager && (m.role !== "owner" || isMe) && (
+                  <details className="w-full">
+                    <summary className="cursor-pointer text-xs text-brand hover:underline">{s.editMember}</summary>
+                    <MemberEditForm
+                      userId={m.user_id}
+                      name={m.profiles?.full_name ?? ""}
+                      phone={m.profiles?.phone ?? ""}
+                      t={{ memberName: s.memberName, memberPhone: s.memberPhone, memberSave: s.memberSave, saving: t.common.saving }}
+                    />
+                  </details>
                 )}
                 {editable && (
                   <details className="w-full">

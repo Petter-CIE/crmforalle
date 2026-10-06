@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button, Input, Label, Notice, Select } from "@/components/ui";
-import { inviteMember, updateWorkspace, type FormState } from "./actions";
+import { inviteMember, updateMember, updateWorkspace, type FormState } from "./actions";
 
 export type SettingsTexts = {
   companyName: string;
@@ -13,6 +13,7 @@ export type SettingsTexts = {
   invitePlaceholder: string;
   inviteName: string;
   inviteNamePlaceholder: string;
+  phoneOptional: string;
   role: string;
   roleUser: string;
   roleAdmin: string;
@@ -102,6 +103,10 @@ export function InviteForm({ t, projects }: { t: SettingsTexts; projects: Projec
           <Label htmlFor="invite_email">{t.email}</Label>
           <Input id="invite_email" name="email" type="email" required placeholder={t.invitePlaceholder} />
         </div>
+        <div className="sm:w-40">
+          <Label htmlFor="invite_phone">{t.phoneOptional}</Label>
+          <Input id="invite_phone" name="phone" type="tel" maxLength={40} autoComplete="off" />
+        </div>
         <div>
           <Label htmlFor="invite_role">{t.role}</Label>
           <Select
@@ -138,6 +143,40 @@ export function InviteForm({ t, projects }: { t: SettingsTexts; projects: Projec
             </Button>
           </div>
         </div>
+      )}
+    </form>
+  );
+}
+
+/** Owner/admin edits a colleague's name and phone. */
+export function MemberEditForm({
+  userId,
+  name,
+  phone,
+  t,
+}: {
+  userId: string;
+  name: string;
+  phone: string;
+  t: { memberName: string; memberPhone: string; memberSave: string; saving: string };
+}) {
+  const [state, action, pending] = useActionState<FormState, FormData>(updateMember, {});
+  return (
+    <form action={action} className="mt-3 flex flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-end">
+      <input type="hidden" name="user_id" value={userId} />
+      <div className="flex-1">
+        <Label htmlFor={`mn_${userId}`}>{t.memberName}</Label>
+        <Input id={`mn_${userId}`} name="full_name" required maxLength={120} defaultValue={name} />
+      </div>
+      <div className="sm:w-44">
+        <Label htmlFor={`mp_${userId}`}>{t.memberPhone}</Label>
+        <Input id={`mp_${userId}`} name="phone" type="tel" maxLength={40} defaultValue={phone} />
+      </div>
+      <Button type="submit" variant="secondary" disabled={pending}>
+        {pending ? t.saving : t.memberSave}
+      </Button>
+      {(state.error || state.message) && (
+        <span className={`text-xs ${state.error ? "text-danger" : "text-brand"}`}>{state.error ?? state.message}</span>
       )}
     </form>
   );

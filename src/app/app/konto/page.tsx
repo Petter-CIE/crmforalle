@@ -48,7 +48,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
     });
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, notify_email, digest_email, idle_timeout_minutes")
+    .select("full_name, phone, notify_email, digest_email, idle_timeout_minutes")
     .eq("id", user.id)
     .maybeSingle();
   const { t, dateLocale } = await getI18n();
@@ -296,6 +296,9 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
         <ActionForm action={updateProfile} submitLabel={s.saveProfile} pendingLabel={t.crm.saving} successText={s.profileSaved}>
           <Field label={s.name} htmlFor="full_name">
             <Input id="full_name" name="full_name" autoComplete="name" defaultValue={profile?.full_name ?? ""} className="w-full" />
+          </Field>
+          <Field label={s.phone} htmlFor="phone">
+            <Input id="phone" name="phone" type="tel" autoComplete="tel" maxLength={40} defaultValue={profile?.phone ?? ""} className="w-full" />
           </Field>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" name="notify_email" value="1" defaultChecked={profile?.notify_email ?? true} className="mt-0.5" />

@@ -13,7 +13,13 @@ export async function acceptInvitation(formData: FormData) {
   if (!error && workspaceId && fullName) {
     // the name colleagues see instead of the e-mail address
     const { data: auth } = await supabase.auth.getUser();
-    if (auth.user) await supabase.from("profiles").update({ full_name: fullName }).eq("id", auth.user.id);
+    if (auth.user) {
+      const phone = String(formData.get("phone") ?? "").trim().slice(0, 40);
+      await supabase
+        .from("profiles")
+        .update({ full_name: fullName, ...(phone ? { phone } : {}) })
+        .eq("id", auth.user.id);
+    }
   }
   if (error || !workspaceId) {
     const reason = error?.message.includes("another email") ? "epost" : "ugyldig";

@@ -15,9 +15,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const { token } = await params;
   const { feil } = await searchParams;
   const { user, supabase } = await requireUser();
-  const [{ data: preview }, { data: profile }] = await Promise.all([
-    /^[0-9a-f-]{36}$/i.test(token) ? supabase.rpc("invitation_preview", { p_token: token }) : Promise.resolve({ data: null }),
-    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+  const validToken = /^[0-9a-f-]{36}$/i.test(token);
+  const [{ data: preview }, { data: invitedPhone }, { data: profile }] = await Promise.all([
+    validToken ? supabase.rpc("invitation_preview", { p_token: token }) : Promise.resolve({ data: null }),
+    validToken ? supabase.rpc("invitation_phone", { p_token: token }) : Promise.resolve({ data: null }),
+    supabase.from("profiles").select("full_name, phone").eq("id", user.id).maybeSingle(),
   ]);
   const invite = preview?.[0] ?? null;
   const { locale, t } = await getI18n();
@@ -63,6 +65,18 @@ export default async function InvitationPage({ params, searchParams }: PageProps
                   className="w-full"
                 />
                 <p className="text-xs text-muted">{t.invitation.yourNameHelp}</p>
+                <label htmlFor="inv_phone" className="block pt-2 text-sm font-medium">
+                  {t.settings.phoneOptional}
+                </label>
+                <Input
+                  id="inv_phone"
+                  name="phone"
+                  type="tel"
+                  maxLength={40}
+                  autoComplete="tel"
+                  defaultValue={profile?.phone || invitedPhone || ""}
+                  className="w-full"
+                />
               </div>
             )}
             <Button type="submit" className="w-full">
