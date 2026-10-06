@@ -2271,6 +2271,18 @@ export type Database = {
           last_sign_in_at: string | null;
         }[];
       };
+      admin_integrations: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          external_company: string | null;
+          last_error: string | null;
+          last_sync_at: string | null;
+          provider: string;
+          workspace_id: string;
+          workspace_name: string;
+        }[];
+      };
       admin_audit_log: {
         Args: { p_id: string };
         Returns: { created_at: string; admin_email: string | null; changes: Json }[];

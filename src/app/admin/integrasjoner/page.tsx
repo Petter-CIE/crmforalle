@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui";
 import { SeedButton } from "./seed-button";
+import { adminStatus } from "../guard";
 import { InboundButton } from "./inbound-button";
 import { brevoEnabled, inboundSecret, listInboundWebhooks } from "@/lib/brevo";
 import { DOMAIN } from "@/lib/inbound-mail";
@@ -49,31 +50,48 @@ async function checkBrevoInbound() {
   }
 }
 
+const fmt = (iso: string | null) =>
+  iso ? new Intl.DateTimeFormat("nb-NO", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Oslo" }).format(new Date(iso)) : "—";
+
 export default async function IntegrationsPage() {
-  const [tt, inbound] = await Promise.all([checkTripletex(), checkBrevoInbound()]);
+  const { supabase } = await adminStatus();
+  const [inbound, { data: links }] = await Promise.all([checkBrevoInbound(), supabase.rpc("admin_integrations")]);
+  // The service check needs its own employee token; customers connect with theirs, so it is optional.
+  const tt = envAuth() ? await checkTripletex() : null;
+  const tripletex = (links ?? []).filter((l) => l.provider === "tripletex");
+  const others = (links ?? []).filter((l) => l.provider !== "tripletex");
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Integrasjoner</h1>
       <Card>
-        <h2 className="mb-1 font-semibold">Tripletex</h2>
-        <p className="mb-4 text-xs text-muted">{TRIPLETEX_BASE}</p>
-        {tt.ok ? (
-          <dl className="grid grid-cols-[10rem_1fr] gap-y-1 text-sm">
-            <dt className="text-muted">Status</dt>
-            <dd className="font-medium text-brand">Tilkoblet ✓</dd>
-            <dt className="text-muted">Firma</dt>
-            <dd>
-              {tt.company} (id {tt.companyId})
-            </dd>
-            <dt className="text-muted">Kunder</dt>
-            <dd>{tt.customers}</dd>
-            <dt className="text-muted">Fakturaer</dt>
-            <dd>{tt.invoices}</dd>
-          </dl>
+        <h2 className="mb-1 font-semibold">Regnskapsintegrasjoner</h2>
+        <p className="mb-4 text-xs text-muted">Tripletex: {TRIPLETEX_BASE}</p>
+        {!process.env.TRIPLETEX_CONSUMER_TOKEN && <p className="mb-3 text-sm text-danger">TRIPLETEX_CONSUMER_TOKEN mangler i Vercel – bedrifter kan ikke koble til Tripletex.</p>}
+        {[...tripletex, ...others].length === 0 ? (
+          <p className="text-sm text-muted">Ingen bedrifter har koblet til ennå.</p>
         ) : (
-          <p className="text-sm text-danger">Ikke tilkoblet: {tt.message}</p>
+          <ul className="divide-y divide-border text-sm">
+            {[...tripletex, ...others].map((l) => (
+              <li key={`${l.workspace_id}-${l.provider}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="font-medium">{l.workspace_name}</span>
+                  <span className="text-muted">
+                    {" "}
+                    · {l.provider}
+                    {l.external_company ? ` · ${l.external_company}` : ""}
+                  </span>
+                </span>
+                {l.last_error ? (
+                  <span className="text-danger">Feil: {l.last_error}</span>
+                ) : (
+                  <span className="text-brand">✓ Sist synkronisert {fmt(l.last_sync_at)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
-        {tt.ok && TRIPLETEX_BASE.includes("api-test") && <SeedButton />}
+        {tt && !tt.ok && <p className="mt-3 text-xs text-muted">Egen testtilgang (TRIPLETEX_EMPLOYEE_TOKEN): {tt.message}</p>}
+        {tt?.ok && TRIPLETEX_BASE.includes("api-test") && <SeedButton />}
       </Card>
       <Card>
         <h2 className="mb-1 font-semibold">E-post til CRM (Brevo)</h2>
