@@ -10,6 +10,10 @@ const A = dir + "assets/";
 fs.rmSync(A, { recursive: true, force: true });
 fs.mkdirSync(A);
 const T = JSON.parse(fs.readFileSync(dir + "timeline.json", "utf8"));
+const EN = (T.find((e) => e.meta)?.meta.lang ?? "nb") === "en";
+const L = EN
+  ? { kind: "Tutorial", tag: "One fixed price for the whole company · All users included", cta: "Try free for 14 days – allseats.no" }
+  : { kind: "Veiledning", tag: "Én fast pris for hele bedriften · Alle brukere inkludert", cta: "Prøv gratis i 14 dager – allseats.no" };
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const b = await chromium.launch();
@@ -42,7 +46,7 @@ for (const [i, c] of index.captions.entries()) {
 for (const [i, t] of index.titles.entries()) {
   await render(`<div id="r" style="width:1280px;height:720px;display:flex;flex-direction:column;justify-content:center;padding:0 110px;box-sizing:border-box;
       background:linear-gradient(135deg,#f7f6f2 0%,#eef4ef 100%);color:#111">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:48px">${logo(44)}<div style="font-size:22px;font-weight:600">AllSeats CRM <span style="color:#6b7280;font-weight:500">· Veiledning</span></div></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:48px">${logo(44)}<div style="font-size:22px;font-weight:600">AllSeats CRM <span style="color:#6b7280;font-weight:500">· ${L.kind}</span></div></div>
     <div style="font-size:64px;font-weight:700;letter-spacing:-.025em;line-height:1.08;max-width:1000px">${esc(t.title)}</div>
     ${t.sub ? `<div style="font-size:28px;color:#4b5563;margin-top:24px;max-width:900px;line-height:1.35">${esc(t.sub)}</div>` : ""}
     <div style="margin-top:56px;width:120px;height:8px;border-radius:4px;background:#1f6b4a"></div></div>`, `title${i}.png`, "#r", false);
@@ -62,8 +66,8 @@ await render('<div id="r" style="width:30px;height:30px;padding:2px"><svg viewBo
 await render(`<div id="r" style="width:1280px;height:720px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
     background:radial-gradient(circle at 50% 35%,#1a6b45,#0f5132 70%);color:#fff">
     <div style="display:flex;align-items:center;gap:16px">${logo(64, true)}<div style="font-weight:700;font-size:56px;letter-spacing:-.02em">AllSeats CRM</div></div>
-    <div style="font-size:28px;opacity:.92">Én fast pris for hele bedriften · Alle brukere inkludert</div>
-    <div style="margin-top:14px;font-weight:600;font-size:26px;background:#fff;color:#0f5132;padding:14px 30px;border-radius:999px">Prøv gratis i 14 dager – allseats.no</div></div>`, "end.png", "#r", false);
+    <div style="font-size:28px;opacity:.92">${L.tag}</div>
+    <div style="margin-top:14px;font-weight:600;font-size:26px;background:#fff;color:#0f5132;padding:14px 30px;border-radius:999px">${L.cta}</div></div>`, "end.png", "#r", false);
 fs.writeFileSync(A + "index.json", JSON.stringify(index));
 await b.close();
 console.log(`${slug}: assets ${index.captions.length} captions, ${index.titles.length} titles, ${index.cards.length} cards`);

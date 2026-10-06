@@ -1,7 +1,7 @@
 // Removes what the tutorial captures created in the demo workspace. Usage: node cleanup.mjs
 import { createRequire } from "node:module";
 import fs from "node:fs";
-const require = createRequire(new URL("../../../package.json", import.meta.url));
+const require = createRequire("/home/claude/crmforalle/package.json");
 const { createClient } = require("@supabase/supabase-js");
 const root = new URL("..", import.meta.url).pathname;
 const env = Object.fromEntries(fs.readFileSync(root + ".env", "utf8").trim().split("\n").map((l) => l.split(/=(.*)/s).slice(0, 2)));
@@ -30,8 +30,8 @@ for (const [table, filter] of Object.entries(extra)) {
   const { data, error } = await db.from(table).delete().eq("workspace_id", WS).match(filter).select("id");
   out.push(`${table} ${JSON.stringify(filter)}: ${data?.length ?? 0}${error ? " ERR " + error.message : ""}`);
 }
-await db.from("tasks").delete().eq("workspace_id", WS).eq("title", "Send tilbud på klubbsokker");
+await db.from("tasks").delete().eq("workspace_id", WS).in("title", ["Send tilbud på klubbsokker", "Send a quote for club socks"]);
 // put the dragged demo deal back (only if it moved), then drop the stage-change entries the captures left
-await db.from("deals").update({ stage_id: "a6073cde-ecfb-49d8-8862-1e926e5a2b66" }).eq("workspace_id", WS).eq("title", "Ullsokker til butikken – vinter").neq("stage_id", "a6073cde-ecfb-49d8-8862-1e926e5a2b66");
+await db.from("deals").update({ stage_id: "a6073cde-ecfb-49d8-8862-1e926e5a2b66" }).eq("workspace_id", WS).in("title", ["Ullsokker til butikken – vinter", "Wool socks for the shop – winter"]).neq("stage_id", "a6073cde-ecfb-49d8-8862-1e926e5a2b66");
 await db.from("activities").delete().eq("workspace_id", WS).eq("type", "stage_change");
 console.log("cleanup:", out.join(" | ") || "nothing extra");

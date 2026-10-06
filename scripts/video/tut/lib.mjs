@@ -35,16 +35,21 @@ export async function login() {
   await b.close();
 }
 
-export async function start(slug, { loggedIn = true } = {}) {
+export async function start(slug, { loggedIn = true, lang = "nb" } = {}) {
   const dir = `${ROOT}tut/videos/${slug}/`;
   fs.rmSync(dir + "shots", { recursive: true, force: true });
   fs.mkdirSync(dir + "shots", { recursive: true });
-  const browser = await chromium.launch({ args: ["--lang=nb-NO"], env: { ...process.env, LANG: "nb_NO.UTF-8", LANGUAGE: "nb" } });
+  const EN = lang === "en";
+  const browser = await chromium.launch(EN
+    ? { args: ["--lang=en-GB"], env: { ...process.env, LANG: "en_GB.UTF-8", LANGUAGE: "en" } }
+    : { args: ["--lang=nb-NO"], env: { ...process.env, LANG: "nb_NO.UTF-8", LANGUAGE: "nb" } });
   async function newPage(li) {
     const ctx = await browser.newContext({
-      viewport: { width: 3840, height: 2160 }, locale: "nb-NO", timezoneId: "Europe/Oslo",
+      viewport: { width: 3840, height: 2160 }, locale: EN ? "en-GB" : "nb-NO", timezoneId: "Europe/Oslo",
       ...(li ? { storageState: ROOT + "state.json" } : {}),
     });
+    // the app's own language switch
+    await ctx.addCookies([{ name: "cfa_lang", value: EN ? "en" : "nb", domain: "allseats.no", path: "/" }]);
     await ctx.addInitScript(() => {
       const z = () => { if (document.body && document.body.style.zoom !== "3") document.body.style.zoom = "3"; };
       document.readyState === "loading" ? addEventListener("DOMContentLoaded", z) : z();
@@ -60,7 +65,7 @@ export async function start(slug, { loggedIn = true } = {}) {
   }
   if (loggedIn) await login();
   const page = await newPage(loggedIn);
-  const T = [];
+  const T = [{ meta: { lang } }];
   let n = 0;
   const ev = (e) => T.push(e);
 
@@ -70,6 +75,12 @@ export async function start(slug, { loggedIn = true } = {}) {
     autoBlur: null, // async () => [rects] applied to every shot while set
     async shot(extra = {}) {
       await api.page.waitForTimeout(200);
+      // "created" history entries keep the Norwegian stage name (RLS blocks editing them)
+      if (EN) await api.page.evaluate(() => {
+        const M = { "Ny henvendelse": "New lead", "Kontaktet": "Contacted", "Tilbud sendt": "Quote sent", "Forhandling": "Negotiation", "Vunnet": "Won", "Tapt": "Lost" };
+        const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n;
+        while ((n = w.nextNode())) { const t = n.nodeValue.trim(); if (M[t]) n.nodeValue = n.nodeValue.replace(t, M[t]); }
+      }).catch(() => {});
       if (api.autoBlur && !extra.blur) extra = { ...extra, blur: await api.autoBlur() };
       const f = `s${String(n++).padStart(3, "0")}.png`;
       await api.page.screenshot({ path: dir + "shots/" + f });

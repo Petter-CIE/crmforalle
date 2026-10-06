@@ -1,0 +1,11 @@
+import { createRequire } from "node:module";
+import fs from "node:fs";
+const require = createRequire("/home/claude/crmforalle/package.json");
+const { createClient } = require("@supabase/supabase-js");
+const root = new URL("..", import.meta.url).pathname;
+const env = Object.fromEntries(fs.readFileSync(root + ".env", "utf8").trim().split("\n").map((l) => l.split(/=(.*)/s).slice(0, 2)));
+const db = createClient("https://lzhqaxjlhatexerxmtxn.supabase.co", "sb_publishable_hgERd6vRSgnHMZb8hr6r2A_M3GVzqk9", { auth: { persistSession: false } });
+await db.auth.signInWithPassword({ email: env.DEMO_EMAIL, password: env.DEMO_PASSWORD });
+const [table, cols] = process.argv.slice(2);
+const { data, error } = await db.from(table).select(cols).eq("workspace_id", "5d5e18e5-843f-468e-a3bc-b1857841189b");
+console.log(error?.message ?? JSON.stringify(data, null, 0));

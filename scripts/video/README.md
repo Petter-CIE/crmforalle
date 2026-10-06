@@ -18,3 +18,12 @@ DEMO_PASSWORD=...
 
 Private data is never shown: Brønnøysund panels of real companies are blurred (`autoBlur`), the CRM
 inbound address is masked.
+
+## English versions
+
+1. `node tut/translate.mjs en` – switches the demo company's stages, deals, tasks, notes, products, projects and contact titles to English.
+2. Capture with `node tut/eNN.mjs` (slugs `en-01-…` – `en-11-…`), then `node tut/cleanup.mjs '<extra filters>'`.
+3. `tut/sheet.sh <slug>` builds assets, a fast preview and a contact sheet; `tut/queue.sh <slugs>` renders 4K.
+4. `node tut/translate.mjs nb` puts the demo data back in Norwegian.
+
+`tut/segs.py <slug>` prints each scene's start time and length – used for the voiceover scripts.
