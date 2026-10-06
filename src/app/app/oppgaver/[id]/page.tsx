@@ -310,7 +310,14 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
               )}
               <TaskLinkFields
                 wrap
-                t={tt}
+                t={{
+                  company: tt.company,
+                  contact: tt.contact,
+                  pickCompany: tt.pickCompany,
+                  pickContact: tt.pickContact,
+                  noLink: tt.noLink,
+                  noMatches: tt.noMatches,
+                }}
                 initialCompany={task.companies ? { id: task.companies.id, label: task.companies.name } : null}
                 initialContact={task.contacts ? { id: task.contacts.id, label: contactName(task.contacts) } : null}
               />
