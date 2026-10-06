@@ -54,6 +54,12 @@ export function inboundSecret() {
   return key ? createHash("sha256").update(`allseats-inbound:${key}`).digest("hex").slice(0, 40) : null;
 }
 
+class BrevoError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
 export type BrevoWebhook = { id: number; url: string; type?: string; domain?: string; events?: string[]; description?: string };
 
 async function brevoApi<T>(path: string, init?: RequestInit): Promise<T> {
@@ -64,14 +70,20 @@ async function brevoApi<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const j = (await res.json().catch(() => null)) as { message?: string; code?: string } | null;
-    throw new Error(j?.message || j?.code || `brevo ${res.status}`);
+    throw new BrevoError(j?.message || j?.code || `brevo ${res.status}`, res.status);
   }
   return (res.status === 204 ? null : await res.json()) as T;
 }
 
 export async function listInboundWebhooks() {
-  const r = await brevoApi<{ webhooks?: BrevoWebhook[] }>("/webhooks?type=inbound");
-  return r.webhooks ?? [];
+  try {
+    const r = await brevoApi<{ webhooks?: BrevoWebhook[] }>("/webhooks?type=inbound");
+    return r.webhooks ?? [];
+  } catch (e) {
+    // Brevo answers 404 "Webhook record does not exist" instead of an empty list.
+    if (e instanceof BrevoError && e.status === 404) return [];
+    throw e;
+  }
 }
 
 export function createInboundWebhook(url: string, domain: string) {
