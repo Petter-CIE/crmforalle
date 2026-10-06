@@ -1,7 +1,10 @@
 import type { AddressObject } from "mailparser";
 
-export const DOMAIN = (process.env.INBOUND_DOMAIN ?? "allseats.no").toLowerCase();
-const ADDRESS = new RegExp(`crm-([a-z0-9]{10})@${DOMAIN.replace(/\./g, "\\.")}`, "gi");
+/** Where the CRM addresses live: a subdomain whose MX points to Brevo, so allseats.no itself can stay in Microsoft 365. */
+export const DOMAIN = (process.env.INBOUND_DOMAIN ?? "inn.allseats.no").toLowerCase();
+const esc = (d: string) => d.replace(/\./g, "\\.");
+// Old addresses (crm-…@allseats.no) are still recognised, e.g. when they show up in forwarded headers.
+const ADDRESS = new RegExp(`crm-([a-z0-9]{10})@(?:${esc(DOMAIN)}|allseats\\.no)\\b`, "gi");
 
 export function addresses(a: AddressObject | AddressObject[] | undefined) {
   const list = Array.isArray(a) ? a : a ? [a] : [];
@@ -13,6 +16,11 @@ export function tokensOf(raw: string) {
   const end = raw.search(/\r?\n\r?\n/);
   const head = end > 0 ? raw.slice(0, end) : raw.slice(0, 20000);
   return [...new Set([...head.matchAll(ADDRESS)].map((m) => m[1].toLowerCase()))];
+}
+
+/** Our tokens from a list of addresses (Brevo gives the envelope recipients, BCC included, as a list). */
+export function tokensFromAddresses(list: string[]) {
+  return [...new Set(list.flatMap((a) => [...a.matchAll(ADDRESS)].map((m) => m[1].toLowerCase())))];
 }
 
 /** "From: Name <a@b.no>" / "Fra: …" line of a forwarded message. */

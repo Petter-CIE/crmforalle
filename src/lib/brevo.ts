@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 
 // Campaign e-mail through Brevo's transactional API (kept apart from the One.com SMTP used for
 // login links and notifications, so newsletter complaints can never block those).
@@ -43,4 +44,43 @@ export async function sendBrevo(m: BrevoMail) {
     const j = (await res.json().catch(() => null)) as { message?: string; code?: string } | null;
     throw new Error(j?.message || j?.code || `brevo ${res.status}`);
   }
+}
+
+// ---- Receiving: Brevo parses mail sent to the inbound subdomain and posts it to our webhook.
+
+/** Secret for the webhook URL, derived from the API key so no extra setting is needed. Changing the key means registering the webhook again. */
+export function inboundSecret() {
+  const key = process.env.BREVO_API_KEY;
+  return key ? createHash("sha256").update(`allseats-inbound:${key}`).digest("hex").slice(0, 40) : null;
+}
+
+export type BrevoWebhook = { id: number; url: string; type?: string; domain?: string; events?: string[]; description?: string };
+
+async function brevoApi<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`https://api.brevo.com/v3${path}`, {
+    ...init,
+    headers: { "api-key": process.env.BREVO_API_KEY ?? "", "content-type": "application/json", accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const j = (await res.json().catch(() => null)) as { message?: string; code?: string } | null;
+    throw new Error(j?.message || j?.code || `brevo ${res.status}`);
+  }
+  return (res.status === 204 ? null : await res.json()) as T;
+}
+
+export async function listInboundWebhooks() {
+  const r = await brevoApi<{ webhooks?: BrevoWebhook[] }>("/webhooks?type=inbound");
+  return r.webhooks ?? [];
+}
+
+export function createInboundWebhook(url: string, domain: string) {
+  return brevoApi<{ id: number }>("/webhooks", {
+    method: "POST",
+    body: JSON.stringify({ type: "inbound", events: ["inboundEmailProcessed"], url, domain, description: "AllSeats CRM – e-post til CRM-adressene" }),
+  });
+}
+
+export function deleteWebhook(id: number) {
+  return brevoApi<null>(`/webhooks/${id}`, { method: "DELETE" });
 }

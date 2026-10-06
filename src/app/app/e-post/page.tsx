@@ -8,13 +8,13 @@ import { formatDateTime } from "@/lib/crm";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
 import { disableInboundAddress, dismissInboundEmail, rotateInboundAddress } from "./actions";
+import { DOMAIN } from "@/lib/inbound-mail";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
   return { title: t.inbound.title };
 }
 
-const DOMAIN = process.env.INBOUND_DOMAIN ?? "allseats.no";
 
 export default async function InboundPage() {
   const { supabase, workspace } = await requireWorkspace();

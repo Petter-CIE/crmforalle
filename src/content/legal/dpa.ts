@@ -68,7 +68,8 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, innlogging og fillagring. Data lagres i AWS-regionen eu-central-1 (Frankfurt). Overføring sikres med EUs standard personvernbestemmelser (SCC).",
             "Vercel Inc. (USA) – drift av applikasjonen, serverfunksjoner i Frankfurt. Sertifisert under EU–US Data Privacy Framework, i tillegg til SCC.",
-            "One.com Group AB (Sverige) – utsending og mottak av e-post. Behandlingen skjer i datasentre i Danmark (EU), og databehandleravtale inngår i avtalen med One.com.",
+            "One.com Group AB (Sverige) – utsending av e-post fra noreply@allseats.no. Behandlingen skjer i datasentre i Danmark (EU), og databehandleravtale inngår i avtalen med One.com.",
+            "Brevo (Sendinblue SAS, Frankrike) – utsending av e-postkampanjer og mottak av e-post til bedriftenes CRM-adresser. Behandlingen skjer i EU, og databehandleravtale inngår i Brevos vilkår.",
           ],
         },
         "Databehandleren varsler Kunden på e-post minst 30 dager før en ny underleverandør tas i bruk. Kunden kan protestere innen fristen og har da rett til å si opp avtalen uten kostnad.",
@@ -178,7 +179,8 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. (USA) – database, login and file storage. Data is stored in the AWS region eu-central-1 (Frankfurt). Transfers are covered by the EU Standard Contractual Clauses (SCC).",
             "Vercel Inc. (USA) – application hosting, server functions in Frankfurt. Certified under the EU–US Data Privacy Framework, in addition to SCC.",
-            "One.com Group AB (Sweden) – sending and receiving e-mail. Processing takes place in data centres in Denmark (EU), and a data processing agreement forms part of the agreement with One.com.",
+            "One.com Group AB (Sweden) – sending e-mail from noreply@allseats.no. Processing takes place in data centres in Denmark (EU), and a data processing agreement forms part of the agreement with One.com.",
+            "Brevo (Sendinblue SAS, France) – sending e-mail campaigns and receiving e-mail sent to companies' CRM addresses. Processing takes place in the EU, and a data processing agreement forms part of Brevo's terms.",
           ],
         },
         "The Processor notifies the Customer by e-mail at least 30 days before a new sub-processor is used. The Customer may object within that period and then has the right to terminate the agreement at no cost.",

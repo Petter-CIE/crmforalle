@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createSession, envAuth, TRIPLETEX_BASE, tripletexGet, tripletexSend } from "@/lib/tripletex";
+import { createInboundWebhook, deleteWebhook, inboundSecret, listInboundWebhooks } from "@/lib/brevo";
+import { DOMAIN } from "@/lib/inbound-mail";
+import { SITE_URL } from "@/lib/site-url";
 import { adminStatus } from "../guard";
 
 export type SeedState = { ok?: boolean; message?: string };
@@ -130,5 +133,26 @@ export async function seedTripletexTestData(): Promise<SeedState> {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("tripletex seed failed", msg);
     return { message: `${steps.length ? `Opprettet: ${steps.join(", ")}. ` : ""}Feil: ${msg}` };
+  }
+}
+
+export type InboundState = { ok?: boolean; message?: string };
+
+/** Registers (or re-registers) the Brevo webhook that delivers mail for the CRM addresses. */
+export async function registerBrevoInbound(_p: InboundState, _f: FormData): Promise<InboundState> {
+  const { isAdmin, hasAal2 } = await adminStatus();
+  if (!isAdmin || !hasAal2) return { message: "Ingen tilgang." };
+  const secret = inboundSecret();
+  if (!secret) return { message: "BREVO_API_KEY mangler i Vercel." };
+  const url = `${SITE_URL}/api/inbound/brevo?key=${secret}`;
+  try {
+    const existing = (await listInboundWebhooks()).filter((w) => w.domain === DOMAIN || w.url.startsWith(`${SITE_URL}/api/inbound/brevo`));
+    // Replace old ones (e.g. after a new API key) so mail is not delivered twice.
+    for (const w of existing) await deleteWebhook(w.id);
+    await createInboundWebhook(url, DOMAIN);
+    revalidatePath("/admin/integrasjoner");
+    return { ok: true, message: `Webhook registrert for ${DOMAIN}.` };
+  } catch (e) {
+    return { message: `Brevo svarte: ${e instanceof Error ? e.message : String(e)}` };
   }
 }

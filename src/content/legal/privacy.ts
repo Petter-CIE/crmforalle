@@ -63,7 +63,8 @@ const nb: LegalDoc = {
           list: [
             "Supabase Inc. – database, innlogging og fillagring. Data lagres i Frankfurt (EU).",
             "Vercel Inc. – drift av nettsiden og applikasjonen. Serverfunksjonene kjører i Frankfurt (EU).",
-            "One.com Group AB (Sverige) – utsending av e-post fra noreply@allseats.no og mottak av e-post til bedriftenes CRM-adresser. E-posten behandles i datasentre i Danmark (EU).",
+            "One.com Group AB (Sverige) – utsending av e-post fra noreply@allseats.no. E-posten behandles i datasentre i Danmark (EU).",
+            "Brevo (Sendinblue SAS, Frankrike) – utsending av e-postkampanjer og mottak av e-post til bedriftenes CRM-adresser. Behandlingen skjer i EU.",
             "Tripletex AS (Norge) – regnskap og fakturering. Gjelder bare fakturaopplysninger om kundebedriftene, ikke dataene dere legger inn i CRM-et.",
           ],
         },
@@ -168,7 +169,8 @@ const en: LegalDoc = {
           list: [
             "Supabase Inc. – database, login and file storage. Data is stored in Frankfurt (EU).",
             "Vercel Inc. – hosting of the website and application. Server functions run in Frankfurt (EU).",
-            "One.com Group AB (Sweden) – sending e-mail from noreply@allseats.no and receiving e-mail sent to companies' CRM addresses. E-mail is processed in data centres in Denmark (EU).",
+            "One.com Group AB (Sweden) – sending e-mail from noreply@allseats.no. E-mail is processed in data centres in Denmark (EU).",
+            "Brevo (Sendinblue SAS, France) – sending e-mail campaigns and receiving e-mail sent to companies' CRM addresses. Processing takes place in the EU.",
             "Tripletex AS (Norway) – accounting and invoicing. Only covers billing details about customer companies, not the data you enter in the CRM.",
           ],
         },

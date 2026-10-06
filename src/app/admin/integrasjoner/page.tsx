@@ -1,5 +1,9 @@
 import { Card } from "@/components/ui";
 import { SeedButton } from "./seed-button";
+import { InboundButton } from "./inbound-button";
+import { brevoEnabled, inboundSecret, listInboundWebhooks } from "@/lib/brevo";
+import { DOMAIN } from "@/lib/inbound-mail";
+import { SITE_URL } from "@/lib/site-url";
 import { createSession, envAuth, TRIPLETEX_BASE, tripletexGet } from "@/lib/tripletex";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +37,20 @@ async function checkTripletex() {
   }
 }
 
+async function checkBrevoInbound() {
+  if (!brevoEnabled()) return { ok: false as const, message: "BREVO_API_KEY mangler i Vercel." };
+  try {
+    const hooks = await listInboundWebhooks();
+    const want = `${SITE_URL}/api/inbound/brevo?key=${inboundSecret()}`;
+    const hook = hooks.find((w) => w.domain === DOMAIN);
+    return { ok: true as const, registered: !!hook, current: hook?.url === want };
+  } catch (e) {
+    return { ok: false as const, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export default async function IntegrationsPage() {
-  const tt = await checkTripletex();
+  const [tt, inbound] = await Promise.all([checkTripletex(), checkBrevoInbound()]);
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Integrasjoner</h1>
@@ -58,6 +74,20 @@ export default async function IntegrationsPage() {
           <p className="text-sm text-danger">Ikke tilkoblet: {tt.message}</p>
         )}
         {tt.ok && TRIPLETEX_BASE.includes("api-test") && <SeedButton />}
+      </Card>
+      <Card>
+        <h2 className="mb-1 font-semibold">E-post til CRM (Brevo)</h2>
+        <p className="mb-4 text-xs text-muted">crm-…@{DOMAIN} → Brevo → {SITE_URL}/api/inbound/brevo</p>
+        {!inbound.ok ? (
+          <p className="text-sm text-danger">Feil: {inbound.message}</p>
+        ) : inbound.registered && inbound.current ? (
+          <p className="text-sm font-medium text-brand">Webhook registrert ✓</p>
+        ) : inbound.registered ? (
+          <p className="text-sm text-danger">Webhooken peker til en gammel adresse (f.eks. etter ny API-nøkkel). Registrer den på nytt.</p>
+        ) : (
+          <p className="text-sm text-muted">Ingen webhook ennå. E-post til CRM-adressene blir ikke levert før den er registrert.</p>
+        )}
+        {inbound.ok && <InboundButton registered={inbound.registered} />}
       </Card>
     </div>
   );
