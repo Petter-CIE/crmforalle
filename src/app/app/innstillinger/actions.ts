@@ -51,6 +51,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   const { t } = await getI18n();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "user") as MemberRole;
+  const fullName = String(formData.get("full_name") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail };
   if (!ASSIGNABLE.includes(role)) return { error: t.settings.invalidRole };
   // Admins always see everything, so only plain users can be limited to projects.
@@ -58,7 +59,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
 
   const { data, error } = await supabase
     .from("invitations")
-    .insert({ workspace_id: workspace.id, email, role, invited_by: user.id, project_ids: projectIds })
+    .insert({ workspace_id: workspace.id, email, full_name: fullName || null, role, invited_by: user.id, project_ids: projectIds })
     .select("token")
     .single();
   if (error) {

@@ -31,6 +31,8 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
     saving: t.common.saving,
     email: s.email,
     invitePlaceholder: s.invitePlaceholder,
+    inviteName: s.inviteName,
+    inviteNamePlaceholder: s.inviteNamePlaceholder,
     role: s.role,
     roleUser: roles.user,
     roleAdmin: roles.admin,

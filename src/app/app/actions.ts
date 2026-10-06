@@ -43,3 +43,12 @@ export async function saveNavPrefs(prefs: unknown) {
   revalidatePath("/app", "layout");
   return { ok: !error };
 }
+
+/** Sets the signed-in user's display name (from the "add your name" bar). */
+export async function saveMyName(formData: FormData) {
+  const { supabase, user } = await requireWorkspace();
+  const fullName = String(formData.get("full_name") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+  if (!fullName) return;
+  await supabase.from("profiles").update({ full_name: fullName }).eq("id", user.id);
+  revalidatePath("/app", "layout");
+}

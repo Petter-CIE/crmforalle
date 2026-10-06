@@ -11,6 +11,8 @@ export type SettingsTexts = {
   saving: string;
   email: string;
   invitePlaceholder: string;
+  inviteName: string;
+  inviteNamePlaceholder: string;
   role: string;
   roleUser: string;
   roleAdmin: string;
@@ -92,6 +94,10 @@ export function InviteForm({ t, projects }: { t: SettingsTexts; projects: Projec
   return (
     <form action={action} className="space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div className="flex-1">
+          <Label htmlFor="invite_name">{t.inviteName}</Label>
+          <Input id="invite_name" name="full_name" required maxLength={120} autoComplete="off" placeholder={t.inviteNamePlaceholder} />
+        </div>
         <div className="flex-1">
           <Label htmlFor="invite_email">{t.email}</Label>
           <Input id="invite_email" name="email" type="email" required placeholder={t.invitePlaceholder} />

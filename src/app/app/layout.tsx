@@ -9,10 +9,10 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { ThemeSwitcher, type Theme } from "@/components/theme-switcher";
 import { ToastProvider } from "@/components/toast";
-import { Logo, Select } from "@/components/ui";
+import { Button, Input, Logo, Select } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, logoUrl, requireWorkspace, trialDaysLeft } from "@/lib/session";
-import { switchWorkspace } from "./actions";
+import { saveMyName, switchWorkspace } from "./actions";
 import { AccountingAutoSync } from "./_components/accounting-auto-sync";
 import { BottomNav } from "./_components/bottom-nav";
 import { FeedbackLink } from "./_components/feedback-link";
@@ -183,7 +183,19 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
               )}
             </div>
           )}
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8 md:py-8">
+            {!profile?.full_name && (
+              <form
+                action={saveMyName}
+                className="mb-6 flex flex-col gap-2 rounded-lg border border-brand/30 bg-brand-soft p-3 text-sm sm:flex-row sm:items-center"
+              >
+                <p className="flex-1">{t.invitation.nameMissing}</p>
+                <Input name="full_name" required maxLength={120} autoComplete="name" aria-label={t.invitation.yourName} placeholder={t.invitation.yourName} className="sm:w-56" />
+                <Button type="submit">{t.invitation.nameSave}</Button>
+              </form>
+            )}
+            {children}
+          </main>
           <div className="flex flex-col items-center gap-2 border-t border-border p-4 pb-24 md:hidden">
             {userCard}
             <Suspense>

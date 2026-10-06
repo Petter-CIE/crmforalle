@@ -997,6 +997,7 @@ export type Database = {
           id: string;
           workspace_id: string;
           email: string;
+          full_name: string | null;
           role: Database["public"]["Enums"]["member_role"];
           token: string;
           invited_by: string | null;
@@ -1009,6 +1010,7 @@ export type Database = {
           id?: string;
           workspace_id: string;
           email: string;
+          full_name?: string | null;
           role?: Database["public"]["Enums"]["member_role"];
           token?: string;
           invited_by?: string | null;
@@ -1021,6 +1023,7 @@ export type Database = {
           id?: string;
           workspace_id?: string;
           email?: string;
+          full_name?: string | null;
           role?: Database["public"]["Enums"]["member_role"];
           token?: string;
           invited_by?: string | null;
@@ -2358,6 +2361,10 @@ export type Database = {
       integration_update_credentials: {
         Args: { p_workspace: string; p_provider: string; p_credentials: string; p_company?: string | null };
         Returns: undefined;
+      };
+      invitation_preview: {
+        Args: { p_token: string };
+        Returns: { workspace_name: string; full_name: string | null }[];
       };
       integration_synced: {
         Args: { p_workspace: string; p_provider: string; p_error: string | null };

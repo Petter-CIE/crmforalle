@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Button, Card, Logo, Notice } from "@/components/ui";
+import { Button, Card, Input, Logo, Notice } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/session";
 import { acceptInvitation } from "./actions";
@@ -14,7 +14,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function InvitationPage({ params, searchParams }: PageProps<"/invitasjon/[token]">) {
   const { token } = await params;
   const { feil } = await searchParams;
-  const { user } = await requireUser();
+  const { user, supabase } = await requireUser();
+  const [{ data: preview }, { data: profile }] = await Promise.all([
+    /^[0-9a-f-]{36}$/i.test(token) ? supabase.rpc("invitation_preview", { p_token: token }) : Promise.resolve({ data: null }),
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+  ]);
+  const invite = preview?.[0] ?? null;
   const { locale, t } = await getI18n();
 
   return (
@@ -24,7 +29,10 @@ export default async function InvitationPage({ params, searchParams }: PageProps
           <Logo />
         </div>
         <Card>
-          <h1 className="mb-1 text-lg font-semibold">{t.invitation.title}</h1>
+          <h1 className="mb-1 text-lg font-semibold">
+            {t.invitation.title}
+            {invite ? ` – ${invite.workspace_name}` : ""}
+          </h1>
           <p className="mb-5 text-sm text-muted">
             {t.invitation.intro} <strong>{user.email}</strong>.
           </p>
@@ -40,6 +48,23 @@ export default async function InvitationPage({ params, searchParams }: PageProps
           )}
           <form action={acceptInvitation} className="space-y-3">
             <input type="hidden" name="token" value={token} />
+            {invite && (
+              <div className="space-y-1">
+                <label htmlFor="inv_name" className="block text-sm font-medium">
+                  {t.invitation.yourName}
+                </label>
+                <Input
+                  id="inv_name"
+                  name="full_name"
+                  required
+                  maxLength={120}
+                  autoComplete="name"
+                  defaultValue={profile?.full_name || invite.full_name || ""}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted">{t.invitation.yourNameHelp}</p>
+              </div>
+            )}
             <Button type="submit" className="w-full">
               {t.invitation.join}
             </Button>

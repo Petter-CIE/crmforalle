@@ -26,6 +26,8 @@ export default async function TeamPage() {
     saving: t.common.saving,
     email: s.email,
     invitePlaceholder: s.invitePlaceholder,
+    inviteName: s.inviteName,
+    inviteNamePlaceholder: s.inviteNamePlaceholder,
     role: s.role,
     roleUser: roles.user,
     roleAdmin: roles.admin,
@@ -48,12 +50,12 @@ export default async function TeamPage() {
     manager
       ? supabase
           .from("invitations")
-          .select("id, email, role, expires_at, project_ids")
+          .select("id, email, full_name, role, expires_at, project_ids")
           .eq("workspace_id", workspace.id)
           .is("accepted_at", null)
           .order("created_at", { ascending: false })
       : Promise.resolve({
-          data: [] as { id: string; email: string; role: "admin" | "user" | "owner"; expires_at: string; project_ids: string[] }[],
+          data: [] as { id: string; email: string; full_name: string | null; role: "admin" | "user" | "owner"; expires_at: string; project_ids: string[] }[],
         }),
     manager
       ? supabase.from("projects").select("id, name, archived").eq("workspace_id", workspace.id).order("name")
@@ -159,7 +161,15 @@ export default async function TeamPage() {
                 <ul className="divide-y divide-border">
                   {invitations.map((inv) => (
                     <li key={inv.id} className="flex items-center gap-3 py-2 text-sm">
-                      <span className="flex-1 truncate">{inv.email}</span>
+                      <span className="flex-1 truncate">
+                        {inv.full_name ? (
+                          <>
+                            {inv.full_name} <span className="text-muted">· {inv.email}</span>
+                          </>
+                        ) : (
+                          inv.email
+                        )}
+                      </span>
                       <span className="text-xs text-muted">{roles[inv.role]}</span>
                       {inv.role === "user" && inv.project_ids.length > 0 && (
                         <span className="max-w-[12rem] truncate text-xs text-muted">{accessLabel(inv.project_ids)}</span>
