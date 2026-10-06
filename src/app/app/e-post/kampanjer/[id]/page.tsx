@@ -23,7 +23,7 @@ export default async function CampaignPage({ params, searchParams }: PageProps<"
   if (!UUID.test(id)) notFound();
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
-  const { t, dateLocale } = await getI18n();
+  const { t, locale, dateLocale } = await getI18n();
   const c = t.campaigns;
   if (!canManage(workspace.role)) notFound();
 
@@ -64,7 +64,7 @@ export default async function CampaignPage({ params, searchParams }: PageProps<"
             projects={projects ?? []}
             owners={owners}
             company={{ name: ws?.name ?? workspace.name, address: ws?.quote_address ?? null }}
-            t={c}
+            locale={locale}
           />
         </Card>
       </div>

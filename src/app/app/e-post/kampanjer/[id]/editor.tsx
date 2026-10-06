@@ -4,7 +4,7 @@ import { useActionState, useEffect, useMemo, useState, useTransition } from "rea
 import { Button, Input, Notice, Select } from "@/components/ui";
 import { Textarea } from "@/components/ui-extra";
 import { renderCampaign } from "@/lib/campaign-render";
-import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 import { previewAudience, saveCampaign, sendCampaign, sendTestCampaign, type Audience, type CampaignState } from "../actions";
 
 type Option = { id: string; name: string };
@@ -14,14 +14,16 @@ export function CampaignEditor({
   projects,
   owners,
   company,
-  t,
+  locale,
 }: {
   campaign: { id: string; name: string; subject: string; body: string; audience: Audience };
   projects: Option[];
   owners: Option[];
   company: { name: string; address: string | null };
-  t: Dictionary["campaigns"];
+  locale: Locale;
 }) {
+  // Texts are looked up here: the dictionary holds functions, which cannot be passed from a server component.
+  const t = dictionaries[locale].campaigns;
   const [subject, setSubject] = useState(campaign.subject);
   const [body, setBody] = useState(campaign.body);
   const [aud, setAud] = useState<Audience>({
