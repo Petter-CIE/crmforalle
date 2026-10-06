@@ -47,6 +47,9 @@ export async function GET(req: NextRequest) {
       .order("first_name")
       .order("last_name")
       .limit(LIMIT);
+    // a picker next to a chosen company only offers that company's contacts
+    const company = req.nextUrl.searchParams.get("company") ?? "";
+    if (/^[0-9a-f-]{36}$/i.test(company)) query = query.eq("company_id", company);
     if (q) {
       const words = q.split(/\s+/).filter(Boolean);
       // "Kari Nord" matches first and last name; a single word matches either name or the e-mail.

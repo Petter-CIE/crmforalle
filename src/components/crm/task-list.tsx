@@ -4,7 +4,7 @@ import { ProjectDot } from "@/components/crm/project-dot";
 import { ActionForm } from "@/components/action-form";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { Input, Select } from "@/components/ui";
-import { SearchSelect } from "@/components/search-select";
+import { TaskLinkFields } from "@/components/crm/task-link-fields";
 import { EmptyState } from "@/components/ui-extra";
 import { createTask, reassignTask } from "@/app/app/crm-actions";
 import { SwipeRow, TaskCheck } from "@/components/crm/task-check";
@@ -241,24 +241,10 @@ export function TaskForm({
       <Input name="due" type="date" aria-label={t.due} className="w-auto" />
       {/* On the general task list (no company, contact or deal around it) the task can be linked here. */}
       {!links.company_id && !links.contact_id && !links.deal_id && t.pickCompany && t.pickContact && (
-        <>
-          <SearchSelect
-            kind="company"
-            name="company_id"
-            placeholder={t.pickCompany}
-            noneLabel={t.noLink}
-            emptyText={t.noMatches ?? ""}
-            className="w-full sm:w-52"
-          />
-          <SearchSelect
-            kind="contact"
-            name="contact_id"
-            placeholder={t.pickContact}
-            noneLabel={t.noLink}
-            emptyText={t.noMatches ?? ""}
-            className="w-full sm:w-52"
-          />
-        </>
+        <TaskLinkFields
+          t={{ pickCompany: t.pickCompany, pickContact: t.pickContact, noLink: t.noLink ?? "", noMatches: t.noMatches ?? "" }}
+          className="w-full sm:w-52"
+        />
       )}
       {!links.project_id && projects && projects.length > 0 && (
         <Select name="project_id" defaultValue="" aria-label={t.noProject}>

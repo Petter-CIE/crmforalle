@@ -22,6 +22,8 @@ export function SearchSelect({
   onPick,
   clearOnPick = false,
   brreg = false,
+  company,
+  onChange,
   className = "",
 }: {
   kind: SearchKind;
@@ -38,6 +40,10 @@ export function SearchSelect({
   clearOnPick?: boolean;
   /** Companies only: also offer matches from Brønnøysundregistrene (submitted as "brreg:<org nr>"). */
   brreg?: boolean;
+  /** Contacts only: limit the list to this company's contacts. */
+  company?: string | null;
+  /** Called whenever the choice changes (picked, cleared or reset). */
+  onChange?: (item: { id: string; label: string } | null) => void;
   className?: string;
 }) {
   const auto = useId();
@@ -60,7 +66,7 @@ export function SearchSelect({
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/app/sok?type=${kind}&q=${encodeURIComponent(q)}${brreg ? "&brreg=1" : ""}`, {
+        const res = await fetch(`/app/sok?type=${kind}&q=${encodeURIComponent(q)}${brreg ? "&brreg=1" : ""}${company ? `&company=${company}` : ""}`, {
           signal: ctrl.signal,
         });
         const data = (await res.json()) as SearchItem[];
@@ -77,7 +83,7 @@ export function SearchSelect({
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [open, query, kind, selected, excludeKey, brreg]);
+  }, [open, query, kind, selected, excludeKey, brreg, company]);
 
   // A form reset (e.g. after "add") also clears the choice, back to the starting value.
   useEffect(() => {
@@ -87,10 +93,11 @@ export function SearchSelect({
       setSelected(defaultValue ?? null);
       setQuery(defaultValue?.label ?? "");
       setOpen(false);
+      onChange?.(defaultValue ?? null);
     };
     form.addEventListener("reset", onReset);
     return () => form.removeEventListener("reset", onReset);
-  }, [defaultValue]);
+  }, [defaultValue, onChange]);
 
   // Close when clicking outside.
   useEffect(() => {
@@ -112,9 +119,11 @@ export function SearchSelect({
     if (clearOnPick || !item) {
       setSelected(null);
       setQuery("");
+      if (!clearOnPick) onChange?.(null);
     } else {
       setSelected({ id: item.id, label: item.label });
       setQuery(item.label);
+      onChange?.({ id: item.id, label: item.label });
     }
     setOpen(false);
   }
@@ -140,7 +149,10 @@ export function SearchSelect({
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
-          if (selected && e.target.value !== selected.label && name) setSelected(null);
+          if (selected && e.target.value !== selected.label && name) {
+            setSelected(null);
+            onChange?.(null);
+          }
         }}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
