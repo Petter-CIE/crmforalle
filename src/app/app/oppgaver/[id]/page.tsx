@@ -220,6 +220,8 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
                 maxSize: tt.maxSize,
                 tooLarge: tt.tooLarge("{name}"),
                 uploadFailed: tt.uploadFailed("{name}"),
+                notAllowed: tt.notAllowed("{name}"),
+                allowed: tt.allowedTypes,
               }}
             />
           </Card>

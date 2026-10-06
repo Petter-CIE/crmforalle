@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Notice } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
+import { ATTACHMENT_ACCEPT, attachmentType, MAX_ATTACHMENT_BYTES } from "@/lib/attachments";
 import { registerAttachment } from "../actions";
 
-const MAX = 25 * 1024 * 1024;
 
 function safeName(name: string) {
   const cleaned = name
@@ -24,7 +24,7 @@ export function AttachmentUpload({
 }: {
   workspaceId: string;
   taskId: string;
-  t: { upload: string; uploading: string; maxSize: string; tooLarge: string; uploadFailed: string };
+  t: { upload: string; uploading: string; maxSize: string; tooLarge: string; uploadFailed: string; notAllowed: string; allowed: string };
 }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
@@ -37,17 +37,22 @@ export function AttachmentUpload({
     const problems: string[] = [];
     const storage = createClient().storage.from("attachments");
     for (const file of Array.from(files)) {
-      if (file.size > MAX) {
+      const type = attachmentType(file.name);
+      if (!type) {
+        problems.push(t.notAllowed.replace("{name}", file.name));
+        continue;
+      }
+      if (file.size > MAX_ATTACHMENT_BYTES) {
         problems.push(t.tooLarge.replace("{name}", file.name));
         continue;
       }
       const path = `${workspaceId}/tasks/${taskId}/${crypto.randomUUID()}-${safeName(file.name)}`;
-      const { error } = await storage.upload(path, file, { contentType: file.type || undefined, upsert: false });
+      const { error } = await storage.upload(path, file, { contentType: type, upsert: false });
       if (error) {
         problems.push(t.uploadFailed.replace("{name}", file.name));
         continue;
       }
-      const res = await registerAttachment({ taskId, path, name: file.name, size: file.size, mime: file.type });
+      const res = await registerAttachment({ taskId, path, name: file.name, size: file.size });
       if (res.error) problems.push(t.uploadFailed.replace("{name}", file.name));
     }
     setErrors(problems);
@@ -67,12 +72,15 @@ export function AttachmentUpload({
           ref={input}
           type="file"
           multiple
+          accept={ATTACHMENT_ACCEPT}
           className="sr-only"
           onChange={(e) => void onFiles(e.currentTarget.files)}
           disabled={busy}
         />
       </label>
-      <p className="text-xs text-muted">{t.maxSize}</p>
+      <p className="text-xs text-muted">
+        {t.maxSize} {t.allowed}
+      </p>
       {errors.map((e) => (
         <Notice key={e} tone="error">
           {e}

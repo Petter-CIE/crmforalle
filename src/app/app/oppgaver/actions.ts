@@ -6,6 +6,7 @@ import type { FormResult } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
 import { notifyAssignment, notifyComment } from "@/lib/notify";
 import { requireWorkspace } from "@/lib/session";
+import { attachmentType, MAX_ATTACHMENT_BYTES } from "@/lib/attachments";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uid = (v: FormDataEntryValue | null | undefined) => (typeof v === "string" && UUID.test(v) ? v : null);
@@ -124,18 +125,24 @@ export async function deleteTaskComment(formData: FormData) {
 }
 
 /** Records a file the browser has already uploaded to storage. */
-export async function registerAttachment(input: { taskId: string; path: string; name: string; size: number; mime: string }) {
+export async function registerAttachment(input: { taskId: string; path: string; name: string; size: number }) {
   const { supabase, user, workspace } = await requireWorkspace();
   if (!UUID.test(input.taskId)) return { error: true };
   const prefix = `${workspace.id}/tasks/${input.taskId}/`;
   if (!input.path.startsWith(prefix) || input.path.includes("..")) return { error: true };
+  // the stored file and the name shown must both be an allowed type
+  const mime = attachmentType(input.name);
+  if (!mime || attachmentType(input.path) !== mime || input.size > MAX_ATTACHMENT_BYTES) {
+    await supabase.storage.from("attachments").remove([input.path]);
+    return { error: true };
+  }
   const { error } = await supabase.from("task_attachments").insert({
     workspace_id: workspace.id,
     task_id: input.taskId,
     path: input.path,
     name: input.name.slice(0, 255) || "fil",
     size: Math.max(0, Math.floor(input.size)),
-    mime: input.mime.slice(0, 200) || null,
+    mime,
     uploaded_by: user.id,
   });
   if (error) {
