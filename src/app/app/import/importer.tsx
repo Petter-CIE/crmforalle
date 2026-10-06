@@ -29,7 +29,7 @@ const CHUNK = 200;
 const SYNONYMS: Record<Field, string[]> = {
   first_name: ["fornavn", "firstname", "givenname", "first"],
   last_name: ["etternavn", "lastname", "surname", "familyname", "last"],
-  full_name: ["navn", "name", "fulltnavn", "fullname", "kontaktperson", "contact", "contactname", "kontakt"],
+  full_name: ["navn", "name", "fulltnavn", "fullname", "kontaktperson", "contact", "contactname", "contactperson", "kontakt"],
   email: ["epost", "email", "mail", "epostadresse", "emailaddress"],
   phone: ["telefon", "tlf", "mobil", "mobiltelefon", "phone", "mobile", "telephone", "telefonnummer", "phonenumber"],
   title: ["stilling", "tittel", "title", "jobtitle", "position", "rolle", "role"],
