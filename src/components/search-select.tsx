@@ -79,6 +79,19 @@ export function SearchSelect({
     };
   }, [open, query, kind, selected, excludeKey, brreg]);
 
+  // A form reset (e.g. after "add") also clears the choice, back to the starting value.
+  useEffect(() => {
+    const form = box.current?.closest("form");
+    if (!form) return;
+    const onReset = () => {
+      setSelected(defaultValue ?? null);
+      setQuery(defaultValue?.label ?? "");
+      setOpen(false);
+    };
+    form.addEventListener("reset", onReset);
+    return () => form.removeEventListener("reset", onReset);
+  }, [defaultValue]);
+
   // Close when clicking outside.
   useEffect(() => {
     if (!open) return;

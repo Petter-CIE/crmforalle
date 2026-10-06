@@ -463,6 +463,13 @@ export async function createTask(_p: FormResult, formData: FormData): Promise<Fo
   const title = String(formData.get("title") ?? "").trim().slice(0, 300);
   if (!title) return { error: t.crm.required };
   const due = String(formData.get("due") ?? "");
+  const contactId = id(formData.get("contact_id"));
+  let companyId = id(formData.get("company_id"));
+  if (contactId && !companyId) {
+    // a task for a contact also shows up on the contact's company
+    const { data: c } = await supabase.from("contacts").select("company_id").eq("id", contactId).eq("workspace_id", workspace.id).maybeSingle();
+    companyId = c?.company_id ?? null;
+  }
   const { data, error } = await supabase
     .from("tasks")
     .insert({
@@ -470,8 +477,8 @@ export async function createTask(_p: FormResult, formData: FormData): Promise<Fo
       title,
       due_at: /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(due) ? new Date(due.length === 10 ? `${due}T09:00` : due).toISOString() : null,
       assignee_id: id(formData.get("assignee_id")) ?? user.id,
-      company_id: id(formData.get("company_id")),
-      contact_id: id(formData.get("contact_id")),
+      company_id: companyId,
+      contact_id: contactId,
       deal_id: id(formData.get("deal_id")),
       project_id: id(formData.get("project_id")),
       created_by: user.id,

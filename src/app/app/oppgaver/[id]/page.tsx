@@ -3,6 +3,7 @@ import { ProjectDot } from "@/components/crm/project-dot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
+import { SearchSelect } from "@/components/search-select";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DeleteButton } from "@/components/delete-button";
 import { Button, Card, Input, Select } from "@/components/ui";
@@ -307,6 +308,28 @@ export default async function TaskPage({ params }: PageProps<"/app/oppgaver/[id]
                   </Select>
                 </Field>
               )}
+              <Field label={tt.company} htmlFor="t_company">
+                <SearchSelect
+                  kind="company"
+                  id="t_company"
+                  name="company_id"
+                  defaultValue={task.companies ? { id: task.companies.id, label: task.companies.name } : null}
+                  placeholder={tt.pickCompany}
+                  noneLabel={tt.noLink}
+                  emptyText={tt.noMatches}
+                />
+              </Field>
+              <Field label={tt.contact} htmlFor="t_contact">
+                <SearchSelect
+                  kind="contact"
+                  id="t_contact"
+                  name="contact_id"
+                  defaultValue={task.contacts ? { id: task.contacts.id, label: contactName(task.contacts) } : null}
+                  placeholder={tt.pickContact}
+                  noneLabel={tt.noLink}
+                  emptyText={tt.noMatches}
+                />
+              </Field>
               <Field label={tt.project} htmlFor="t_project">
                 <Select id="t_project" name="project_id" defaultValue={task.project_id ?? ""} className="w-full">
                   <option value="">{tt.noProject}</option>

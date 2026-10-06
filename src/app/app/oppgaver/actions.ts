@@ -43,6 +43,8 @@ export async function updateTask(_p: FormResult, formData: FormData): Promise<Fo
       due_at: /^\d{4}-\d{2}-\d{2}$/.test(due) ? new Date(`${due}T09:00`).toISOString() : null,
       ...(formData.has("assignee_id") ? { assignee_id: assigneeId } : {}),
       ...(formData.has("project_id") ? { project_id: uid(formData.get("project_id")) } : {}),
+      ...(formData.has("company_id") ? { company_id: uid(formData.get("company_id")) } : {}),
+      ...(formData.has("contact_id") ? { contact_id: uid(formData.get("contact_id")) } : {}),
     })
     .eq("id", taskId)
     .eq("workspace_id", workspace.id)

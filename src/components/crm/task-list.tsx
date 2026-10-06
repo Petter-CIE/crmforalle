@@ -4,6 +4,7 @@ import { ProjectDot } from "@/components/crm/project-dot";
 import { ActionForm } from "@/components/action-form";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { Input, Select } from "@/components/ui";
+import { SearchSelect } from "@/components/search-select";
 import { EmptyState } from "@/components/ui-extra";
 import { createTask, reassignTask } from "@/app/app/crm-actions";
 import { SwipeRow, TaskCheck } from "@/components/crm/task-check";
@@ -205,7 +206,18 @@ export function TaskForm({
   path: string;
   members: Member[];
   me: string;
-  t: { placeholder: string; due: string; assignee: string; add: string; new: string; noProject: string };
+  t: {
+    placeholder: string;
+    due: string;
+    assignee: string;
+    add: string;
+    new: string;
+    noProject: string;
+    pickCompany?: string;
+    pickContact?: string;
+    noLink?: string;
+    noMatches?: string;
+  };
   save: string;
   /** When given, lets the user pick a project for the task. */
   projects?: { id: string; name: string }[];
@@ -227,6 +239,27 @@ export function TaskForm({
       {links.project_id && <input type="hidden" name="project_id" value={links.project_id} />}
       <Input id={inputId} name="title" required placeholder={t.placeholder} aria-label={t.new} className="min-w-[12rem] flex-1" />
       <Input name="due" type="date" aria-label={t.due} className="w-auto" />
+      {/* On the general task list (no company, contact or deal around it) the task can be linked here. */}
+      {!links.company_id && !links.contact_id && !links.deal_id && t.pickCompany && t.pickContact && (
+        <>
+          <SearchSelect
+            kind="company"
+            name="company_id"
+            placeholder={t.pickCompany}
+            noneLabel={t.noLink}
+            emptyText={t.noMatches ?? ""}
+            className="w-full sm:w-52"
+          />
+          <SearchSelect
+            kind="contact"
+            name="contact_id"
+            placeholder={t.pickContact}
+            noneLabel={t.noLink}
+            emptyText={t.noMatches ?? ""}
+            className="w-full sm:w-52"
+          />
+        </>
+      )}
       {!links.project_id && projects && projects.length > 0 && (
         <Select name="project_id" defaultValue="" aria-label={t.noProject}>
           <option value="">{t.noProject}</option>
