@@ -4,8 +4,10 @@ import { useActionState, useState, useTransition } from "react";
 import { Button, Input, Notice, Select } from "@/components/ui";
 import {
   chooseFikenCompany,
+  connectPowerOffice,
   connectTripletex,
   disconnectFiken,
+  disconnectPowerOffice,
   disconnectTripletex,
   syncAccountingNow,
   type AccountingState,
@@ -41,6 +43,12 @@ export type AccountingTexts = {
   confirmDisconnectFiken: string;
   fikenAccessNote: string;
   fikenNotReady: string;
+  powerOffice: string;
+  poIntro: string;
+  poKeyLabel: string;
+  poKeyHelp: string;
+  poNotReady: string;
+  confirmDisconnectPo: string;
 };
 
 type Connection = { company: string | null; lastSync: string | null; error: string | null };
@@ -96,10 +104,30 @@ function FikenChooser({ t, companies }: { t: AccountingTexts; companies: FikenCo
   );
 }
 
+function PowerOfficeConnect({ t }: { t: AccountingTexts }) {
+  const [state, action, pending] = useActionState<AccountingState, FormData>(connectPowerOffice, {});
+  return (
+    <form action={action} className="space-y-3">
+      <label htmlFor="po_key" className="block font-medium">
+        {t.powerOffice} – {t.poKeyLabel}
+      </label>
+      <p className="text-xs text-muted">{t.poIntro}</p>
+      <Input id="po_key" name="clientKey" type="password" autoComplete="off" required minLength={20} />
+      <p className="text-xs text-muted">{t.poKeyHelp}</p>
+      {state.error && <Notice tone="error">{state.error}</Notice>}
+      <Button type="submit" disabled={pending}>
+        {pending ? t.connecting : `${t.connect} ${t.powerOffice}`}
+      </Button>
+    </form>
+  );
+}
+
 export function AccountingCard({
   t,
   tripletex,
   fiken,
+  poweroffice,
+  powerOfficeReady,
   fikenCompanies,
   fikenReady,
   flash,
@@ -109,6 +137,8 @@ export function AccountingCard({
   t: AccountingTexts;
   tripletex: Connection | null;
   fiken: Connection | null;
+  poweroffice: Connection | null;
+  powerOfficeReady: boolean;
   /** Set when Fiken is connected but no company is chosen yet. */
   fikenCompanies: FikenCompanyOption[] | null;
   fikenReady: boolean;
@@ -123,12 +153,13 @@ export function AccountingCard({
   if (!allowed) return <p className="text-sm text-muted">{t.notIncluded}</p>;
 
   const fikenPending = !!fiken && !!fikenCompanies;
-  const anySynced = !!tripletex || (!!fiken && !fikenPending);
+  const none = !tripletex && !fiken && !poweroffice;
+  const anySynced = !!tripletex || !!poweroffice || (!!fiken && !fikenPending);
   const message = syncState.error ?? syncState.message ?? state.message;
 
   return (
     <div className="space-y-5 text-sm">
-      {!tripletex && !fiken && <p className="text-muted">{t.intro}</p>}
+      {none && <p className="text-muted">{t.intro}</p>}
       {flash && <Notice tone={flash.tone}>{flash.text}</Notice>}
 
       {/* --- Tripletex --- */}
@@ -138,7 +169,7 @@ export function AccountingCard({
           {manager && <Disconnect action={disconnectTripletex} confirm={t.confirmDisconnect} label={`${t.disconnect} ${t.tripletex}`} />}
         </div>
       ) : (
-        !fiken &&
+        none &&
         manager && (
           <form action={connectAction} className="space-y-3">
             <label htmlFor="tt_token" className="block font-medium">
@@ -166,7 +197,7 @@ export function AccountingCard({
           {!fikenPending && <p className="text-xs text-muted">{t.fikenAccessNote}</p>}
         </div>
       ) : (
-        !tripletex &&
+        none &&
         manager && (
           <div className="space-y-3 border-t border-border pt-4">
             <p className="font-medium">{t.fiken}</p>
@@ -185,8 +216,29 @@ export function AccountingCard({
         )
       )}
 
-      {!tripletex && !fiken && !manager && <p className="text-muted">{t.onlyAdmins}</p>}
-      {!tripletex && !fiken && <p className="text-xs text-muted">{t.soon}</p>}
+      {/* --- PowerOffice Go --- */}
+      {poweroffice ? (
+        <div className="space-y-2">
+          <Status t={t} name={t.powerOffice} c={poweroffice} />
+          {manager && <Disconnect action={disconnectPowerOffice} confirm={t.confirmDisconnectPo} label={`${t.disconnect} ${t.powerOffice}`} />}
+        </div>
+      ) : (
+        none &&
+        manager && (
+          <div className="border-t border-border pt-4">
+            {powerOfficeReady ? (
+              <PowerOfficeConnect t={t} />
+            ) : (
+              <>
+                <p className="font-medium">{t.powerOffice}</p>
+                <p className="text-xs text-muted">{t.poNotReady}</p>
+              </>
+            )}
+          </div>
+        )
+      )}
+
+      {none && !manager && <p className="text-muted">{t.onlyAdmins}</p>}
 
       {anySynced && (
         <div className="space-y-2">
