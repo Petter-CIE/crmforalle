@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { hasAccountingAccess } from "@/lib/accounting/access";
 import { fikenCredentials, syncFiken } from "@/lib/accounting/fiken-sync";
+import { syncPowerOffice, verifyPowerOffice } from "@/lib/accounting/poweroffice-sync";
 import { syncTripletex, verifyTripletex, type SyncResult } from "@/lib/accounting/tripletex-sync";
 import { fikenCompanies, FikenError, fikenRevoke } from "@/lib/fiken";
 import { getI18n } from "@/lib/i18n/server";
+import { powerOfficeEnabled } from "@/lib/poweroffice";
 import { canEncrypt, open, seal } from "@/lib/secret-box";
 import { canManage, requireWorkspace } from "@/lib/session";
 
@@ -28,7 +30,8 @@ function summary(r: SyncResult, tpl: string) {
     .replace("{tasks}", String(r.tasksCreated));
 }
 
-type Provider = "tripletex" | "fiken";
+type Provider = "tripletex" | "fiken" | "poweroffice";
+const isProvider = (p: string): p is Provider => p === "tripletex" || p === "fiken" || p === "poweroffice";
 type Ctx = Awaited<ReturnType<typeof requireWorkspace>>;
 
 /** Fiken answers 403 when the company lacks Fiken's API add-on (or the app lost access to it). */
@@ -41,7 +44,9 @@ async function runSync(ctx: Ctx, provider: Provider) {
     const r =
       provider === "fiken"
         ? await syncFiken(ctx.supabase, ctx.workspace.id, ctx.user.id)
-        : await syncTripletex(ctx.supabase, ctx.workspace.id, ctx.user.id);
+        : provider === "poweroffice"
+          ? await syncPowerOffice(ctx.supabase, ctx.workspace.id, ctx.user.id)
+          : await syncTripletex(ctx.supabase, ctx.workspace.id, ctx.user.id);
     await ctx.supabase.rpc("integration_synced", { p_workspace: ctx.workspace.id, p_provider: provider, p_error: null });
     return { ok: true as const, result: r };
   } catch (e) {
@@ -54,7 +59,7 @@ async function runSync(ctx: Ctx, provider: Provider) {
 
 async function connectedProviders(ctx: Ctx) {
   const { data } = await ctx.supabase.from("integrations").select("provider, last_sync_at").eq("workspace_id", ctx.workspace.id);
-  return (data ?? []).filter((r): r is { provider: Provider; last_sync_at: string | null } => r.provider === "tripletex" || r.provider === "fiken");
+  return (data ?? []).filter((r): r is { provider: Provider; last_sync_at: string | null } => isProvider(r.provider));
 }
 
 export async function connectTripletex(_prev: AccountingState, formData: FormData): Promise<AccountingState> {
@@ -86,6 +91,42 @@ export async function connectTripletex(_prev: AccountingState, formData: FormDat
   if (error) return { error: a.failed };
 
   const sync = await runSync(ctx, "tripletex");
+  revalidatePath("/app/innstillinger");
+  revalidatePath("/app/bedrifter");
+  if (!sync.ok) return { ok: true, message: a.connectedSyncFailed.replace("{company}", company) };
+  return { ok: true, message: `${a.connected.replace("{company}", company)} ${summary(sync.result, a.syncSummary)}` };
+}
+
+export async function connectPowerOffice(_prev: AccountingState, formData: FormData): Promise<AccountingState> {
+  const { ctx, allowed } = await access();
+  const { t } = await getI18n();
+  const a = t.accounting;
+  if (!canManage(ctx.workspace.role)) return { error: a.onlyAdmins };
+  if (!allowed) return { error: a.notIncluded };
+  if (!canEncrypt() || !powerOfficeEnabled()) return { error: a.notReady };
+  const key = String(formData.get("clientKey") ?? "").trim();
+  if (key.length < 20 || key.length > 200 || /\s/.test(key)) return { error: a.poBadKey };
+
+  let company: string;
+  try {
+    company = await verifyPowerOffice(key);
+  } catch (e) {
+    const code = e instanceof Error ? e.message : String(e);
+    console.error("poweroffice connect failed", code);
+    // 400/401 from the token endpoint = PowerOffice rejected the client key.
+    if (/^poweroffice_token_(400|401|403)$/.test(code)) return { error: a.poBadKey };
+    if (code.startsWith("poweroffice_privileges:")) return { error: a.poPrivileges };
+    return { error: a.poServiceError.replace("{code}", code.replace(/^poweroffice_/, "")) };
+  }
+  const { error } = await ctx.supabase.rpc("save_integration", {
+    p_workspace: ctx.workspace.id,
+    p_provider: "poweroffice",
+    p_credentials: seal(key),
+    p_company: company,
+  });
+  if (error) return { error: a.failed };
+
+  const sync = await runSync(ctx, "poweroffice");
   revalidatePath("/app/innstillinger");
   revalidatePath("/app/bedrifter");
   if (!sync.ok) return { ok: true, message: a.connectedSyncFailed.replace("{company}", company) };
@@ -167,6 +208,14 @@ export async function disconnectFiken() {
   }
   await ctx.supabase.from("integrations").delete().eq("workspace_id", ctx.workspace.id).eq("provider", "fiken");
   await ctx.supabase.from("external_invoices").delete().eq("workspace_id", ctx.workspace.id).eq("provider", "fiken");
+  revalidatePath("/app/innstillinger");
+}
+
+export async function disconnectPowerOffice() {
+  const ctx = await requireWorkspace();
+  if (!canManage(ctx.workspace.role)) return;
+  await ctx.supabase.from("integrations").delete().eq("workspace_id", ctx.workspace.id).eq("provider", "poweroffice");
+  await ctx.supabase.from("external_invoices").delete().eq("workspace_id", ctx.workspace.id).eq("provider", "poweroffice");
   revalidatePath("/app/innstillinger");
 }
 

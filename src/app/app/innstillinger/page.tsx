@@ -7,6 +7,7 @@ import { hasAccountingAccess } from "@/lib/accounting/access";
 import { formatDateTime } from "@/lib/crm";
 import { fikenCredentials } from "@/lib/accounting/fiken-sync";
 import { fikenCompanies, fikenEnabled } from "@/lib/fiken";
+import { powerOfficeEnabled } from "@/lib/poweroffice";
 import { AccountingCard } from "./accounting-card";
 import { WorkspaceForm, type SettingsTexts } from "./forms";
 import { LogoForm } from "./logo-form";
@@ -59,6 +60,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
   };
   const tripletex = conn("tripletex");
   const fiken = conn("fiken");
+  const poweroffice = conn("poweroffice");
   // Fiken connected but no company chosen yet: the owner/admin picks one from their Fiken user.
   let fikenChoices: { slug: string; name: string; hasApi: boolean }[] | null = null;
   if (fiken && manager) {
@@ -176,9 +178,17 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
             confirmDisconnectFiken: ac.confirmDisconnectFiken,
             fikenAccessNote: ac.fikenAccessNote,
             fikenNotReady: ac.fikenNotReady,
+            powerOffice: ac.powerOffice,
+            poIntro: ac.poIntro,
+            poKeyLabel: ac.poKeyLabel,
+            poKeyHelp: ac.poKeyHelp,
+            poNotReady: ac.poNotReady,
+            confirmDisconnectPo: ac.confirmDisconnectPo,
           }}
           tripletex={tripletex}
           fiken={fiken}
+          poweroffice={poweroffice}
+          powerOfficeReady={powerOfficeEnabled()}
           fikenCompanies={fikenChoices}
           fikenReady={fikenEnabled()}
           flash={

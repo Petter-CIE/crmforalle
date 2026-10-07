@@ -96,7 +96,7 @@ export async function EconomyCard({ companyId }: { companyId: string }) {
       )}
       {integration?.last_sync_at && (
         <p className="mt-3 text-xs text-muted">{a.fromProvider
-            .replace("{provider}", integration.provider === "fiken" ? "Fiken" : "Tripletex")
+            .replace("{provider}", integration.provider === "fiken" ? "Fiken" : integration.provider === "poweroffice" ? "PowerOffice Go" : "Tripletex")
             .replace("{when}", formatDateTime(integration.last_sync_at, dateLocale))}</p>
       )}
     </Card>
