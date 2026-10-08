@@ -68,6 +68,7 @@ const nb: Faq = {
           a: [
             "Skriv til post@allseats.no. Månedsabonnement løper ut perioden som er betalt, årsabonnement løper ut året og fornyes ikke.",
             "Etter oppsigelse kan dere lese og eksportere dataene i 30 dager. Deretter slettes de.",
+            "Vil dere heller slette alt med en gang, kan eieren gjøre det selv under Innstillinger → Slett bedriften. CRM-et stenges da straks, abonnementet fornyes ikke, og alle data slettes permanent etter 30 dager. Fram til da kan eieren laste ned dataene eller angre.",
           ],
           link: { href: "/vilkar", label: "Les brukervilkårene" },
         },
@@ -419,6 +420,7 @@ const en: Faq = {
           a: [
             "Write to post@allseats.no. A monthly subscription runs to the end of the paid period; a yearly one runs to the end of the year and is not renewed.",
             "After cancelling you can read and export your data for 30 days. After that it is deleted.",
+            "Prefer to delete everything right away? The owner can do it under Settings → Delete the company. The CRM closes at once, the subscription is not renewed, and all data is permanently deleted after 30 days. Until then the owner can download the data or undo.",
           ],
           link: { href: "/vilkar", label: "Read the terms of service" },
         },

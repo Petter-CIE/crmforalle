@@ -16,6 +16,7 @@ export default async function SuspendedPage() {
   const workspaces = await listWorkspaces(ctx);
   const wanted = (await cookies()).get(WORKSPACE_COOKIE)?.value;
   const current = workspaces.find((w) => w.id === wanted) ?? workspaces[0];
+  if (current?.deletion_requested_at) redirect("/slettes");
   if (!current || !current.suspended_at) redirect("/app");
   const others = workspaces.filter((w) => w.id !== current.id && !w.suspended_at);
   const { t } = await getI18n();

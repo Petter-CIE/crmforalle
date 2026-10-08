@@ -739,3 +739,100 @@ export async function sendTrialMails(
   }
   return sent;
 }
+
+/** Owner asked for the company to be deleted: confirmation to the company's owners and admins. Never throws. */
+export async function notifyDeletionScheduled(o: {
+  workspaceName: string;
+  orgNumber: string | null;
+  scheduledFor: string;
+  recipients: { email: string; name: string | null }[];
+}) {
+  const mailer = transport();
+  if (!mailer) return 0;
+  const nbDate = new Date(o.scheduledFor).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Oslo" });
+  const enDate = new Date(o.scheduledFor).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Oslo" });
+  const company = o.orgNumber ? `${o.workspaceName} (org.nr. ${o.orgNumber})` : o.workspaceName;
+  const nb = `${company} blir slettet permanent fra AllSeats CRM ${nbDate}, med alle kontakter, bedrifter, salg, oppgaver, prosjekter, notater, e-poster, filer og integrasjoner. CRM-et er stengt fra nå av. Abonnementet fornyes ikke. Fram til sletting kan eieren laste ned dataene eller angre slettingen.`;
+  const en = `${company} will be permanently deleted from AllSeats CRM on ${enDate}, with all contacts, companies, deals, tasks, projects, notes, e-mails, files and integrations. The CRM is closed from now on and the subscription is not renewed. Until then the owner can download the data or undo the deletion.`;
+  const { html, text } = render({
+    lead: "Bedriften slettes / The company will be deleted",
+    title: o.workspaceName,
+    quote: `${nb}\n\n${en}`,
+    url: `${siteUrl()}/slettes`,
+    button: "Last ned data eller angre / Download data or undo",
+    footer:
+      "Var det ikke du? Svar på denne e-posten eller skriv til post@allseats.no. / Wasn't you? Reply to this e-mail or write to post@allseats.no. – AllSeats CRM, CIE AS",
+  });
+  let sent = 0;
+  for (const r of o.recipients) {
+    try {
+      await mailer.sendMail({
+        from: FROM(),
+        replyTo: "post@allseats.no",
+        to: r.email,
+        subject: `${o.workspaceName} slettes ${nbDate} / will be deleted on ${enDate}`,
+        text,
+        html,
+      });
+      sent++;
+    } catch (e) {
+      console.error("notifyDeletionScheduled failed", e instanceof Error ? e.message : e);
+    }
+  }
+  return sent;
+}
+
+/** Tells the AllSeats team that a company asked for deletion, undid it, or was deleted. Never throws. */
+export async function notifyTeamDeletion(o: {
+  event: "requested" | "cancelled" | "deleted";
+  workspaceName: string;
+  orgNumber: string | null;
+  plan: string;
+  paymentMethod: string | null;
+  scheduledFor?: string | null;
+  by?: string | null;
+}) {
+  const mailer = transport();
+  if (!mailer) return false;
+  const when = o.scheduledFor
+    ? new Date(o.scheduledFor).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Oslo" })
+    : null;
+  const headline =
+    o.event === "requested" ? `Eieren har bedt om sletting – slettes ${when}.` : o.event === "cancelled" ? "Eieren har angret slettingen." : "Bedriften er nå slettet permanent.";
+  const lines = [
+    headline,
+    `Plan: ${o.plan}`,
+    o.paymentMethod === "card"
+      ? o.event === "cancelled"
+        ? "Kortabonnementet i Stripe fortsetter som før."
+        : "Kortabonnementet i Stripe er stoppet automatisk."
+      : o.plan === "start" || o.plan === "bedrift"
+        ? o.event === "cancelled"
+          ? "Faktura: fortsett å fakturere som før."
+          : "Faktura: ikke send flere fakturaer (vurder kreditnota for forhåndsbetalt periode)."
+        : null,
+    o.orgNumber ? `Org.nr.: ${o.orgNumber}` : null,
+    o.by ? `Av: ${o.by}` : null,
+  ].filter(Boolean);
+  const { html, text } = render({
+    lead: "Sletting av bedrift:",
+    title: o.workspaceName,
+    quote: lines.join("\n"),
+    url: `${siteUrl()}/admin`,
+    button: "Åpne admin",
+    footer: "– AllSeats CRM",
+  });
+  try {
+    await mailer.sendMail({
+      from: FROM(),
+      to: process.env.ORDER_EMAIL || "post@allseats.no",
+      subject: `Sletting (${o.event === "requested" ? "bestilt" : o.event === "cancelled" ? "angret" : "utført"}): ${o.workspaceName}`,
+      text,
+      html,
+    });
+    return true;
+  } catch (e) {
+    console.error("team deletion notice failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}

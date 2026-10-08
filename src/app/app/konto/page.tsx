@@ -19,6 +19,7 @@ import { PushToggle } from "./push-toggle";
 import { InstallApp } from "@/components/install-app";
 import { vapidPublicKey } from "@/lib/push";
 import { PasskeySection, TotpSection, type SecurityTexts } from "./security-client";
+import { deleteMyAccount } from "@/app/app/innstillinger/deletion-actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -27,7 +28,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AccountPage({ searchParams }: PageProps<"/app/konto">) {
   const sp = await searchParams;
-  const { supabase, user, workspace } = await requireWorkspace();
+  const { supabase, user, workspace, workspaces } = await requireWorkspace();
+  // Owners must delete their companies before they can delete their own login.
+  const ownsCompany = workspaces.some((w) => w.role === "owner" && !w.deletion_requested_at);
   const [{ data: mailboxes }, { data: projects }] = await Promise.all([
     supabase
       .from("mail_connections")
@@ -345,6 +348,22 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
         <h2 className="mb-1 font-semibold">{s.passkeys}</h2>
         <p className="mb-4 text-sm text-muted">{s.passkeysIntro}</p>
         <PasskeySection t={texts} dateLocale={dateLocale} />
+      </Card>
+
+      <Card className="border-danger/40">
+        <h2 className="mb-1 font-semibold text-danger">{t.deletion.accountTitle}</h2>
+        {ownsCompany ? (
+          <p className="text-sm text-muted">{t.deletion.accountOwner}</p>
+        ) : (
+          <>
+            <p className="mb-4 text-sm text-muted">{t.deletion.accountIntro}</p>
+            <ActionForm action={deleteMyAccount} submitLabel={t.deletion.accountButton} pendingLabel={t.crm.saving}>
+              <Field label={t.deletion.confirmEmail} htmlFor="confirm_email">
+                <Input id="confirm_email" name="confirm_email" type="email" required autoComplete="off" className="w-full max-w-sm" />
+              </Field>
+            </ActionForm>
+          </>
+        )}
       </Card>
 
       <p className="flex flex-wrap gap-x-4 text-xs text-muted">

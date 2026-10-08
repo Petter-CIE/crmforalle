@@ -14,7 +14,8 @@ function customCells(fields: CustomField[], custom: Json) {
 
 /** Exports all companies or contacts of the current company as CSV (owner/admin only). */
 export async function GET(req: NextRequest) {
-  const { supabase, workspace } = await requireWorkspace();
+  // The owner may still export while the company waits to be deleted.
+  const { supabase, workspace } = await requireWorkspace({ allowPendingDeletion: true });
   if (!canManage(workspace.role)) return new NextResponse("Forbidden", { status: 403 });
   const type = req.nextUrl.searchParams.get("type") === "bedrifter" ? "bedrifter" : "kontakter";
   const date = new Date().toISOString().slice(0, 10);

@@ -5,12 +5,20 @@ import { getI18n } from "@/lib/i18n/server";
 import { monthlyPrice } from "@/lib/pricing";
 import { nowMs } from "@/lib/time";
 import { adminStatus } from "./guard";
+import { cleanupDeletedFiles } from "./storage-cleanup";
 
 const FILTERS = ["all", "paying", "trial", "expiring", "expired", "free", "suspended"] as const;
 type Filter = (typeof FILTERS)[number];
 
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
-  const { supabase } = await adminStatus();
+  const { supabase, isAdmin, hasAal2 } = await adminStatus();
+  if (isAdmin && hasAal2) {
+    try {
+      await cleanupDeletedFiles(supabase);
+    } catch (e) {
+      console.error("storage cleanup failed", e instanceof Error ? e.message : e);
+    }
+  }
   const { t, dateLocale } = await getI18n();
   const a = t.admin;
   const sp = await searchParams;
