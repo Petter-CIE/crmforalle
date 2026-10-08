@@ -62,7 +62,7 @@ export async function verifyPowerOffice(clientKey: string) {
 export async function syncPowerOffice(db: Db, workspaceId: string, userId: string): Promise<SyncResult> {
   const { data: integration } = await db
     .from("integrations")
-    .select("credentials")
+    .select("credentials, last_sync_at, last_error")
     .eq("workspace_id", workspaceId)
     .eq("provider", PROVIDER)
     .maybeSingle();
@@ -70,6 +70,39 @@ export async function syncPowerOffice(db: Db, workspaceId: string, userId: strin
   const token = await powerOfficeToken(open(integration.credentials));
 
   const today = new Date();
+  const invoiceFields = "Id,InvoiceNo,VoucherDate,DueDate,TotalAmount,NetAmount,Balance,CurrencyCode,CustomerId,IsReversed,VoucherType";
+  // After a successful sync, only invoices that are new or whose balance changed are read again
+  // (PowerOffice's own advice); a full read is done at most once a week.
+  const last = integration.last_sync_at ? new Date(integration.last_sync_at) : null;
+  const incremental = !!last && !integration.last_error && today.getTime() - last.getTime() < 7 * 86400000;
+  const tomorrow = iso(new Date(today.getTime() + 86400000));
+  const readInvoices = async () => {
+    const merge = (...lists: PoInvoice[][]) => [...new Map(lists.flat().map((inv) => [inv.Id, inv])).values()];
+    if (!incremental || !last) {
+      // The last ~13 months, plus every unpaid invoice however old (they matter for follow-up).
+      const [window, unpaid] = await Promise.all([
+        powerOfficeAll<PoInvoice>(token, "/OutgoingInvoices", {
+          fromDate: iso(new Date(today.getTime() - 400 * 86400000)),
+          toDate: tomorrow,
+          Fields: invoiceFields,
+        }),
+        powerOfficeAll<PoInvoice>(token, "/OutgoingInvoices", { onlyUnpaidInvoices: "true", Fields: invoiceFields }),
+      ]);
+      return merge(window, unpaid);
+    }
+    const [changed, recent] = await Promise.all([
+      powerOfficeAll<PoInvoice>(token, "/OutgoingInvoices", {
+        balanceLastChangedDateTimeOffsetGreaterThan: new Date(last.getTime() - 2 * 3600000).toISOString(),
+        Fields: invoiceFields,
+      }),
+      powerOfficeAll<PoInvoice>(token, "/OutgoingInvoices", {
+        fromDate: iso(new Date(last.getTime() - 3 * 86400000)),
+        toDate: tomorrow,
+        Fields: invoiceFields,
+      }),
+    ]);
+    return merge(recent, changed);
+  };
   const [customers, persons, invoices] = await Promise.all([
     powerOfficeAll<PoCustomer>(token, "/Customers", {
       Fields: "Id,Name,LegalName,FirstName,LastName,IsPerson,IsActive,IsArchived,OrganizationNumber,EmailAddress,PhoneNumber,WebsiteUrl,MailAddress",
@@ -77,11 +110,7 @@ export async function syncPowerOffice(db: Db, workspaceId: string, userId: strin
     powerOfficeAll<PoContactPerson>(token, "/ContactPersons", {
       Fields: "Id,ContactId,FirstName,LastName,EmailAddress,PhoneNumber,IsActive",
     }),
-    powerOfficeAll<PoInvoice>(token, "/OutgoingInvoices", {
-      fromDate: iso(new Date(today.getTime() - 400 * 86400000)),
-      toDate: iso(new Date(today.getTime() + 86400000)),
-      Fields: "Id,InvoiceNo,VoucherDate,DueDate,TotalAmount,NetAmount,Balance,CurrencyCode,CustomerId,IsReversed,VoucherType",
-    }),
+    readInvoices(),
   ]);
 
   // Private customers (IsPerson) are people, not companies, so they are left out of the company list.
