@@ -44,12 +44,14 @@ export async function GET(request: Request) {
     const plan = m.plan === "bedrift" ? "bedrift" : "start";
     const interval = m.interval === "year" ? "year" : "month";
     const addon = m.addon === "1";
+    const outlook = plan === "start" && m.outlook === "1";
     const email = m.email || s.customer_details?.email || c.requested_by || "";
-    const { error: applyErr } = await db.rpc("stripe_activate_apply", {
+    const { error: applyErr } = await db.rpc("stripe_activate_apply_v2", {
       p_ticket: ticket,
       p_plan: plan,
       p_interval: interval,
       p_addon: addon,
+      p_outlook: outlook,
       p_email: email,
       p_subscription: sub.id,
       p_customer: customer,
@@ -71,11 +73,12 @@ export async function GET(request: Request) {
         plan: plan === "bedrift" ? "Bedrift" : "Start",
         interval,
         addon,
+        outlook,
         invoiceEmail: email,
         reference: null,
         orderedBy: c.requested_by ?? "",
         monthly: monthlyPrice(
-          { plan, discount_percent: 0, discount_until: null, suspended_at: null, billing_interval: "month", accounting_addon: addon, extra_contact_packs: c.packs },
+          { plan, discount_percent: 0, discount_until: null, suspended_at: null, billing_interval: "month", accounting_addon: addon, outlook_addon: outlook, extra_contact_packs: c.packs },
           new Date().toISOString().slice(0, 10),
         ),
         method: "card",

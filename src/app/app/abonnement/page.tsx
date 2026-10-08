@@ -22,7 +22,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
   const s = t.subscription;
   const { data: w } = await supabase
     .from("workspaces")
-    .select("plan, billing_interval, accounting_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id, stripe_subscription_id, pilot_at")
+    .select("plan, billing_interval, accounting_addon, outlook_addon, invoice_email, invoice_reference, ordered_at, trial_ends_at, payment_method, card_status, card_period_end, stripe_customer_id, stripe_subscription_id, pilot_at")
     .eq("id", workspace.id)
     .single();
   const plan = w?.plan ?? workspace.plan;
@@ -112,6 +112,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
                 plan: plan === "bedrift" ? "bedrift" : "start",
                 interval: w?.billing_interval === "year" || w?.pilot_at ? "year" : "month",
                 addon: !!w?.accounting_addon,
+                outlook: !!w?.outlook_addon,
                 invoiceEmail: w?.invoice_email ?? user.email ?? "",
                 reference: w?.invoice_reference ?? "",
               }}
@@ -123,6 +124,7 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/app
                 perYear: s.perYear,
                 twoFree: s.twoFree,
                 addon: s.addon,
+                outlookAddon: s.outlookAddon,
                 invoiceEmail: s.invoiceEmail,
                 reference: s.reference,
                 total: s.total,

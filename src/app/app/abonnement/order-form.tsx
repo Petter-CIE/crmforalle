@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Input } from "@/components/ui";
-import { ACCOUNTING_ADDON_PRICE, MONTHS_PAID_PER_YEAR, PLAN_PRICE } from "@/lib/pricing";
+import { ACCOUNTING_ADDON_PRICE, MONTHS_PAID_PER_YEAR, OUTLOOK_ADDON_PRICE, PLAN_PRICE } from "@/lib/pricing";
 import { orderSubscription } from "./actions";
 
 type Texts = {
@@ -14,6 +14,7 @@ type Texts = {
   perYear: string;
   twoFree: string;
   addon: string;
+  outlookAddon: string;
   invoiceEmail: string;
   reference: string;
   total: string;
@@ -39,16 +40,18 @@ export function OrderForm({
 }: {
   cardEnabled: boolean;
   plans: Plan[];
-  initial: { plan: "start" | "bedrift"; interval: "month" | "year"; addon: boolean; invoiceEmail: string; reference: string };
+  initial: { plan: "start" | "bedrift"; interval: "month" | "year"; addon: boolean; outlook: boolean; invoiceEmail: string; reference: string };
   locale: string;
   t: Texts;
 }) {
   const [plan, setPlan] = useState(initial.plan);
   const [interval, setInterval] = useState(initial.interval);
   const [addon, setAddon] = useState(initial.addon);
+  const [outlook, setOutlook] = useState(initial.outlook);
   const [method, setMethod] = useState<"invoice" | "card">("invoice");
   const nok = (n: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(n);
-  const monthly = PLAN_PRICE[plan] + (plan === "start" && addon ? ACCOUNTING_ADDON_PRICE : 0);
+  const monthly =
+    PLAN_PRICE[plan] + (plan === "start" && addon ? ACCOUNTING_ADDON_PRICE : 0) + (plan === "start" && outlook ? OUTLOOK_ADDON_PRICE : 0);
   const total = interval === "year" ? monthly * MONTHS_PAID_PER_YEAR : monthly;
 
   return (
@@ -101,10 +104,16 @@ export function OrderForm({
         })}
       </div>
       {plan === "start" && (
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="addon" value="1" checked={addon} onChange={(e) => setAddon(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
-          {t.addon}
-        </label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="addon" value="1" checked={addon} onChange={(e) => setAddon(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
+            {t.addon}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="outlook" value="1" checked={outlook} onChange={(e) => setOutlook(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
+            {t.outlookAddon}
+          </label>
+        </div>
       )}
       {cardEnabled && (
         <fieldset className="space-y-2">

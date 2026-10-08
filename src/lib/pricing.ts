@@ -3,8 +3,11 @@ import type { PlanType } from "@/lib/database.types";
 /** List prices in NOK per month (ex. VAT). */
 export const PLAN_PRICE: Record<PlanType, number> = { trial: 0, free: 0, start: 249, bedrift: 990 };
 
-/** Tripletex/Fiken add-on for the Start plan (included in Bedrift). */
-export const ACCOUNTING_ADDON_PRICE = 50;
+/** Accounting add-on (Tripletex, Fiken, PowerOffice Go) for the Start plan (included in Bedrift). */
+export const ACCOUNTING_ADDON_PRICE = 99;
+
+/** Outlook / Microsoft 365 sync add-on for the Start plan (included in Bedrift). */
+export const OUTLOOK_ADDON_PRICE = 99;
 
 /** Yearly billing: 12 months for the price of 10. */
 export const MONTHS_PAID_PER_YEAR = 10;
@@ -36,6 +39,7 @@ export function monthlyPrice(
     suspended_at: string | null;
     billing_interval?: string;
     accounting_addon?: boolean;
+    outlook_addon?: boolean;
     extra_contact_packs?: number;
   },
   todayIso: string,
@@ -43,6 +47,7 @@ export function monthlyPrice(
   if (w.suspended_at) return 0;
   let base = PLAN_PRICE[w.plan];
   if (w.plan === "start" && w.accounting_addon) base += ACCOUNTING_ADDON_PRICE;
+  if (w.plan === "start" && w.outlook_addon) base += OUTLOOK_ADDON_PRICE;
   base += (w.extra_contact_packs ?? 0) * (CONTACT_PACK[w.plan]?.price ?? 0);
   if (w.billing_interval === "year") base = (base * MONTHS_PAID_PER_YEAR) / 12;
   const active = w.discount_percent > 0 && (!w.discount_until || w.discount_until >= todayIso);

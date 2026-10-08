@@ -2,11 +2,14 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { authorizeUrl, microsoftEnabled } from "@/lib/microsoft";
+import { outlookAllowed } from "@/lib/plan-access";
 import { requireWorkspace, siteUrl } from "@/lib/session";
 
 /** Sends the user to Microsoft to connect their Outlook mailbox and calendar. */
 export async function GET(req: Request) {
-  await requireWorkspace();
+  const { supabase, workspace } = await requireWorkspace();
+  // Outlook sync is in Bedrift, or an add-on to Start.
+  if (!(await outlookAllowed(supabase, workspace))) return NextResponse.redirect(new URL("/app/konto?outlook=tillegg#microsoft", siteUrl()));
   const project = new URL(req.url).searchParams.get("prosjekt") ?? "";
   if (!microsoftEnabled()) return NextResponse.redirect(new URL("/app/konto", siteUrl()));
   const state = randomBytes(24).toString("hex");

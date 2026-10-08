@@ -2088,6 +2088,7 @@ export type Database = {
           deletion_scheduled_for: string | null;
           billing_interval: string;
           accounting_addon: boolean;
+          outlook_addon: boolean;
           extra_contact_packs: number;
           terms_version: string | null;
           terms_accepted_at: string | null;
@@ -2130,6 +2131,7 @@ export type Database = {
           deletion_scheduled_for?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
+          outlook_addon?: boolean;
           extra_contact_packs?: number;
           terms_version?: string | null;
           terms_accepted_at?: string | null;
@@ -2172,6 +2174,7 @@ export type Database = {
           deletion_scheduled_for?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
+          outlook_addon?: boolean;
           extra_contact_packs?: number;
           terms_version?: string | null;
           terms_accepted_at?: string | null;
@@ -2435,6 +2438,35 @@ export type Database = {
         Returns: undefined;
       };
       trial_claim: { Args: { p_ticket: string }; Returns: Json };
+      plan_features: { Args: { p_workspace: string }; Returns: { team: boolean; outlook: boolean }[] };
+      order_subscription_invoice_v2: {
+        Args: {
+          p_workspace: string;
+          p_plan: Database["public"]["Enums"]["plan_type"];
+          p_interval: string;
+          p_addon: boolean;
+          p_outlook: boolean;
+          p_invoice_email: string;
+          p_reference: string | null;
+        };
+        Returns: undefined;
+      };
+      stripe_activate_apply_v2: {
+        Args: {
+          p_ticket: string;
+          p_plan: Database["public"]["Enums"]["plan_type"];
+          p_interval: string;
+          p_addon: boolean;
+          p_outlook: boolean;
+          p_email: string;
+          p_subscription: string;
+          p_customer: string;
+          p_period_end: string;
+        };
+        Returns: undefined;
+      };
+      admin_set_outlook_addon: { Args: { p_id: string; p_on: boolean }; Returns: undefined };
+      admin_outlook_addons: { Args: never; Returns: string[] };
       deletion_claim: { Args: { p_ticket: string }; Returns: Json };
       request_workspace_deletion: { Args: { p_workspace: string; p_confirm_name: string }; Returns: string };
       cancel_workspace_deletion: { Args: { p_workspace: string }; Returns: undefined };

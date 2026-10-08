@@ -1,7 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
 import type { PlanType } from "@/lib/database.types";
-import { ACCOUNTING_ADDON_PRICE, CONTACT_PACK, MONTHS_PAID_PER_YEAR, PLAN_PRICE } from "@/lib/pricing";
+import { ACCOUNTING_ADDON_PRICE, CONTACT_PACK, MONTHS_PAID_PER_YEAR, OUTLOOK_ADDON_PRICE, PLAN_PRICE } from "@/lib/pricing";
 
 /** Stripe client, or null when card payments are not set up (STRIPE_SECRET_KEY missing). */
 export function getStripe() {
@@ -28,7 +28,7 @@ async function vatRate(stripe: Stripe) {
 }
 
 /** Checkout line items for a plan (prices ex. VAT, in øre), with the add-on and extra contact packs. */
-export async function lineItems(stripe: Stripe, o: { plan: Exclude<PlanType, "trial" | "free">; interval: "month" | "year"; addon: boolean; packs: number }) {
+export async function lineItems(stripe: Stripe, o: { plan: Exclude<PlanType, "trial" | "free">; interval: "month" | "year"; addon: boolean; outlook?: boolean; packs: number }) {
   const tax = await vatRate(stripe);
   const factor = o.interval === "year" ? MONTHS_PAID_PER_YEAR : 1;
   const recurring = { interval: o.interval } as const;
@@ -38,7 +38,8 @@ export async function lineItems(stripe: Stripe, o: { plan: Exclude<PlanType, "tr
     price_data: { currency: "nok", unit_amount: Math.round(nokPerMonth * factor * 100), recurring, product_data: { name } },
   });
   const items = [item(`AllSeats CRM ${o.plan === "bedrift" ? "Bedrift" : "Start"}`, PLAN_PRICE[o.plan])];
-  if (o.plan === "start" && o.addon) items.push(item("Tripletex/Fiken-tillegg", ACCOUNTING_ADDON_PRICE));
+  if (o.plan === "start" && o.addon) items.push(item("Regnskapstillegg (Tripletex/Fiken/PowerOffice)", ACCOUNTING_ADDON_PRICE));
+  if (o.plan === "start" && o.outlook) items.push(item("Outlook-tillegg (Microsoft 365)", OUTLOOK_ADDON_PRICE));
   const pack = CONTACT_PACK[o.plan];
   if (pack && o.packs > 0) items.push(item(`Ekstra kontakter (+${pack.size.toLocaleString("nb-NO")})`, pack.price, o.packs));
   return items;

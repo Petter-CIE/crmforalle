@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { hasTeamFeatures } from "@/lib/plan-features";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Card, Input, Select } from "@/components/ui";
+import { Card, Input, Notice, Select } from "@/components/ui";
 import { EmptyState, Field, PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace } from "@/lib/session";
@@ -35,6 +37,15 @@ export default async function AutomationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={c.autoTitle} subtitle={c.autoIntro} backHref="/app/innstillinger" backLabel={t.settings.title} />
+
+      {!hasTeamFeatures(workspace.plan) && (
+        <Notice>
+          {t.planGate.automations}{" "}
+          <Link href="/app/abonnement" className="font-medium underline">
+            {t.planGate.upgrade}
+          </Link>
+        </Notice>
+      )}
 
       <Card>
         <h2 className="mb-4 font-semibold">{c.newRule}</h2>

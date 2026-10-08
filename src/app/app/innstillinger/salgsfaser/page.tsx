@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { hasTeamFeatures } from "@/lib/plan-features";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
@@ -6,7 +7,7 @@ import { canManage, requireWorkspace } from "@/lib/session";
 import { stageName } from "@/lib/stages";
 import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
-import { Card, Input, Select } from "@/components/ui";
+import { Card, Input, Notice, Select } from "@/components/ui";
 import { Field } from "@/components/ui-extra";
 import { loadPipelines, pickPipeline } from "@/lib/pipelines";
 import { createPipeline, deletePipeline, renamePipeline } from "../customize-actions";
@@ -73,11 +74,20 @@ export default async function StagesPage({ searchParams }: PageProps<"/app/innst
           })}
         </nav>
         <div className="mt-5 grid gap-6 md:grid-cols-2">
-          <ActionForm action={createPipeline} submitLabel={pl.create} pendingLabel={t.crm.saving} className="space-y-3">
-            <Field label={pl.newName} htmlFor="pl_new">
-              <Input id="pl_new" name="name" required maxLength={60} placeholder={pl.newPlaceholder} className="w-full" />
-            </Field>
-          </ActionForm>
+          {hasTeamFeatures(workspace.plan) || pipelines.length === 0 ? (
+            <ActionForm action={createPipeline} submitLabel={pl.create} pendingLabel={t.crm.saving} className="space-y-3">
+              <Field label={pl.newName} htmlFor="pl_new">
+                <Input id="pl_new" name="name" required maxLength={60} placeholder={pl.newPlaceholder} className="w-full" />
+              </Field>
+            </ActionForm>
+          ) : (
+            <Notice>
+            {t.planGate.pipelines}{" "}
+            <Link href="/app/abonnement" className="font-medium underline">
+              {t.planGate.upgrade}
+            </Link>
+          </Notice>
+          )}
           <ActionForm key={pipeline.id} action={renamePipeline} submitLabel={pl.renameSave} pendingLabel={t.crm.saving} className="space-y-3">
             <input type="hidden" name="id" value={pipeline.id} />
             <Field label={pl.rename} htmlFor="pl_name">

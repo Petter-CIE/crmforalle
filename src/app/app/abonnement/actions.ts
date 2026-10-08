@@ -20,14 +20,16 @@ export async function orderSubscription(_p: FormResult, formData: FormData): Pro
   const plan = formData.get("plan") === "bedrift" ? "bedrift" : "start";
   const interval = formData.get("interval") === "year" ? "year" : "month";
   const addon = plan === "start" && formData.get("addon") === "1";
+  const outlook = plan === "start" && formData.get("outlook") === "1";
   const invoiceEmail = String(formData.get("invoice_email") ?? "").trim().slice(0, 200);
   const reference = String(formData.get("reference") ?? "").trim().slice(0, 100) || null;
 
-  const { error } = await supabase.rpc("order_subscription_invoice", {
+  const { error } = await supabase.rpc("order_subscription_invoice_v2", {
     p_workspace: workspace.id,
     p_plan: plan,
     p_interval: interval,
     p_addon: addon,
+    p_outlook: outlook,
     p_invoice_email: invoiceEmail,
     p_reference: reference,
   });
@@ -39,7 +41,7 @@ export async function orderSubscription(_p: FormResult, formData: FormData): Pro
   }
   const { data: w } = await supabase.from("workspaces").select("extra_contact_packs, pilot_at").eq("id", workspace.id).single();
   const monthly = monthlyPrice(
-    { plan, discount_percent: 0, discount_until: null, suspended_at: null, billing_interval: "month", accounting_addon: addon, extra_contact_packs: w?.extra_contact_packs ?? 0 },
+    { plan, discount_percent: 0, discount_until: null, suspended_at: null, billing_interval: "month", accounting_addon: addon, outlook_addon: outlook, extra_contact_packs: w?.extra_contact_packs ?? 0 },
     new Date().toISOString().slice(0, 10),
   );
   after(() =>
@@ -50,6 +52,7 @@ export async function orderSubscription(_p: FormResult, formData: FormData): Pro
       plan: plan === "bedrift" ? "Bedrift" : "Start",
       interval,
       addon,
+      outlook,
       invoiceEmail,
       reference,
       orderedBy: user.email ?? "",
@@ -72,6 +75,7 @@ async function startCardCheckout(formData: FormData): Promise<FormResult> {
   const plan = formData.get("plan") === "bedrift" ? "bedrift" : "start";
   const interval = formData.get("interval") === "year" ? "year" : "month";
   const addon = plan === "start" && formData.get("addon") === "1";
+  const outlook = plan === "start" && formData.get("outlook") === "1";
   const email = String(formData.get("invoice_email") ?? "").trim().slice(0, 200) || user.email || "";
 
   let url: string | null = null;
@@ -80,13 +84,13 @@ async function startCardCheckout(formData: FormData): Promise<FormResult> {
     // A returning customer keeps their Stripe customer; a new one is created by Checkout and stored
     // only after the server has verified the payment (see /api/cron/stripe-activate).
     const customer = w?.stripe_customer_id ?? null;
-    const meta = { workspace_id: workspace.id, plan, interval, addon: addon ? "1" : "0", email };
+    const meta = { workspace_id: workspace.id, plan, interval, addon: addon ? "1" : "0", outlook: outlook ? "1" : "0", email };
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       ...(customer ? { customer, customer_update: { name: "auto", address: "auto" } as const } : { customer_email: email || undefined }),
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
-      line_items: await lineItems(stripe, { plan, interval, addon, packs: w?.extra_contact_packs ?? 0 }),
+      line_items: await lineItems(stripe, { plan, interval, addon, outlook, packs: w?.extra_contact_packs ?? 0 }),
       locale: locale === "en" ? "en" : "nb",
       metadata: meta,
       subscription_data: { metadata: meta, description: `AllSeats CRM – ${workspace.name}` },

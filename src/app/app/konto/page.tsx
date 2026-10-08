@@ -20,6 +20,7 @@ import { InstallApp } from "@/components/install-app";
 import { vapidPublicKey } from "@/lib/push";
 import { PasskeySection, TotpSection, type SecurityTexts } from "./security-client";
 import { deleteMyAccount } from "@/app/app/innstillinger/deletion-actions";
+import { outlookAllowed } from "@/lib/plan-access";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -31,6 +32,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
   const { supabase, user, workspace, workspaces } = await requireWorkspace();
   // Owners must delete their companies before they can delete their own login.
   const ownsCompany = workspaces.some((w) => w.role === "owner" && !w.deletion_requested_at);
+  const outlookOk = await outlookAllowed(supabase, workspace);
   const [{ data: mailboxes }, { data: projects }] = await Promise.all([
     supabase
       .from("mail_connections")
@@ -107,9 +109,17 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/kont
         {sp.ms === "ok" && <Notice>{t.outlook.ok}</Notice>}
         {sp.ms === "feil" && <Notice tone="error">{t.outlook.failed}</Notice>}
         {sp.ms === "avbrutt" && <Notice>{t.outlook.cancelled}</Notice>}
+        {microsoftEnabled() && !outlookOk && (
+          <Notice>
+            {t.planGate.outlook}{" "}
+            <Link href="/app/abonnement" className="font-medium underline">
+              {t.planGate.upgrade}
+            </Link>
+          </Notice>
+        )}
         {!microsoftEnabled() ? (
           <p className="text-sm text-muted">{t.outlook.notAvailable}</p>
-        ) : (
+        ) : !outlookOk && ordered.length === 0 ? null : (
           <div className="mt-2 space-y-4 text-sm">
             {ordered.map(({ ms, groupId, last }) => (
               <div key={ms.id} className={ms.parent_id ? "ml-6 border-l-2 border-brand/30 pl-4" : ""}>
