@@ -53,6 +53,9 @@ export function OrderForm({
   const monthly =
     PLAN_PRICE[plan] + (plan === "start" && addon ? ACCOUNTING_ADDON_PRICE : 0) + (plan === "start" && outlook ? OUTLOOK_ADDON_PRICE : 0);
   const total = interval === "year" ? monthly * MONTHS_PAID_PER_YEAR : monthly;
+  // Add-on price in the chosen billing interval (yearly = 10 months, like the plans).
+  const addonPrice = (perMonth: number) =>
+    `(+${nok(interval === "year" ? perMonth * MONTHS_PAID_PER_YEAR : perMonth)} ${interval === "year" ? t.perYear : t.perMonth})`;
 
   return (
     <ActionForm action={orderSubscription} submitLabel={method === "card" ? `${t.goToPayment} →` : t.order} pendingLabel={t.ordering}>
@@ -107,11 +110,11 @@ export function OrderForm({
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="addon" value="1" checked={addon} onChange={(e) => setAddon(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
-            {t.addon}
+            {t.addon} {addonPrice(ACCOUNTING_ADDON_PRICE)}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="outlook" value="1" checked={outlook} onChange={(e) => setOutlook(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
-            {t.outlookAddon}
+            {t.outlookAddon} {addonPrice(OUTLOOK_ADDON_PRICE)}
           </label>
         </div>
       )}
