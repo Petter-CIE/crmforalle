@@ -89,3 +89,44 @@ export function missingPrivileges(c: PowerOfficeClient) {
   const valid = c.ValidPrivileges ?? [];
   return POWEROFFICE_PRIVILEGES.filter((p) => !valid.some((v) => v === `${p}_Full` || v === `${p}_Read` || v.startsWith(`${p}_`)));
 }
+
+// --- Onboarding (v2): the customer activates AllSeats in Go with one click instead of copying a client key.
+// Initiate returns a temporary Go login URL; after the user accepts, Go sends them to our whitelisted
+// redirect URL with a one-time token, and Finalize swaps that token for the client key(s).
+// Only the subscription key is needed for these calls (no access token).
+
+async function onboardingPost<T>(path: string, body: Record<string, unknown>) {
+  const res = await fetch(`${POWEROFFICE_BASE}${path}`, {
+    method: "POST",
+    headers: { "Ocp-Apim-Subscription-Key": subscription(), "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    console.error(`poweroffice ${path} ${res.status}`, detail.slice(0, 300));
+    throw new PowerOfficeError(`poweroffice_onboarding_${res.status}`, res.status);
+  }
+  return (await res.json()) as T;
+}
+
+/** Starts onboarding and returns the Go login URL to send the user to. */
+export async function powerOfficeInitiate(redirectUri: string, orgNumber?: string | null) {
+  const json = await onboardingPost<{ TemporaryUrl?: string | null }>("/Onboarding/Initiate", {
+    ApplicationKey: process.env.POWEROFFICE_APPLICATION_KEY,
+    RedirectUri: redirectUri,
+    ...(orgNumber ? { ClientOrganizationNo: orgNumber } : {}),
+  });
+  if (!json.TemporaryUrl) throw new PowerOfficeError("poweroffice_onboarding_empty", 500);
+  return json.TemporaryUrl;
+}
+
+export type OnboardedClient = { ClientKey: string; ClientName?: string | null; ClientOrganizationNumber?: string | null };
+
+/** Swaps the one-time token from the redirect for the client key(s) of the client(s) the user chose. */
+export async function powerOfficeFinalize(onboardingToken: string) {
+  const json = await onboardingPost<{ OnboardedClientsInformation?: OnboardedClient[] | null }>("/Onboarding/Finalize", {
+    OnboardingToken: onboardingToken,
+  });
+  return (json.OnboardedClientsInformation ?? []).filter((c) => !!c.ClientKey);
+}

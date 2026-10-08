@@ -186,6 +186,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
             poKeyLabel: ac.poKeyLabel,
             poKeyHelp: ac.poKeyHelp,
             poNotReady: ac.poNotReady,
+            poOneClickHelp: ac.poOneClickHelp,
+            poChooseClient: ac.poChooseClient,
+            poManual: ac.poManual,
             confirmDisconnectPo: ac.confirmDisconnectPo,
           }}
           tripletex={tripletex}
@@ -205,7 +208,20 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
                 synkfeil: { tone: "error", text: ac.fikenSyncFailed },
                 feil: { tone: "error", text: ac.fikenFailed },
               } as Record<string, { tone: "success" | "error"; text: string } | null>
-            )[String(sp.fiken ?? "")] ?? null
+            )[String(sp.fiken ?? "")] ??
+            (
+              {
+                ok: { tone: "success", text: ac.poOk },
+                avbrutt: { tone: "error", text: ac.poCancelled },
+                ikkefunnet: { tone: "error", text: ac.poNotFound },
+                ingentilgang: { tone: "error", text: ac.poNoAccess },
+                blokkert: { tone: "error", text: ac.poBlocked },
+                tilgang: { tone: "error", text: ac.poPrivileges },
+                synkfeil: { tone: "error", text: ac.poSyncFailed },
+                feil: { tone: "error", text: ac.poFailed },
+              } as Record<string, { tone: "success" | "error"; text: string }>
+            )[String(sp.poweroffice ?? "")] ??
+            null
           }
           manager={manager}
           allowed={!!billing && hasAccountingAccess(billing)}

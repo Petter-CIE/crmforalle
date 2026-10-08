@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { hasAccountingAccess } from "@/lib/accounting/access";
-import { fikenCredentials, syncFiken } from "@/lib/accounting/fiken-sync";
-import { syncPowerOffice, verifyPowerOffice } from "@/lib/accounting/poweroffice-sync";
-import { syncTripletex, verifyTripletex, type SyncResult } from "@/lib/accounting/tripletex-sync";
-import { fikenCompanies, FikenError, fikenRevoke } from "@/lib/fiken";
+import { fikenCredentials } from "@/lib/accounting/fiken-sync";
+import { isFiken403, isProvider, runSync, savePowerOfficeKey, type Provider } from "@/lib/accounting/run-sync";
+import { verifyTripletex, type SyncResult } from "@/lib/accounting/tripletex-sync";
+import { fikenCompanies, fikenRevoke } from "@/lib/fiken";
 import { getI18n } from "@/lib/i18n/server";
 import { powerOfficeEnabled } from "@/lib/poweroffice";
 import { canEncrypt, open, seal } from "@/lib/secret-box";
@@ -30,32 +30,7 @@ function summary(r: SyncResult, tpl: string) {
     .replace("{tasks}", String(r.tasksCreated));
 }
 
-type Provider = "tripletex" | "fiken" | "poweroffice";
-const isProvider = (p: string): p is Provider => p === "tripletex" || p === "fiken" || p === "poweroffice";
 type Ctx = Awaited<ReturnType<typeof requireWorkspace>>;
-
-/** Fiken answers 403 when the company lacks Fiken's API add-on (or the app lost access to it). */
-const isFiken403 = (e: unknown) => e instanceof FikenError && e.status === 403;
-
-async function runSync(ctx: Ctx, provider: Provider) {
-  const { data: claimed } = await ctx.supabase.rpc("integration_claim_sync", { p_workspace: ctx.workspace.id, p_provider: provider });
-  if (!claimed) return { ok: false as const, message: "busy" };
-  try {
-    const r =
-      provider === "fiken"
-        ? await syncFiken(ctx.supabase, ctx.workspace.id, ctx.user.id)
-        : provider === "poweroffice"
-          ? await syncPowerOffice(ctx.supabase, ctx.workspace.id, ctx.user.id)
-          : await syncTripletex(ctx.supabase, ctx.workspace.id, ctx.user.id);
-    await ctx.supabase.rpc("integration_synced", { p_workspace: ctx.workspace.id, p_provider: provider, p_error: null });
-    return { ok: true as const, result: r };
-  } catch (e) {
-    const message = isFiken403(e) ? "fiken_403" : e instanceof Error ? e.message : String(e);
-    console.error(`${provider} sync failed`, message);
-    await ctx.supabase.rpc("integration_synced", { p_workspace: ctx.workspace.id, p_provider: provider, p_error: message });
-    return { ok: false as const, message };
-  }
-}
 
 async function connectedProviders(ctx: Ctx) {
   const { data } = await ctx.supabase.from("integrations").select("provider, last_sync_at").eq("workspace_id", ctx.workspace.id);
@@ -107,30 +82,21 @@ export async function connectPowerOffice(_prev: AccountingState, formData: FormD
   const key = String(formData.get("clientKey") ?? "").trim();
   if (key.length < 20 || key.length > 200 || /\s/.test(key)) return { error: a.poBadKey };
 
-  let company: string;
   try {
-    company = await verifyPowerOffice(key);
+    const { company, sync } = await savePowerOfficeKey(ctx, key);
+    revalidatePath("/app/innstillinger");
+    revalidatePath("/app/bedrifter");
+    if (!sync.ok) return { ok: true, message: a.connectedSyncFailed.replace("{company}", company) };
+    return { ok: true, message: `${a.connected.replace("{company}", company)} ${summary(sync.result, a.syncSummary)}` };
   } catch (e) {
     const code = e instanceof Error ? e.message : String(e);
     console.error("poweroffice connect failed", code);
     // 400/401 from the token endpoint = PowerOffice rejected the client key.
     if (/^poweroffice_token_(400|401|403)$/.test(code)) return { error: a.poBadKey };
     if (code.startsWith("poweroffice_privileges:")) return { error: a.poPrivileges };
+    if (code === "save_failed") return { error: a.failed };
     return { error: a.poServiceError.replace("{code}", code.replace(/^poweroffice_/, "")) };
   }
-  const { error } = await ctx.supabase.rpc("save_integration", {
-    p_workspace: ctx.workspace.id,
-    p_provider: "poweroffice",
-    p_credentials: seal(key),
-    p_company: company,
-  });
-  if (error) return { error: a.failed };
-
-  const sync = await runSync(ctx, "poweroffice");
-  revalidatePath("/app/innstillinger");
-  revalidatePath("/app/bedrifter");
-  if (!sync.ok) return { ok: true, message: a.connectedSyncFailed.replace("{company}", company) };
-  return { ok: true, message: `${a.connected.replace("{company}", company)} ${summary(sync.result, a.syncSummary)}` };
 }
 
 export async function syncAccountingNow(): Promise<AccountingState> {

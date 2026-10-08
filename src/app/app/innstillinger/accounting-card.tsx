@@ -48,6 +48,9 @@ export type AccountingTexts = {
   poKeyLabel: string;
   poKeyHelp: string;
   poNotReady: string;
+  poOneClickHelp: string;
+  poChooseClient: string;
+  poManual: string;
   confirmDisconnectPo: string;
 };
 
@@ -107,18 +110,37 @@ function FikenChooser({ t, companies }: { t: AccountingTexts; companies: FikenCo
 function PowerOfficeConnect({ t }: { t: AccountingTexts }) {
   const [state, action, pending] = useActionState<AccountingState, FormData>(connectPowerOffice, {});
   return (
-    <form action={action} className="space-y-3">
-      <label htmlFor="po_key" className="block font-medium">
-        {t.powerOffice} – {t.poKeyLabel}
-      </label>
+    <div className="space-y-3">
+      <p className="font-medium">{t.powerOffice}</p>
       <p className="text-xs text-muted">{t.poIntro}</p>
-      <Input id="po_key" name="clientKey" type="password" autoComplete="off" required minLength={20} />
-      <p className="text-xs text-muted">{t.poKeyHelp}</p>
-      {state.error && <Notice tone="error">{state.error}</Notice>}
-      <Button type="submit" disabled={pending}>
-        {pending ? t.connecting : `${t.connect} ${t.powerOffice}`}
-      </Button>
-    </form>
+      {/* One click: activate AllSeats in Go and come straight back (full page navigation to Go). */}
+      <a
+        href="/api/integrations/poweroffice/start"
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+      >
+        {t.connect} {t.powerOffice}
+      </a>
+      <p className="text-xs text-muted">
+        {t.poOneClickHelp}{" "}
+        <a href="/api/integrations/poweroffice/start?alle=1" className="underline">
+          {t.poChooseClient}
+        </a>
+      </p>
+      <details className="text-sm">
+        <summary className="cursor-pointer text-xs text-muted hover:text-foreground">{t.poManual}</summary>
+        <form action={action} className="mt-3 space-y-3">
+          <label htmlFor="po_key" className="block font-medium">
+            {t.powerOffice} – {t.poKeyLabel}
+          </label>
+          <Input id="po_key" name="clientKey" type="password" autoComplete="off" required minLength={20} />
+          <p className="text-xs text-muted">{t.poKeyHelp}</p>
+          {state.error && <Notice tone="error">{state.error}</Notice>}
+          <Button type="submit" variant="secondary" disabled={pending}>
+            {pending ? t.connecting : `${t.connect} ${t.powerOffice}`}
+          </Button>
+        </form>
+      </details>
+    </div>
   );
 }
 
