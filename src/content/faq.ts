@@ -44,14 +44,14 @@ const nb: Faq = {
         {
           q: "Hvordan velger eller bytter vi abonnement?",
           a: [
-            "Under Innstillinger → Abonnement (eier og administratorer). Velg Start eller Bedrift, månedlig eller årlig, og hvor fakturaen skal sendes. Abonnementet er aktivt med en gang.",
+            "Under Abonnement i menyen (eier og administratorer). Velg Start eller Bedrift, månedlig eller årlig, og hvor fakturaen skal sendes. Abonnementet er aktivt med en gang.",
             "Dere kan bytte plan og betalingsintervall på samme sted. For oppsigelse, skriv til post@allseats.no.",
           ],
         },
         {
           q: "Hvordan betaler vi?",
           a: [
-            "Med faktura eller kort – dere velger under Innstillinger → Abonnement. Faktura sendes på e-post forskuddsvis for en måned eller et år om gangen, med mva. i tillegg. Med kort trekkes beløpet automatisk, og kvitteringen kommer på e-post.",
+            "Med faktura eller kort – dere velger under Abonnement i menyen. Faktura sendes på e-post forskuddsvis for en måned eller et år om gangen, med mva. i tillegg. Med kort trekkes beløpet automatisk, og kvitteringen kommer på e-post.",
             "Fortell oss hvilken e-postadresse fakturaen skal til, og om dere trenger en referanse eller et bestillingsnummer på den.",
           ],
         },
@@ -397,14 +397,14 @@ const en: Faq = {
         {
           q: "How do we choose or change our subscription?",
           a: [
-            "Under Settings → Subscription (owner and admins). Choose Start or Bedrift, monthly or yearly, and where the invoice should go. The subscription is active right away.",
+            "Under Subscription in the menu (owner and admins). Choose Start or Bedrift, monthly or yearly, and where the invoice should go. The subscription is active right away.",
             "You can change plan and billing interval in the same place. To cancel, write to post@allseats.no.",
           ],
         },
         {
           q: "How do we pay?",
           a: [
-            "By invoice or card – you choose under Settings → Subscription. Invoices are sent by e-mail in advance for one month or one year at a time, with VAT added. With a card the amount is charged automatically and the receipt comes by e-mail.",
+            "By invoice or card – you choose under Subscription in the menu. Invoices are sent by e-mail in advance for one month or one year at a time, with VAT added. With a card the amount is charged automatically and the receipt comes by e-mail.",
             "Tell us which e-mail address the invoice should go to, and whether you need a reference or purchase order number on it.",
           ],
         },

@@ -711,8 +711,8 @@ export async function sendTrialMails(
             : `Prøveperioden av AllSeats CRM for ${it.workspace} er over.`,
         title: en ? "Choose a subscription to continue" : "Velg abonnement for å fortsette",
         quote: en
-          ? "Start (NOK 249/month) or Bedrift (NOK 990/month), excl. VAT – all users included, paid by invoice, no card needed. Choose under Settings → Subscription; it takes a minute and all your data stays as it is."
-          : "Start (249 kr/mnd) eller Bedrift (990 kr/mnd) eks. mva. – alle brukere inkludert, betaling med faktura, ingen kort. Velg under Innstillinger → Abonnement; det tar ett minutt, og alle dataene beholdes.",
+          ? "Start (NOK 249/month) or Bedrift (NOK 990/month), excl. VAT – all users included, paid by invoice, no card needed. Choose under Subscription in the menu; it takes a minute and all your data stays as it is."
+          : "Start (249 kr/mnd) eller Bedrift (990 kr/mnd) eks. mva. – alle brukere inkludert, betaling med faktura, ingen kort. Velg under Abonnement i menyen; det tar ett minutt, og alle dataene beholdes.",
         url: `${siteUrl()}/app/abonnement`,
         button: en ? "Choose subscription" : "Velg abonnement",
         footer: en ? "Questions? Reply to this e-mail. – AllSeats CRM, CIE AS" : "Spørsmål? Svar på denne e-posten. – AllSeats CRM, CIE AS",

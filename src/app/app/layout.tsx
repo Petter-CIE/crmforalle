@@ -18,7 +18,7 @@ import { BottomNav } from "./_components/bottom-nav";
 import { FeedbackLink } from "./_components/feedback-link";
 import { GlobalSearch } from "./_components/global-search";
 import { Nav } from "./_components/nav";
-import { NAV_HREF, NAV_ICON, orderedNav, parseNavPrefs } from "@/lib/nav-items";
+import { MANAGER_ONLY, NAV_HREF, NAV_ICON, orderedNav, parseNavPrefs } from "@/lib/nav-items";
 import { HashFocus, QuickAdd } from "./_components/quick-add";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
@@ -31,12 +31,15 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   ]);
   const isPlatformAdmin = !!adminRows?.[0]?.is_admin;
   // The user's own menu: order and hidden sections. The phone tab bar shows the first four.
-  const menu = orderedNav(parseNavPrefs(profile?.nav)).map(({ key, hidden }) => ({
-    key,
-    href: NAV_HREF[key],
-    label: t.nav[key],
-    hidden,
-  }));
+  const manager = canManage(workspace.role);
+  const menu = orderedNav(parseNavPrefs(profile?.nav))
+    .filter(({ key }) => manager || !MANAGER_ONLY.includes(key))
+    .map(({ key, hidden }) => ({
+      key,
+      href: NAV_HREF[key],
+      label: t.nav[key],
+      hidden,
+    }));
   const visibleMenu = menu.filter((m) => !m.hidden);
   const tabs = visibleMenu.slice(0, 4).map((m) => ({ href: m.href, label: m.label, d: NAV_ICON[m.key] }));
   const themeCookie = (await cookies()).get("theme")?.value;
@@ -56,6 +59,30 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       .slice(0, 2)
       .map((p) => p[0]?.toUpperCase())
       .join("") || "?";
+  // Plan badge under the menu: what the company has, and the way to upgrade (owners and admins).
+  const planNames: Record<string, string> = { start: t.landing.plans[0].name, bedrift: t.landing.plans[1].name };
+  const badge =
+    workspace.plan === "trial"
+      ? { text: daysLeft > 0 ? t.subscription.badgeTrial(daysLeft) : t.subscription.badgeTrialOver, cta: null, warn: daysLeft <= 3 }
+      : workspace.plan === "free"
+        ? { text: t.subscription.badgeFree, cta: null, warn: false }
+        : { text: planNames[workspace.plan] ?? workspace.plan, cta: workspace.plan === "start" ? t.subscription.badgeUpgrade : null, warn: false };
+  const badgeInner = (
+    <>
+      <span className={`truncate ${badge.warn ? "font-medium text-danger" : ""}`}>{badge.text}</span>
+      {manager && badge.cta && <span className="shrink-0 font-medium text-brand">· {badge.cta} →</span>}
+    </>
+  );
+  const planBadge = manager ? (
+    <Link
+      href="/app/abonnement"
+      className="mt-3 flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs text-muted hover:bg-background hover:text-foreground"
+    >
+      {badgeInner}
+    </Link>
+  ) : (
+    <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs text-muted">{badgeInner}</p>
+  );
   const userCard = (
     <Link
       href="/app/konto"
@@ -130,6 +157,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
               show: t.nav.show,
             }}
           />
+          <div className="hidden md:block">{planBadge}</div>
           <div className="hidden md:block">
             <FeedbackLink label={t.feedback.nav} />
           </div>
@@ -176,7 +204,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
               }`}
             >
               <span>{daysLeft > 0 ? t.trial.daysLeft(daysLeft) : t.subscription.bannerOver}</span>
-              {canManage(workspace.role) && (
+              {manager && (
                 <Link href="/app/abonnement" className="font-medium underline underline-offset-2">
                   {t.subscription.banner}
                 </Link>
@@ -198,6 +226,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           </main>
           <div className="flex flex-col items-center gap-2 border-t border-border p-4 pb-24 md:hidden">
             {userCard}
+            {planBadge}
             <Suspense>
               <LanguageSwitcher locale={locale} label={t.common.language} />
             </Suspense>
