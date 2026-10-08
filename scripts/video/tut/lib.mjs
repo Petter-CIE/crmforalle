@@ -3,18 +3,19 @@
 // records a timeline. assets.mjs renders cards/captions, render.py turns it all into a smooth 4K video.
 import { createRequire } from "node:module";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 // Playwright from the shared tools folder in the cloud workspace, otherwise from a normal npm install
 let pw;
 try { pw = createRequire("/opt/npm-tools/node_modules/")("playwright"); } catch { pw = createRequire(import.meta.url)("playwright"); }
 const { chromium } = pw;
 
-export const ROOT = new URL("..", import.meta.url).pathname; // demo/
+export const ROOT = fileURLToPath(new URL("..", import.meta.url)); // demo/
 export const BASE = "https://allseats.no";
 const SLOW = 1.5; // tutorial pace: cursor moves take 1.5x the default
 
 // fresh session for every capture (each run rotates the refresh token)
 export async function login() {
-  const env = Object.fromEntries(fs.readFileSync(ROOT + ".env", "utf8").trim().split("\n").map((l) => l.split(/=(.*)/s).slice(0, 2)));
+  const env = Object.fromEntries(fs.readFileSync(ROOT + ".env", "utf8").trim().split(/\r?\n/).map((l) => l.split(/=(.*)/s).slice(0, 2)));
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: 1280, height: 720 } });
   const p = await ctx.newPage();
