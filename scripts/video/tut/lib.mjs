@@ -3,8 +3,10 @@
 // records a timeline. assets.mjs renders cards/captions, render.py turns it all into a smooth 4K video.
 import { createRequire } from "node:module";
 import fs from "node:fs";
-const require = createRequire("/opt/npm-tools/node_modules/");
-const { chromium } = require("playwright");
+// Playwright from the shared tools folder in the cloud workspace, otherwise from a normal npm install
+let pw;
+try { pw = createRequire("/opt/npm-tools/node_modules/")("playwright"); } catch { pw = createRequire(import.meta.url)("playwright"); }
+const { chromium } = pw;
 
 export const ROOT = new URL("..", import.meta.url).pathname; // demo/
 export const BASE = "https://allseats.no";
