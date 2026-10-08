@@ -1840,6 +1840,31 @@ const nb = {
     text: (ws: string) => `Tilgangen til ${ws} i AllSeats CRM er midlertidig stengt. Dataene dine er trygge. Ta kontakt med oss på post@allseats.no.`,
     other: "Bytt til en annen bedrift:",
   },
+  deletion: {
+    companyTitle: "Slett bedriften",
+    companyIntro:
+      "Sletter bedriften i AllSeats med alle kontakter, bedrifter, salg, tilbud, oppgaver, prosjekter, notater, e-poster, filer og integrasjoner. CRM-et stenges med en gang for alle brukere, og abonnementet fornyes ikke. Alt slettes permanent etter 30 dager – fram til da kan du laste ned dataene eller angre. Brukerkontoene slettes ikke.",
+    confirmName: (name: string) => `Skriv inn bedriftens navn for å bekrefte: ${name}`,
+    companyButton: "Slett bedriften om 30 dager",
+    onlyOwner: "Bare eieren kan slette bedriften.",
+    nameMismatch: "Navnet stemmer ikke. Skriv bedriftens navn nøyaktig slik det står.",
+    failed: "Noe gikk galt. Prøv igjen, eller skriv til post@allseats.no.",
+    pendingTitle: "Bedriften slettes",
+    pendingText: (ws: string, when: string) =>
+      `${ws} blir slettet permanent ${when}. CRM-et er stengt fram til da, og abonnementet fornyes ikke.`,
+    pendingOthers: "Eieren av bedriften har bedt om sletting. Ta kontakt med eieren hvis du trenger data herfra.",
+    exportTitle: "Last ned dataene før de slettes:",
+    undo: "Angre slettingen",
+    accountTitle: "Slett brukerkontoen min",
+    accountIntro:
+      "Sletter innloggingen din og fjerner deg fra alle bedrifter du er med i. Det du har lagt inn i CRM-et – kontakter, notater, oppgaver – blir liggende hos bedriften. Dette kan ikke angres.",
+    accountOwner:
+      "Du er eier av en bedrift i AllSeats. Slett bedriften først under Innstillinger → Slett bedriften (eller be oss om å overføre eierskapet), så kan du slette brukerkontoen din.",
+    confirmEmail: "Skriv inn e-postadressen din for å bekrefte",
+    accountButton: "Slett brukerkontoen min",
+    emailMismatch: "E-postadressen stemmer ikke med kontoen din.",
+    ownsCompany: "Du er fortsatt eier av en bedrift. Slett bedriften først.",
+  },
 };
 
 export type Dictionary = typeof nb;
@@ -3674,6 +3699,31 @@ const en: Dictionary = {
     title: "Access is suspended",
     text: (ws: string) => `Access to ${ws} in AllSeats CRM is temporarily suspended. Your data is safe. Contact us at post@allseats.no.`,
     other: "Switch to another company:",
+  },
+  deletion: {
+    companyTitle: "Delete the company",
+    companyIntro:
+      "Deletes the company in AllSeats with all contacts, companies, deals, quotes, tasks, projects, notes, e-mails, files and integrations. The CRM closes at once for all users and the subscription is not renewed. Everything is deleted permanently after 30 days – until then you can download the data or undo. User accounts are not deleted.",
+    confirmName: (name: string) => `Type the company's name to confirm: ${name}`,
+    companyButton: "Delete the company in 30 days",
+    onlyOwner: "Only the owner can delete the company.",
+    nameMismatch: "The name doesn't match. Type the company's name exactly as shown.",
+    failed: "Something went wrong. Please try again, or write to post@allseats.no.",
+    pendingTitle: "The company is being deleted",
+    pendingText: (ws: string, when: string) =>
+      `${ws} will be permanently deleted on ${when}. The CRM is closed until then and the subscription is not renewed.`,
+    pendingOthers: "The owner of the company has asked for it to be deleted. Contact the owner if you need data from it.",
+    exportTitle: "Download the data before it is deleted:",
+    undo: "Undo the deletion",
+    accountTitle: "Delete my user account",
+    accountIntro:
+      "Deletes your login and removes you from every company you belong to. What you added to the CRM – contacts, notes, tasks – stays with the company. This cannot be undone.",
+    accountOwner:
+      "You own a company in AllSeats. Delete the company first under Settings → Delete the company (or ask us to transfer ownership), then you can delete your user account.",
+    confirmEmail: "Type your e-mail address to confirm",
+    accountButton: "Delete my user account",
+    emailMismatch: "The e-mail address doesn't match your account.",
+    ownsCompany: "You still own a company. Delete the company first.",
   },
 };
 

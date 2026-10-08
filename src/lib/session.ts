@@ -13,6 +13,9 @@ export type WorkspaceSummary = {
   plan: PlanType;
   trial_ends_at: string;
   suspended_at: string | null;
+  /** Set when the owner has asked for the company to be deleted; it is deleted on deletion_scheduled_for. */
+  deletion_requested_at: string | null;
+  deletion_scheduled_for: string | null;
   logo_path: string | null;
   role: MemberRole;
   /** Limited to the projects they are added to (only applies to the "user" role). */
@@ -71,7 +74,7 @@ export async function listWorkspaces(
   const { supabase, user } = ctx ?? (await requireUser());
   const { data, error } = await supabase
     .from("members")
-    .select("role, restricted, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at, logo_path)")
+    .select("role, restricted, workspaces(id, name, org_number, plan, trial_ends_at, suspended_at, deletion_requested_at, deletion_scheduled_for, logo_path)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -81,15 +84,17 @@ export async function listWorkspaces(
 }
 
 /** Current workspace (from cookie, else the first one) or redirect to onboarding. */
-export async function requireWorkspace() {
+export async function requireWorkspace(opts: { allowPendingDeletion?: boolean } = {}) {
   const ctx = await requireUser();
   const { supabase, user } = ctx;
   const workspaces = await listWorkspaces(ctx);
   if (workspaces.length === 0) redirect("/kom-i-gang");
   const wanted = (await cookies()).get(WORKSPACE_COOKIE)?.value;
   const workspace = workspaces.find((w) => w.id === wanted) ?? workspaces[0];
+  // Being deleted: the CRM is closed. Only the owner may still export data (and undo the deletion on /slettes).
+  if (workspace.deletion_requested_at && !(opts.allowPendingDeletion && workspace.role === "owner")) redirect("/slettes");
   // Access suspended by the platform admin: the CRM stays closed, data is kept.
-  if (workspace.suspended_at) redirect("/sperret");
+  if (workspace.suspended_at && !workspace.deletion_requested_at) redirect("/sperret");
   return { supabase, user, workspace, workspaces };
 }
 

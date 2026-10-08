@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card } from "@/components/ui";
+import { ActionForm } from "@/components/action-form";
+import { Card, Input } from "@/components/ui";
+import { Field } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, logoUrl, requireWorkspace } from "@/lib/session";
 import { hasAccountingAccess } from "@/lib/accounting/access";
@@ -9,6 +11,7 @@ import { fikenCredentials } from "@/lib/accounting/fiken-sync";
 import { fikenCompanies, fikenEnabled } from "@/lib/fiken";
 import { powerOfficeEnabled } from "@/lib/poweroffice";
 import { AccountingCard } from "./accounting-card";
+import { requestCompanyDeletion } from "./deletion-actions";
 import { WorkspaceForm, type SettingsTexts } from "./forms";
 import { LogoForm } from "./logo-form";
 
@@ -224,6 +227,20 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/inn
               {t.import.title}
             </a>
           </div>
+        </Card>
+      )}
+
+      {workspace.role === "owner" && (
+        <Card className="border-danger/40">
+          <h2 id="slett" className="mb-1 scroll-mt-20 font-semibold text-danger">
+            {t.deletion.companyTitle}
+          </h2>
+          <p className="mb-4 text-sm text-muted">{t.deletion.companyIntro}</p>
+          <ActionForm action={requestCompanyDeletion} submitLabel={t.deletion.companyButton} pendingLabel={t.crm.saving}>
+            <Field label={t.deletion.confirmName(workspace.name)} htmlFor="confirm_name">
+              <Input id="confirm_name" name="confirm_name" required autoComplete="off" className="w-full max-w-sm" />
+            </Field>
+          </ActionForm>
         </Card>
       )}
     </div>

@@ -2083,6 +2083,9 @@ export type Database = {
           discount_note: string | null;
           admin_note: string | null;
           suspended_at: string | null;
+          deletion_requested_at: string | null;
+          deletion_requested_by: string | null;
+          deletion_scheduled_for: string | null;
           billing_interval: string;
           accounting_addon: boolean;
           extra_contact_packs: number;
@@ -2122,6 +2125,9 @@ export type Database = {
           discount_note?: string | null;
           admin_note?: string | null;
           suspended_at?: string | null;
+          deletion_requested_at?: string | null;
+          deletion_requested_by?: string | null;
+          deletion_scheduled_for?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
           extra_contact_packs?: number;
@@ -2161,6 +2167,9 @@ export type Database = {
           discount_note?: string | null;
           admin_note?: string | null;
           suspended_at?: string | null;
+          deletion_requested_at?: string | null;
+          deletion_requested_by?: string | null;
+          deletion_scheduled_for?: string | null;
           billing_interval?: string;
           accounting_addon?: boolean;
           extra_contact_packs?: number;
@@ -2426,6 +2435,12 @@ export type Database = {
         Returns: undefined;
       };
       trial_claim: { Args: { p_ticket: string }; Returns: Json };
+      deletion_claim: { Args: { p_ticket: string }; Returns: Json };
+      request_workspace_deletion: { Args: { p_workspace: string; p_confirm_name: string }; Returns: string };
+      cancel_workspace_deletion: { Args: { p_workspace: string }; Returns: undefined };
+      delete_my_account: { Args: { p_confirm_email: string }; Returns: undefined };
+      admin_storage_cleanup_list: { Args: never; Returns: { id: number; bucket: string; path: string }[] };
+      admin_storage_cleanup_done: { Args: { p_ids: number[] }; Returns: undefined };
       order_subscription_invoice: {
         Args: {
           p_workspace: string;
