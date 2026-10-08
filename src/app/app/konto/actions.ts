@@ -1,5 +1,6 @@
 "use server";
 
+import { outlookAllowed } from "@/lib/plan-access";
 import { revalidatePath } from "next/cache";
 import type { FormResult } from "@/app/app/crm-actions";
 import { getI18n } from "@/lib/i18n/server";
@@ -102,6 +103,7 @@ export async function disconnectOutlook(formData: FormData) {
 /** Adds a shared mailbox (read through the user's own Microsoft connection) with an optional project. */
 export async function addSharedMailbox(formData: FormData) {
   const { supabase, user, workspace } = await requireWorkspace();
+  if (!(await outlookAllowed(supabase, workspace))) return;
   const parent = String(formData.get("parent_id") ?? "");
   const address = String(formData.get("address") ?? "").trim().toLowerCase();
   const project = String(formData.get("project_id") ?? "");

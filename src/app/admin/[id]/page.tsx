@@ -27,12 +27,13 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
   const { t, dateLocale } = await getI18n();
   const a = t.admin;
 
-  const [{ data: all }, { data: members }, { data: log }, { data: pilotAt }, { data: spots }] = await Promise.all([
+  const [{ data: all }, { data: members }, { data: log }, { data: pilotAt }, { data: spots }, { data: outlookIds }] = await Promise.all([
     supabase.rpc("admin_workspaces_v3"),
     supabase.rpc("admin_workspace_members", { p_id: id }),
     supabase.rpc("admin_audit_log", { p_id: id }),
     supabase.rpc("admin_workspace_pilot", { p_id: id }),
     supabase.rpc("pilot_spots_left"),
+    supabase.rpc("admin_outlook_addons"),
   ]);
   const w = (all ?? []).find((x) => x.id === id);
   if (!w) notFound();
@@ -150,6 +151,13 @@ export default async function AdminWorkspacePage({ params }: PageProps<"/admin/[
                 <input type="checkbox" name="accounting_addon" value="1" defaultChecked={w.accounting_addon} className="mt-0.5" />
                 <span>
                   {a.addon}
+                  <span className="block text-xs text-muted">{a.addonHelp}</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="outlook_addon" value="1" defaultChecked={(outlookIds ?? []).includes(w.id)} className="mt-0.5" />
+                <span>
+                  {a.outlookAddon}
                   <span className="block text-xs text-muted">{a.addonHelp}</span>
                 </span>
               </label>

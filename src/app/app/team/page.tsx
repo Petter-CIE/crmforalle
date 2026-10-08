@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { hasTeamFeatures } from "@/lib/plan-features";
 import { Button, Card, Select } from "@/components/ui";
 import { PageHeader } from "@/components/ui-extra";
 import { getI18n } from "@/lib/i18n/server";
@@ -38,8 +39,9 @@ export default async function TeamPage() {
     copied: s.copied,
     inviteLink: s.inviteLink,
     accessTitle: s.accessTitle,
-    accessHelp: s.accessHelp,
-    noProjects: s.noProjects,
+    // Limiting users to projects is a Bedrift feature.
+    accessHelp: hasTeamFeatures(workspace.plan) ? s.accessHelp : "",
+    noProjects: hasTeamFeatures(workspace.plan) ? s.noProjects : t.planGate.projectAccess,
   };
 
   const [{ data: members }, { data: invitations }, { data: projectRows }, { data: projectMembers }] = await Promise.all([
@@ -66,7 +68,9 @@ export default async function TeamPage() {
       : Promise.resolve({ data: [] as { user_id: string; project_id: string }[] }),
   ]);
   const allProjects = projectRows ?? [];
-  const activeProjects = allProjects.filter((p) => !p.archived).map((p) => ({ id: p.id, name: p.name }));
+  const activeProjects = hasTeamFeatures(workspace.plan)
+    ? allProjects.filter((p) => !p.archived).map((p) => ({ id: p.id, name: p.name }))
+    : [];
   const projectName = new Map(allProjects.map((p) => [p.id, p.name]));
   const projectsOf = new Map<string, string[]>();
   for (const pm of projectMembers ?? []) projectsOf.set(pm.user_id, [...(projectsOf.get(pm.user_id) ?? []), pm.project_id]);

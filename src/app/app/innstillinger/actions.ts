@@ -1,5 +1,6 @@
 "use server";
 
+import { hasTeamFeatures } from "@/lib/plan-features";
 import { revalidatePath } from "next/cache";
 import { getI18n } from "@/lib/i18n/server";
 import { canManage, requireWorkspace, siteUrl } from "@/lib/session";
@@ -55,8 +56,8 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   const phone = String(formData.get("phone") ?? "").trim().slice(0, 40);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: t.common.invalidEmail };
   if (!ASSIGNABLE.includes(role)) return { error: t.settings.invalidRole };
-  // Admins always see everything, so only plain users can be limited to projects.
-  const projectIds = role === "user" ? await validProjectIds(supabase, workspace.id, formData) : [];
+  // Admins always see everything, so only plain users can be limited to projects (a Bedrift feature).
+  const projectIds = role === "user" && hasTeamFeatures(workspace.plan) ? await validProjectIds(supabase, workspace.id, formData) : [];
 
   const { data, error } = await supabase
     .from("invitations")
@@ -115,6 +116,8 @@ export async function setMemberProjects(formData: FormData) {
   const userId = String(formData.get("user_id"));
   if (!UUID.test(userId) || userId === user.id) return;
   const projectIds = await validProjectIds(supabase, workspace.id, formData);
+  // Limiting users to projects is a Bedrift feature; on Start a limit can only be removed.
+  if (projectIds.length > 0 && !hasTeamFeatures(workspace.plan)) return;
 
   const { error: delError } = await supabase
     .from("project_members")

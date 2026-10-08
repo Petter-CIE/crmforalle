@@ -103,7 +103,7 @@ const nb: Docs = {
             {
               h: "Tilgang bare til bestemte prosjekter",
               p: [
-                "En bruker kan begrenses til ett eller flere prosjekter – for eksempel en innleid selger eller en partner. Velg prosjektene når du inviterer, eller senere under Team. Brukeren ser da bare bedrifter, kontakter, salg, tilbud, oppgaver og e-post som hører til disse prosjektene, pluss det hen selv har lagt inn.",
+                "Finnes i Bedrift. En bruker kan begrenses til ett eller flere prosjekter – for eksempel en innleid selger eller en partner. Velg prosjektene når du inviterer, eller senere under Team. Brukeren ser da bare bedrifter, kontakter, salg, tilbud, oppgaver og e-post som hører til disse prosjektene, pluss det hen selv har lagt inn.",
                 "Velger du ingen prosjekter, ser brukeren hele bedriften. Eier og administratorer ser alltid alt.",
               ],
             },
@@ -221,7 +221,7 @@ const nb: Docs = {
             {
               h: "Egne faser og flere pipeliner",
               p: [
-                "Under Innstillinger → Salgsfaser kan eier og administratorer gi fasene nye navn, endre sannsynlighet, dra dem i ny rekkefølge, legge til og slette faser. Selger dere på ulike måter – for eksempel nye kunder, fornyelser og partnere – kan dere lage flere pipeliner med hver sine faser.",
+                "Under Innstillinger → Salgsfaser kan eier og administratorer gi fasene nye navn, endre sannsynlighet, dra dem i ny rekkefølge, legge til og slette faser. Selger dere på ulike måter – for eksempel nye kunder, fornyelser og partnere – kan dere lage flere pipeliner med hver sine faser (Bedrift – Start har én pipeline).",
               ],
             },
           ],
@@ -323,7 +323,7 @@ const nb: Docs = {
             {
               h: "Koble til Outlook / Microsoft 365",
               p: [
-                "Under Konto og sikkerhet kan du koble til e-posten og kalenderen din (kun lesetilgang). E-post du sender til og får fra kontakter i CRM-et, havner da automatisk i historikken. Annen e-post leses ikke inn. Du kan også legge til delte postkasser og knytte en postkasse til et prosjekt.",
+                "Inkludert i Bedrift, tillegg til Start (99 kr/mnd). Under Konto og sikkerhet kan du koble til e-posten og kalenderen din (kun lesetilgang). E-post du sender til og får fra kontakter i CRM-et, havner da automatisk i historikken. Annen e-post leses ikke inn. Du kan også legge til delte postkasser og knytte en postkasse til et prosjekt.",
               ],
             },
             {
@@ -453,7 +453,7 @@ const nb: Docs = {
           blocks: [
             {
               p: [
-                "Under Innstillinger → Automatisering lager dere regler som «når et salg flyttes til Tilbud sendt, opprett ‘Følg opp tilbudet’ med frist om 3 dager». Oppgaven gis til den som er ansvarlig for salget.",
+                "Automatisering finnes i Bedrift. Under Innstillinger → Automatisering lager dere regler som «når et salg flyttes til Tilbud sendt, opprett ‘Følg opp tilbudet’ med frist om 3 dager». Oppgaven gis til den som er ansvarlig for salget.",
               ],
             },
           ],
@@ -492,7 +492,7 @@ const nb: Docs = {
             },
             {
               p: [
-                "Ser du ikke fanen API-tilgang, må tilleggstjenesten Integrasjoner bestilles under Selskap → Mitt abonnement i Tripletex. Koblingen er inkludert i Bedrift og koster 50 kr/mnd på Start. Fiken kommer.",
+                "Ser du ikke fanen API-tilgang, må tilleggstjenesten Integrasjoner bestilles under Selskap → Mitt abonnement i Tripletex. Koblingen er inkludert i Bedrift og koster 99 kr/mnd på Start. Fiken og PowerOffice Go kommer.",
               ],
             },
           ],
@@ -561,8 +561,9 @@ const nb: Docs = {
           blocks: [
             {
               bullets: [
-                "Start – 249 kr/mnd: ubegrenset antall brukere, opptil 2 000 bedrifter og kontakter.",
-                "Bedrift – 990 kr/mnd: ubegrenset antall brukere, opptil 25 000 bedrifter og kontakter, Tripletex inkludert.",
+                "Start – 249 kr/mnd: ubegrenset antall brukere, opptil 2 000 bedrifter og kontakter, én salgspipeline. Tillegg: regnskapskobling (99 kr/mnd) og Outlook / Microsoft 365-synk (99 kr/mnd).",
+                "Bedrift – 990 kr/mnd: alt i Start, opptil 25 000 bedrifter og kontakter, regnskapskobling og Outlook-synk inkludert, flere pipeliner, automatisering og brukere som bare ser egne prosjekter.",
+                "Prøveperioden (14 dager) har alt som finnes i Bedrift.",
                 "Årlig betaling gir 2 måneder gratis. Alle priser er eks. mva.",
               ],
             },
@@ -666,7 +667,7 @@ const en: Docs = {
             {
               h: "Access to selected projects only",
               p: [
-                "A user can be limited to one or more projects – for example a contracted sales rep or a partner. Choose the projects when you invite them, or later under Team. The user then only sees the companies, contacts, deals, quotes, tasks and e-mail that belong to those projects, plus what they entered themselves.",
+                "Part of Business. A user can be limited to one or more projects – for example a contracted sales rep or a partner. Choose the projects when you invite them, or later under Team. The user then only sees the companies, contacts, deals, quotes, tasks and e-mail that belong to those projects, plus what they entered themselves.",
                 "If you choose no projects, the user sees the whole company. Owners and admins always see everything.",
               ],
             },
@@ -782,7 +783,7 @@ const en: Docs = {
             {
               h: "Your own stages and several pipelines",
               p: [
-                "Under Settings → Pipeline stages, owners and admins can rename stages, change probabilities, drag them into a new order, and add or delete stages. If you sell in different ways – new customers, renewals and partners, for example – you can create several pipelines, each with its own stages.",
+                "Under Settings → Pipeline stages, owners and admins can rename stages, change probabilities, drag them into a new order, and add or delete stages. If you sell in different ways – new customers, renewals and partners, for example – you can create several pipelines, each with its own stages (Business – Start has one pipeline).",
               ],
             },
           ],
@@ -884,7 +885,7 @@ const en: Docs = {
             {
               h: "Connect Outlook / Microsoft 365",
               p: [
-                "Under Account and security you can connect your e-mail and calendar (read only). E-mail you exchange with contacts in the CRM is then added to their history automatically. Other e-mail is not read. You can also add shared mailboxes and link a mailbox to a project.",
+                "Included in Business, an add-on to Start (NOK 99/month). Under Account and security you can connect your e-mail and calendar (read only). E-mail you exchange with contacts in the CRM is then added to their history automatically. Other e-mail is not read. You can also add shared mailboxes and link a mailbox to a project.",
               ],
             },
             {
@@ -1012,7 +1013,7 @@ const en: Docs = {
           blocks: [
             {
               p: [
-                "Under Settings → Automation you create rules such as “when a deal moves to Quote sent, create ‘Follow up the quote’ due in 3 days”. The task is assigned to the deal's owner.",
+                "Automation is part of Business. Under Settings → Automation you create rules such as “when a deal moves to Quote sent, create ‘Follow up the quote’ due in 3 days”. The task is assigned to the deal's owner.",
               ],
             },
           ],
@@ -1051,7 +1052,7 @@ const en: Docs = {
             },
             {
               p: [
-                "If you don't see the API access tab, order the Integrations add-on under Company → My subscription in Tripletex. The connection is included in Bedrift and costs NOK 50/month on Start. Fiken is coming.",
+                "If you don't see the API access tab, order the Integrations add-on under Company → My subscription in Tripletex. The connection is included in Business and costs NOK 99/month on Start. Fiken and PowerOffice Go are coming.",
               ],
             },
           ],
@@ -1118,8 +1119,9 @@ const en: Docs = {
           blocks: [
             {
               bullets: [
-                "Start – NOK 249/month: unlimited users, up to 2,000 companies and contacts.",
-                "Bedrift – NOK 990/month: unlimited users, up to 25,000 companies and contacts, Tripletex included.",
+                "Start – NOK 249/month: unlimited users, up to 2,000 companies and contacts, one sales pipeline. Add-ons: accounting integration (NOK 99/month) and Outlook / Microsoft 365 sync (NOK 99/month).",
+                "Business – NOK 990/month: everything in Start, up to 25,000 companies and contacts, accounting integration and Outlook sync included, several pipelines, automation and users who only see their own projects.",
+                "The free trial (14 days) includes everything in Business.",
                 "Paying yearly gives you 2 months free. All prices excl. VAT.",
               ],
             },

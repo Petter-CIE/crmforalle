@@ -25,9 +25,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
   const filter: Filter = FILTERS.includes(sp.vis as Filter) ? (sp.vis as Filter) : "all";
 
-  const { data, error } = await supabase.rpc("admin_workspaces_v3");
+  const [{ data, error }, { data: outlookIds }] = await Promise.all([supabase.rpc("admin_workspaces_v3"), supabase.rpc("admin_outlook_addons")]);
   if (error) throw new Error("admin_workspaces failed");
-  const rows = data ?? [];
+  const outlook = new Set(outlookIds ?? []);
+  const rows = (data ?? []).map((w) => ({ ...w, outlook_addon: outlook.has(w.id) }));
   const now = nowMs();
   const today = new Date(now).toISOString().slice(0, 10);
   const daysLeft = (iso: string) => Math.ceil((new Date(iso).getTime() - now) / 86_400_000);
@@ -188,9 +189,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                   <td className="px-4 py-3 text-right tabular-nums">{w.contact_count}</td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     {formatMoney(monthlyPrice(w, today), dateLocale)}
-                    {(w.billing_interval === "year" || (w.plan === "start" && w.accounting_addon)) && (
+                    {(w.billing_interval === "year" || (w.plan === "start" && (w.accounting_addon || w.outlook_addon))) && (
                       <span className="block text-xs text-muted">
-                        {[w.billing_interval === "year" ? a.yearlyShort : null, w.plan === "start" && w.accounting_addon ? "+ Tripletex/Fiken" : null]
+                        {[w.billing_interval === "year" ? a.yearlyShort : null, w.plan === "start" && w.accounting_addon ? "+ regnskap" : null, w.plan === "start" && w.outlook_addon ? "+ Outlook" : null]
                           .filter(Boolean)
                           .join(", ")}
                       </span>

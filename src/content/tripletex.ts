@@ -53,7 +53,7 @@ const nb: TripletexPage = {
   ],
   priceTitle: "Pris",
   priceText:
-    "Tripletex-integrasjonen er inkludert i Bedrift (990 kr/mnd for hele bedriften) og kan legges til Start for 50 kr/mnd. Alle priser eks. mva., ubegrenset antall brukere.",
+    "Tripletex-integrasjonen er inkludert i Bedrift (990 kr/mnd for hele bedriften) og kan legges til Start for 99 kr/mnd. Alle priser eks. mva., ubegrenset antall brukere.",
   faqTitle: "Spørsmål om integrasjonen",
   faq: [
     {
@@ -108,7 +108,7 @@ const en: TripletexPage = {
   ],
   priceTitle: "Price",
   priceText:
-    "The Tripletex integration is included in Bedrift (NOK 990/month for the whole company) and can be added to Start for NOK 50/month. All prices excl. VAT, unlimited users.",
+    "The Tripletex integration is included in Bedrift (NOK 990/month for the whole company) and can be added to Start for NOK 99/month. All prices excl. VAT, unlimited users.",
   faqTitle: "Questions about the integration",
   faq: [
     {

@@ -56,10 +56,11 @@ const nb: Faq = {
           ],
         },
         {
-          q: "Hva er tillegget for Tripletex og Fiken?",
+          q: "Hva er tilleggene i Start?",
           a: [
-            "En kobling til regnskapsprogrammet, slik at kunder, kontaktpersoner og fakturaer hentes automatisk inn i CRM-et. Tripletex er klar – Fiken kommer.",
-            "Tillegget koster 50 kr/mnd på Start og er inkludert i Bedrift.",
+            "Regnskapskobling: kunder, kontaktpersoner og fakturaer hentes automatisk fra regnskapsprogrammet. Tripletex er klar – Fiken og PowerOffice Go kommer. 99 kr/mnd på Start, inkludert i Bedrift.",
+            "Outlook / Microsoft 365-synk: e-post og kalender fra Outlook havner automatisk i CRM-et. 99 kr/mnd på Start, inkludert i Bedrift. E-post via Bcc, videresending og Gmail virker i begge planer.",
+            "Bedrift har i tillegg flere salgspipeliner, automatisering og brukere som bare ser egne prosjekter.",
           ],
           link: { href: "/tripletex", label: "Les om Tripletex-koblingen" },
         },
@@ -296,7 +297,7 @@ const nb: Faq = {
         {
           q: "Kan CRM-et lage oppfølgingsoppgaver automatisk?",
           a: [
-            "Ja. Under Innstillinger → Automatisering lager dere regler som «når et salg flyttes til Tilbud sendt, opprett ‘Følg opp tilbudet’ med frist om 3 dager». Oppgaven gis til den som er ansvarlig for salget.",
+            "Ja, i Bedrift. Under Innstillinger → Automatisering lager dere regler som «når et salg flyttes til Tilbud sendt, opprett ‘Følg opp tilbudet’ med frist om 3 dager». Oppgaven gis til den som er ansvarlig for salget.",
           ],
         },
         {
@@ -408,10 +409,11 @@ const en: Faq = {
           ],
         },
         {
-          q: "What is the Tripletex and Fiken add-on?",
+          q: "What are the add-ons on Start?",
           a: [
-            "A connection to your accounting software, so customers, contact persons and invoices are fetched into the CRM automatically. Tripletex is ready – Fiken is coming.",
-            "The add-on costs NOK 50/month on Start and is included in Bedrift.",
+            "Accounting integration: customers, contact persons and invoices are fetched from your accounting software automatically. Tripletex is ready – Fiken and PowerOffice Go are coming. NOK 99/month on Start, included in Business.",
+            "Outlook / Microsoft 365 sync: e-mail and calendar from Outlook end up in the CRM automatically. NOK 99/month on Start, included in Business. E-mail via Bcc, forwarding and Gmail works on both plans.",
+            "Business also has several sales pipelines, automation and users who only see their own projects.",
           ],
           link: { href: "/tripletex", label: "Read about the Tripletex connection" },
         },
@@ -648,7 +650,7 @@ const en: Faq = {
         {
           q: "Can the CRM create follow-up tasks automatically?",
           a: [
-            "Yes. Under Settings → Automation you create rules like “when a deal moves to Quote sent, create ‘Follow up the quote’ due in 3 days”. The task goes to the deal owner.",
+            "Yes, on Business. Under Settings → Automation you create rules like “when a deal moves to Quote sent, create ‘Follow up the quote’ due in 3 days”. The task goes to the deal owner.",
           ],
         },
         {

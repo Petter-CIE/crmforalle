@@ -496,6 +496,7 @@ export async function notifyOrder(o: {
   plan: string;
   interval: string;
   addon: boolean;
+  outlook?: boolean;
   invoiceEmail: string;
   reference: string | null;
   orderedBy: string;
@@ -507,7 +508,7 @@ export async function notifyOrder(o: {
   if (!mailer) return false;
   const lines = [
     o.pilot ? "⭐ PILOTKUNDE – trekk 50 % rabatt på første års faktura." : null,
-    `Plan: ${o.plan} (${o.interval === "year" ? "årlig" : "månedlig"})${o.addon ? " + regnskapstillegg" : ""}`,
+    `Plan: ${o.plan} (${o.interval === "year" ? "årlig" : "månedlig"})${o.addon ? " + regnskapstillegg" : ""}${o.outlook ? " + Outlook-tillegg" : ""}`,
     `Pris: ${o.monthly} kr/mnd eks. mva.${o.interval === "year" ? ` (${o.monthly * 12} kr/år)` : ""}`,
     o.method === "card" ? `Betalt med kort (Stripe) – IKKE send faktura. Kvittering til: ${o.invoiceEmail}` : `Faktura til: ${o.invoiceEmail}`,
     o.reference ? `Referanse: ${o.reference}` : null,

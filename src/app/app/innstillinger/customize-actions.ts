@@ -7,6 +7,7 @@ import { opt } from "@/lib/crm";
 import { CUSTOM_ENTITIES, CUSTOM_TYPES, MAX_FIELDS_PER_ENTITY, type CustomEntity, type CustomType } from "@/lib/custom-fields";
 import { getI18n } from "@/lib/i18n/server";
 import { flash } from "@/lib/flash";
+import { hasTeamFeatures } from "@/lib/plan-features";
 import { canManage, requireWorkspace } from "@/lib/session";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -84,6 +85,7 @@ export async function moveCustomField(formData: FormData) {
 export async function createAutomation(_p: FormResult, formData: FormData): Promise<FormResult> {
   const { ctx, t, allowed } = await manager();
   if (!allowed) return { error: t.customize.onlyAdmins };
+  if (!hasTeamFeatures(ctx.workspace.plan)) return { error: t.planGate.automations };
   const stageId = String(formData.get("stage_id") ?? "");
   const title = String(formData.get("task_title") ?? "").trim().slice(0, 200);
   const days = Math.round(Number(formData.get("due_days")));
@@ -100,6 +102,7 @@ export async function toggleAutomation(formData: FormData) {
   const { ctx, allowed } = await manager();
   const id = String(formData.get("id") ?? "");
   if (!allowed || !UUID.test(id)) return;
+  if (formData.get("active") === "1" && !hasTeamFeatures(ctx.workspace.plan)) return;
   await ctx.supabase
     .from("automations")
     .update({ active: formData.get("active") === "1" })
@@ -218,6 +221,7 @@ export async function createPipeline(_p: FormResult, formData: FormData): Promis
   const { supabase, workspace } = ctx;
   const { data: list } = await supabase.from("pipelines").select("position").eq("workspace_id", workspace.id);
   if ((list ?? []).length >= MAX_PIPELINES) return { error: pl.tooMany };
+  if ((list ?? []).length >= 1 && !hasTeamFeatures(workspace.plan)) return { error: t.planGate.pipelines };
   const position = Math.max(-1, ...(list ?? []).map((p) => p.position)) + 1;
   const { data: created, error } = await supabase.from("pipelines").insert({ workspace_id: workspace.id, name, position }).select("id").single();
   if (error || !created) return { error: t.crm.error };
