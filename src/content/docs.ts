@@ -69,7 +69,7 @@ const nb: Docs = {
             },
             {
               p: [
-                "De første 14 dagene er gratis, uten kort. Dere har tilgang til alt i Start-planen. Når prøveperioden er over, velger dere abonnement under Innstillinger → Abonnement. Gjør dere ikke det, kan dere fortsatt lese og eksportere dataene i 30 dager.",
+                "De første 14 dagene er gratis, uten kort. Dere har tilgang til alle funksjonene. Når prøveperioden er over, velger dere abonnement under Abonnement i menyen. Gjør dere ikke det, kan dere fortsatt lese og eksportere dataene i 30 dager.",
               ],
             },
           ],
@@ -570,7 +570,7 @@ const nb: Docs = {
             {
               p: [
                 "Bare bedrifter og kontakter teller med i grensen. Trenger dere flere, kan dere kjøpe kontaktpakker (Start: +2 000 for 50 kr/mnd, Bedrift: +25 000 for 250 kr/mnd).",
-                "Abonnementet velges og endres under Innstillinger → Abonnement, med betaling på faktura eller kort. For oppsigelse, skriv til post@allseats.no. Etter oppsigelse kan dere lese og eksportere dataene i 30 dager.",
+                "Abonnementet velges og endres under Abonnement i menyen, med betaling på faktura eller kort. For oppsigelse, skriv til post@allseats.no. Etter oppsigelse kan dere lese og eksportere dataene i 30 dager.",
                 "Eieren kan også slette hele bedriften selv under Innstillinger → Slett bedriften. CRM-et stenges med en gang, abonnementet fornyes ikke, og alt slettes permanent etter 30 dager. Fram til da kan eieren laste ned kontakter og bedrifter eller angre. Hver bruker kan slette sin egen brukerkonto under Konto og sikkerhet.",
               ],
             },
@@ -633,7 +633,7 @@ const en: Docs = {
             },
             {
               p: [
-                "The first 14 days are free, no card needed, with access to everything in the Start plan. When the trial ends, choose a subscription under Settings → Subscription. If you don't, you can still read and export your data for 30 days.",
+                "The first 14 days are free, no card needed, with access to every feature. When the trial ends, choose a subscription under Subscription in the menu. If you don't, you can still read and export your data for 30 days.",
               ],
             },
           ],
@@ -1128,7 +1128,7 @@ const en: Docs = {
             {
               p: [
                 "Only companies and contacts count towards the limit. Need more? Buy extra contact packs (Start: +2,000 for NOK 50/month, Bedrift: +25,000 for NOK 250/month).",
-                "Choose and change the subscription under Settings → Subscription, paying by invoice or card. To cancel, write to post@allseats.no. After cancelling you can read and export your data for 30 days.",
+                "Choose and change the subscription under Subscription in the menu, paying by invoice or card. To cancel, write to post@allseats.no. After cancelling you can read and export your data for 30 days.",
                 "The owner can also delete the whole company under Settings → Delete the company. The CRM closes at once, the subscription is not renewed, and everything is permanently deleted after 30 days. Until then the owner can download contacts and companies or undo. Each user can delete their own user account under Account and security.",
               ],
             },
