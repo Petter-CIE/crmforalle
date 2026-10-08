@@ -56,8 +56,18 @@ async function get(token: string, path: string, params: Record<string, string>) 
   return res;
 }
 
+/** Parses a response body; PowerOffice answers 204 / an empty body when a filtered list has no rows. */
+async function body<T>(res: Response, empty: T): Promise<T> {
+  if (res.status === 204) return empty;
+  const text = await res.text();
+  return text.trim() ? (JSON.parse(text) as T) : empty;
+}
+
 export async function powerOfficeGet<T>(token: string, path: string, params: Record<string, string> = {}) {
-  return (await (await get(token, path, params)).json()) as T;
+  const res = await get(token, path, params);
+  const json = await body<T | null>(res, null);
+  if (json === null) throw new PowerOfficeError("poweroffice_empty_response", res.status);
+  return json;
 }
 
 const PAGE = 1000;
@@ -67,7 +77,7 @@ export async function powerOfficeAll<T>(token: string, path: string, params: Rec
   const out: T[] = [];
   for (let page = 1; page <= 100; page++) {
     const res = await get(token, path, { ...params, PageNumber: String(page), PageSize: String(PAGE) });
-    const rows = (await res.json()) as T[];
+    const rows = await body<T[]>(res, []);
     out.push(...rows);
     let totalPages = 0;
     try {
