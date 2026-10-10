@@ -320,6 +320,9 @@ const nb = {
     trialNote: "14 dager gratis. Ingen kort nødvendig.",
     nameRequired: "Skriv inn navnet på bedriften.",
     failed: "Kunne ikke opprette bedriften. Prøv igjen.",
+    haveAccount: "Har du allerede en konto?",
+    signIn: "Logg inn",
+    signedInAs: (email: string) => `Du er logget inn som ${email}.`,
   },
   brreg: {
     placeholder: "Søk på firmanavn eller org.nr.",
@@ -2260,6 +2263,9 @@ const en: Dictionary = {
     trialNote: "14 days free. No card required.",
     nameRequired: "Enter the company name.",
     failed: "Couldn't create the company. Please try again.",
+    haveAccount: "Already have an account?",
+    signIn: "Sign in",
+    signedInAs: (email: string) => `You are signed in as ${email}.`,
   },
   brreg: {
     placeholder: "Search by company name or org. no.",
