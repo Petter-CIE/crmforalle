@@ -52,6 +52,14 @@ export default async function OnboardingPage() {
             brreg={t.brreg}
             legal={{ accept: t.legal.accept, terms: t.legal.terms, privacy: t.legal.privacy, dpa: t.legal.dpa }}
           />
+          {/* Signed in with an account that has no company yet (e.g. a different Google account): switch account. */}
+          <form action="/auth/logg-ut" method="post" className="mt-5 border-t border-border pt-4 text-center text-sm text-muted">
+            {user.email && <span className="block text-xs">{t.onboarding.signedInAs.replace("{email}", user.email)}</span>}
+            {t.onboarding.haveAccount}{" "}
+            <button type="submit" className="font-medium text-brand hover:underline">
+              {t.onboarding.signIn}
+            </button>
+          </form>
         </Card>
         <div className="flex justify-center">
           <Suspense>
