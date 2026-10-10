@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { Avatar } from "@/components/avatar";
 import { DeleteButton } from "@/components/delete-button";
@@ -38,7 +39,7 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
 
   let q = supabase
     .from("activities")
-    .select("id, type, body, occurred_at, author_id, profiles(full_name, email), projects(name, color)")
+    .select("id, type, body, occurred_at, author_id, deal_id, profiles(full_name, email), projects(name, color)")
     .eq("workspace_id", workspace.id)
     .order("occurred_at", { ascending: false })
     .limit(100);
@@ -108,6 +109,15 @@ export async function Timeline({ filter, links, path }: { filter: Scope; links: 
                     <Avatar name={a.profiles.full_name || a.profiles.email} size="xs" />
                     {a.profiles.full_name || a.profiles.email}
                   </span>
+                )}
+                {a.type === "email" && !a.deal_id && !filter.deal_id && (
+                  <Link
+                    href={`/app/salg/henvendelse?aktivitet=${a.id}`}
+                    title={t.deals.inquiry.fromThisEmailTitle}
+                    className="rounded-full border border-border px-2 py-px text-[11px] font-medium text-brand hover:bg-brand-soft"
+                  >
+                    + {t.deals.inquiry.fromThisEmail}
+                  </Link>
                 )}
                 {a.author_id === user.id && !system(a.type) && (
                   <DeleteButton kind="note" id={a.id} message={t.ui.deleted.note} variant="ghost" className="ml-auto !px-1 !py-0 text-xs">

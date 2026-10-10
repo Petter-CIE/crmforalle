@@ -8,7 +8,7 @@ import { createQuote } from "@/app/app/tilbud/actions";
 export type QuickAddTexts = {
   quickAdd: string;
   close: string;
-  quick: { task: string; contact: string; company: string; deal: string; quote: string };
+  quick: { task: string; contact: string; company: string; deal: string; quote: string; inquiry: string };
   shortcuts: {
     title: string;
     open: string;
@@ -95,12 +95,13 @@ export function QuickAdd({ t }: { t: QuickAddTexts }) {
   }, [router]);
 
   const items = [
+    { href: "/app/salg/henvendelse", label: t.quick.inquiry, d: "M4 4h16v12H5.17L4 17.17V4zM12 7v6M9 10h6" },
     { href: "/app/oppgaver#ny-oppgave", label: t.quick.task, d: "M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
     { href: "/app/kontakter/ny", label: t.quick.contact, d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6" },
     { href: "/app/bedrifter/ny", label: t.quick.company, d: "M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4" },
     { href: "/app/salg/ny", label: t.quick.deal, d: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
   ];
-  const hideFab = /\/(ny|rediger)$/.test(pathname);
+  const hideFab = /\/(ny|rediger|henvendelse)$/.test(pathname);
 
   return (
     <>

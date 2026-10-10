@@ -94,6 +94,9 @@ export default async function SalesPage({ searchParams }: PageProps<"/app/salg">
                 ⚙ {t.customize.stages.title}
               </ButtonLink>
             )}
+            <ButtonLink href="/app/salg/henvendelse" variant="secondary">
+              + {t.deals.newInquiry}
+            </ButtonLink>
             <ButtonLink
               href={`/app/salg/ny?${new URLSearchParams({ ...(projectId ? { prosjekt: projectId } : {}), ...(pipeline ? { pipeline: pipeline.id } : {}) })}`}
             >
