@@ -157,6 +157,9 @@ export default async function InboundPage() {
                     {m.body && <p className="mt-1 line-clamp-2 text-sm text-muted">{m.body}</p>}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
+                    <ButtonLink href={`/app/salg/henvendelse?innkommende=${m.id}`} className="!px-3 !py-1.5">
+                      + {i.createInquiry}
+                    </ButtonLink>
                     <ButtonLink
                       href={`/app/kontakter/ny?epost=${encodeURIComponent(who)}&navn=${encodeURIComponent(name)}`}
                       variant="secondary"

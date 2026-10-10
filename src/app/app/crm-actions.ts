@@ -414,6 +414,174 @@ export async function createDeal(_p: FormResult, formData: FormData): Promise<Fo
   redirect(back(formData, `/app/salg/${data.id}`));
 }
 
+/** "Ola Nordmann" → first "Ola", last "Nordmann"; "Kari Anne Berg" → "Kari Anne" + "Berg". */
+function splitName(full: string) {
+  const parts = full.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  if (parts.length <= 1) return { first: (parts[0] ?? "").slice(0, 100), last: null };
+  return { first: parts.slice(0, -1).join(" ").slice(0, 100), last: parts[parts.length - 1].slice(0, 100) };
+}
+
+/**
+ * New inquiry in one step: finds or creates the contact and company and creates a deal in the
+ * first stage. Started from an e-mail (an e-mail on the timeline or one waiting under E-post),
+ * the e-mail is moved onto the new deal – or copied there as a note when it can't be moved.
+ */
+export async function createInquiry(_p: FormResult, formData: FormData): Promise<FormResult> {
+  const ctx = await requireWorkspace();
+  const { supabase, user, workspace } = ctx;
+  const { t } = await getI18n();
+  const q = t.deals.inquiry;
+  const ws = workspace.id;
+
+  const stageId = id(formData.get("stage_id"));
+  if (!stageId) return { error: t.crm.required };
+  const { data: stage } = await supabase.from("pipeline_stages").select("id").eq("id", stageId).eq("workspace_id", ws).maybeSingle();
+  if (!stage) return { error: t.crm.required };
+
+  const name = String(formData.get("name") ?? "").trim().slice(0, 200);
+  const email = opt(formData.get("email"), 200)?.toLowerCase() ?? null;
+  const phone = opt(formData.get("phone"), 50);
+  const what = String(formData.get("title") ?? "").trim().slice(0, 200);
+  const note = String(formData.get("note") ?? "").trim().slice(0, 10000);
+  const rawValue = Number(String(formData.get("value") ?? "").replace(/\s/g, "").replace(",", "."));
+  const value = Number.isFinite(rawValue) && rawValue >= 0 ? Math.round(rawValue * 100) / 100 : 0;
+
+  const company = await resolveCompanyRef(ctx, formData.get("company_id"));
+  if (company.error) return { error: company.error };
+  let companyId = company.id;
+  if (companyId) {
+    const { data } = await supabase.from("companies").select("id").eq("id", companyId).eq("workspace_id", ws).maybeSingle();
+    companyId = data?.id ?? null;
+  }
+
+  // Contact: the one chosen, an existing one with the same e-mail, or a new one.
+  let contactId: string | null = null;
+  let contactLabel = "";
+  const chosen = id(formData.get("contact_id"));
+  if (chosen) {
+    const { data } = await supabase.from("contacts").select("id, first_name, last_name, company_id").eq("id", chosen).eq("workspace_id", ws).maybeSingle();
+    if (data) {
+      contactId = data.id;
+      contactLabel = [data.first_name, data.last_name].filter(Boolean).join(" ");
+      companyId = companyId ?? data.company_id;
+    }
+  }
+  if (!contactId && email) {
+    const { data } = await supabase
+      .from("contacts")
+      .select("id, first_name, last_name, company_id")
+      .eq("workspace_id", ws)
+      .ilike("email", email)
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      contactId = data.id;
+      contactLabel = [data.first_name, data.last_name].filter(Boolean).join(" ");
+      companyId = companyId ?? data.company_id;
+    }
+  }
+  if (!contactId && (name || email || phone)) {
+    const { first, last } = splitName(name);
+    const { data, error } = await supabase
+      .from("contacts")
+      .insert({
+        workspace_id: ws,
+        first_name: first,
+        last_name: last,
+        email,
+        phone,
+        company_id: companyId,
+        kind: companyId ? "b2b" : "b2c",
+        owner_id: user.id,
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
+    if (error) return { error: await errorText(error) };
+    contactId = data.id;
+    contactLabel = name || email || phone || "";
+  }
+  if (!contactId && !companyId) return { error: q.needSomething };
+
+  let companyName = "";
+  if (companyId) {
+    const { data } = await supabase.from("companies").select("name").eq("id", companyId).maybeSingle();
+    companyName = data?.name ?? "";
+  }
+  const title = what || q.defaultTitle(companyName || contactLabel || email || "?").slice(0, 200);
+
+  const { data: deal, error } = await supabase
+    .from("deals")
+    .insert({
+      workspace_id: ws,
+      title,
+      value,
+      stage_id: stageId,
+      company_id: companyId,
+      contact_id: contactId,
+      owner_id: user.id,
+      created_by: user.id,
+      position: Date.now(),
+    })
+    .select("id")
+    .single();
+  if (error) return { error: await errorText(error) };
+
+  if (note) {
+    await supabase.from("activities").insert({
+      workspace_id: ws,
+      type: "note",
+      body: note,
+      company_id: companyId,
+      contact_id: contactId,
+      deal_id: deal.id,
+      author_id: user.id,
+    });
+  }
+
+  // The e-mail the inquiry came from goes onto the deal.
+  const activityId = id(formData.get("activity_id"));
+  const inboundId = id(formData.get("inbound_id"));
+  let mail: { ids: string[]; text: string | null } | null = null;
+  if (activityId) {
+    const { data } = await supabase.from("activities").select("id, body").eq("id", activityId).eq("workspace_id", ws).eq("type", "email").maybeSingle();
+    if (data) mail = { ids: [data.id], text: data.body };
+  } else if (inboundId) {
+    const { data: e } = await supabase.from("inbound_emails").select("id, subject, body, sent_at").eq("id", inboundId).eq("workspace_id", ws).maybeSingle();
+    if (e) {
+      // Creating the contact above linked the waiting e-mail to the contact's timeline.
+      const { data: linked } = contactId
+        ? await supabase.from("activities").select("id").eq("workspace_id", ws).eq("type", "email").eq("contact_id", contactId).eq("occurred_at", e.sent_at).is("deal_id", null)
+        : { data: [] };
+      mail = { ids: (linked ?? []).map((r) => r.id), text: `${e.subject || "(—)"}\n\n${e.body ?? ""}` };
+    }
+  }
+  if (mail) {
+    const moved = mail.ids.length
+      ? (await supabase.from("activities").update({ deal_id: deal.id }).in("id", mail.ids).eq("workspace_id", ws).select("id")).data ?? []
+      : [];
+    if (moved.length === 0 && mail.text) {
+      // Only on the deal: the original stays on the contact's timeline, so no duplicate there.
+      await supabase.from("activities").insert({
+        workspace_id: ws,
+        type: "email",
+        body: `${q.emailCopy}: ${mail.text}`.slice(0, 10000),
+        deal_id: deal.id,
+        author_id: user.id,
+      });
+      // Its content is on the deal now, so it no longer waits under E-post.
+      if (inboundId) await supabase.from("inbound_emails").delete().eq("id", inboundId).eq("workspace_id", ws).eq("status", "unmatched");
+    }
+  }
+
+  revalidatePath("/app/salg");
+  revalidatePath("/app/e-post");
+  if (contactId) revalidatePath(`/app/kontakter/${contactId}`);
+  if (companyId) revalidatePath(`/app/bedrifter/${companyId}`);
+  await flash("created");
+  redirect(`/app/salg/${deal.id}`);
+}
+
 export async function updateDeal(_p: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireWorkspace();
   const { supabase, workspace } = ctx;
