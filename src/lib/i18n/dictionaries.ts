@@ -322,7 +322,7 @@ const nb = {
     failed: "Kunne ikke opprette bedriften. Prøv igjen.",
     haveAccount: "Har du allerede en konto?",
     signIn: "Logg inn",
-    signedInAs: (email: string) => `Du er logget inn som ${email}.`,
+    signedInAs: "Du er logget inn som {email}.",
   },
   brreg: {
     placeholder: "Søk på firmanavn eller org.nr.",
@@ -2265,7 +2265,7 @@ const en: Dictionary = {
     failed: "Couldn't create the company. Please try again.",
     haveAccount: "Already have an account?",
     signIn: "Sign in",
-    signedInAs: (email: string) => `You are signed in as ${email}.`,
+    signedInAs: "You are signed in as {email}.",
   },
   brreg: {
     placeholder: "Search by company name or org. no.",
